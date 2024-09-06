@@ -1,0 +1,45 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+@tailwind variants;
+
+html,
+body {
+  @apply h-full overflow-hidden;
+}
+
+.cRouteBodyStyle {
+  @apply flex flex-col items-center md:w-11/12 space-y-4;
+}
+
+.cTitlePartStyle {
+  @apply m-2 md:mt-4;
+}
+
+.cTitleStyle {
+  @apply text-2xl font-bold;
+}
+
+.cContentPartStyle {
+  @apply space-y-4;
+}
+
+.cInputFormAndMessagePartStyle {
+  @apply flex items-center space-x-3;
+}
+
+.cLinkButtonStyle {
+  @apply text-lg text-blue-500 hover:underline font-bold;
+}
+
+.cIconButtonStyle {
+  @apply px-2 py-1 text-white rounded bg-blue-500 hover:bg-blue-600;
+}
+
+.cIconDivStyle {
+  @apply w-5 h-5 flex-shrink-0;
+}
+
+.cIconStyle {
+  @apply w-full h-full;
+}

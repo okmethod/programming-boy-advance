@@ -1,0 +1,13 @@
+{
+	"folders": [
+		{
+			"name": "my-static-site",
+			"path": "."
+		},
+		{
+			"name": "skeleton-app",
+			"path": "skeleton-app"
+		},
+	],
+	"settings": {}
+}
