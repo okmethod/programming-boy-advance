@@ -27,7 +27,7 @@
 </script>
 
 <svelte:head>
-  <title>My Static WebSite</title>
+  <title>PG Boy Advance</title>
 </svelte:head>
 
 <Modal />
