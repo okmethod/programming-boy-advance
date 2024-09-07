@@ -4,26 +4,34 @@
   import { safeEval, type AllowedGlobals } from "$lib/utils/safeEval";
 
   const sampleCode = `
-function helloWorld() {
-  console.log('Hello, world!');
+const oddNumbers = [];
+for (let i = 1; i <= 10; i++) {
+  if (i % 2 !== 0) {
+    log(i + " is Odd.");
+    oddNumbers.push(i);
+  } else {
+    log(i + " is Even.");
+  }
 }
-
-// helloWorld();
-customFunction();
-
-return 'This is Return Value.';
-
+return oddNumbers;
 `;
 
   let logs: string[] = [];
-  function customFunction() {
+  function log(message: string): void {
     const timestamp = new Date().toLocaleString();
-    logs.push(`[${timestamp}] Custom function called.`);
+    logs.push(`[${timestamp}] ${message}`);
     logs = [...logs];
   }
 
+  function customFunction(): void {
+    log("Custom function called.");
+  }
+
   const allowedGlobals: AllowedGlobals = {
+    log: log,
     customFunction: customFunction,
+    Math: Math,
+    Date: Date,
     // console: console,
     // 必要に応じて追加
   };
@@ -37,6 +45,8 @@ return 'This is Return Value.';
       const result = safeEval(allowedGlobals, code);
       if (typeof result === "string" || typeof result === "number" || typeof result === "boolean") {
         resultString = String(result);
+      } else if (Array.isArray(result) || typeof result === "object") {
+        resultString = JSON.stringify(result, null, 2);
       }
       message = "Executed successfully.";
       succeed = true;
