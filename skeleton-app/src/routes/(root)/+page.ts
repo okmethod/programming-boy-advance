@@ -14,7 +14,7 @@ export interface ContentButtonProps {
 
 const contents: Content[] = [
   {
-    title: "Code Executer",
+    title: "Test Code Executer",
     action: "navigate",
     route: "/executer",
   },

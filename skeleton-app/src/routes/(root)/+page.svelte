@@ -9,7 +9,7 @@
 <div class="cRouteBodyStyle">
   <!-- タイトル部 -->
   <div class="cTitlePartStyle md:!mb-4">
-    <h1 class="cTitleStyle md:!text-3xl">Programming Boy Advance</h1>
+    <h1 class="cTitleStyle md:!text-3xl">PGM Boy Advance</h1>
   </div>
 
   <!-- コンテンツ部 -->
