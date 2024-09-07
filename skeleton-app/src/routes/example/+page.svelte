@@ -11,10 +11,15 @@ function helloWorld() {
 // helloWorld();
 customFunction();
 
+return 'This is Return Value.';
+
 `;
 
+  let logs: string[] = [];
   function customFunction() {
-    console.log("Custom function called.");
+    const timestamp = new Date().toLocaleString();
+    logs.push(`[${timestamp}] Custom function called.`);
+    logs = [...logs];
   }
 
   const allowedGlobals: AllowedGlobals = {
@@ -24,11 +29,15 @@ customFunction();
   };
 
   let code = sampleCode;
+  let resultString: string;
   function executeCode(): void {
     let message: string;
     let succeed: boolean;
     try {
-      safeEval(allowedGlobals, code);
+      const result = safeEval(allowedGlobals, code);
+      if (typeof result === "string" || typeof result === "number" || typeof result === "boolean") {
+        resultString = String(result);
+      }
       message = "Executed successfully.";
       succeed = true;
     } catch (error: unknown) {
@@ -55,7 +64,7 @@ customFunction();
 <div class="cRouteBodyStyle">
   <!-- タイトル部 -->
   <div class="cTitlePartStyle md:!mb-4">
-    <h1 class="cTitleStyle md:!text-3xl">Highlight Code Editor</h1>
+    <h1 class="cTitleStyle md:!text-3xl">Code Executer</h1>
   </div>
 
   <!-- コンテンツ部 -->
@@ -66,5 +75,13 @@ customFunction();
         <span> Execute </span>
       </div>
     </button>
+    <div class="w-96 h-40 p-4 border border-gray-300 rounded-md overflow-y-auto">
+      <span class="block font-mono">{resultString ?? ""}</span>
+    </div>
+    <div class="w-96 h-40 p-4 border border-gray-300 rounded-md overflow-y-auto">
+      {#each logs as log}
+        <span class="block font-mono">{log}</span>
+      {/each}
+    </div>
   </div>
 </div>
