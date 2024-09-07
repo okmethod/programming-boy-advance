@@ -68,21 +68,21 @@ return 'This is Return Value.';
   </div>
 
   <!-- コンテンツ部 -->
-  <div class="grid grid-cols-12 justify-center items-center gap-4 m-4">
-    <div class="col-span-5">
+  <div class="grid grid-cols-1 lg:grid-cols-12 justify-center items-center gap-4 m-4">
+    <div class="col-span-1 lg:col-span-5">
       <strong class="ml-2 font-mono underline">Editor</strong>
       <HighlightCodeEditor bind:code cLanguage="language-javascript" />
     </div>
 
-    <div class="col-span-2 flex justify-center">
-      <button type="submit" on:click={executeCode} class="cIconButtonStyle">
+    <div class="col-span-1 lg:col-span-2 flex justify-center items-center">
+      <button type="submit" on:click={executeCode} class="cIconButtonStyle relative">
         <div class="cButtonSpan">
           <span> Execute </span>
         </div>
       </button>
     </div>
 
-    <div class="col-span-5 space-y-4">
+    <div class="col-span-1 lg:col-span-5 space-y-4">
       <div>
         <strong class="ml-2 font-mono underline">Result</strong>
         <div class="w-96 h-24 p-4 border border-gray-300 rounded-md overflow-y-auto">
