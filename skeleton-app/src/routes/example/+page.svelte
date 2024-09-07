@@ -64,24 +64,39 @@ return 'This is Return Value.';
 <div class="cRouteBodyStyle">
   <!-- タイトル部 -->
   <div class="cTitlePartStyle md:!mb-4">
-    <h1 class="cTitleStyle md:!text-3xl">Code Executer</h1>
+    <h1 class="cTitleStyle md:!text-3xl">Highlight Code Executer</h1>
   </div>
 
   <!-- コンテンツ部 -->
-  <div class="cContentPartStyle !m-4">
-    <HighlightCodeEditor bind:code cLanguage="language-javascript" />
-    <button type="submit" on:click={executeCode} class="cIconButtonStyle">
-      <div class="cButtonSpan">
-        <span> Execute </span>
-      </div>
-    </button>
-    <div class="w-96 h-40 p-4 border border-gray-300 rounded-md overflow-y-auto">
-      <span class="block font-mono">{resultString ?? ""}</span>
+  <div class="grid grid-cols-12 justify-center items-center gap-4 m-4">
+    <div class="col-span-5">
+      <strong class="ml-2 font-mono underline">Editor</strong>
+      <HighlightCodeEditor bind:code cLanguage="language-javascript" />
     </div>
-    <div class="w-96 h-40 p-4 border border-gray-300 rounded-md overflow-y-auto">
-      {#each logs as log}
-        <span class="block font-mono">{log}</span>
-      {/each}
+
+    <div class="col-span-2 flex justify-center">
+      <button type="submit" on:click={executeCode} class="cIconButtonStyle">
+        <div class="cButtonSpan">
+          <span> Execute </span>
+        </div>
+      </button>
+    </div>
+
+    <div class="col-span-5 space-y-4">
+      <div>
+        <strong class="ml-2 font-mono underline">Result</strong>
+        <div class="w-96 h-24 p-4 border border-gray-300 rounded-md overflow-y-auto">
+          <span class="block font-mono">{resultString ?? ""}</span>
+        </div>
+      </div>
+      <div>
+        <strong class="ml-2 font-mono underline">Logs</strong>
+        <div class="w-96 h-40 p-4 border border-gray-300 rounded-md space-y-1 overflow-y-auto">
+          {#each logs as log}
+            <span class="block border border-gray-100 rounded-sm font-mono">{log}</span>
+          {/each}
+        </div>
+      </div>
     </div>
   </div>
 </div>
