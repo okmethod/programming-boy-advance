@@ -23,7 +23,15 @@
     codeElement.replaceWith(newElement);
   }
 
-  function updateCode() {
+  const linesLimit = 12;
+  function updateCode(event: Event | undefined = undefined) {
+    if (event) {
+      const target = event.target as HTMLTextAreaElement;
+      const lines = target.value.split("\n");
+      if (lines.length > linesLimit) {
+        target.value = lines.slice(0, 12).join("\n");
+      }
+    }
     highlightCodeElement(highlightElementId, code);
   }
 
@@ -41,8 +49,13 @@
     bind:value={code}
     on:input={updateCode}
     rows="10"
-    cols="10"
-    class="{cCodeArea} font-mono text-transparent bg-transparent caret-white absolute top-6 left-0 z-10"
+    cols={linesLimit}
+    class="
+      {cCodeArea}
+      font-mono text-transparent bg-transparent caret-white
+      resize-none overflow-hidden
+      absolute top-6 left-0 z-10
+    "
   ></textarea>
 
   <!-- ハイライトされたコードブロック -->
