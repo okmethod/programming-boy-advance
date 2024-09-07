@@ -14,12 +14,12 @@ export interface ContentButtonProps {
 
 const contents: Content[] = [
   {
-    title: "sample page",
+    title: "Code Executer",
     action: "navigate",
-    route: "/example",
+    route: "/executer",
   },
   {
-    title: "github repository",
+    title: "Github Repository",
     action: "redirect",
     route: GITHUB_REPO_URL,
   },
