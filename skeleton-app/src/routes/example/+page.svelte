@@ -11,7 +11,7 @@ helloWorld();
 `;
 
   let code = sampleCode;
-  function executeCode() {
+  function executeCode(): void {
     try {
       eval(code);
       console.log("Executed successfully.");

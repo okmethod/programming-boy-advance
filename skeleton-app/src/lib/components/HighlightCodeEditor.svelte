@@ -11,7 +11,7 @@
   const highlightElementId = `code-block-${uniqueId}`;
 
   const hljs = get(storeHighlightJs);
-  function highlightCodeElement(id: string, code: string) {
+  function highlightCodeElement(id: string, code: string): void {
     const codeElement = document.getElementById(id) as HTMLElement;
 
     // コードを書き換えて再適用することができないため、新しい要素を作成して置き換える
@@ -24,7 +24,7 @@
   }
 
   const linesLimit = 12;
-  function updateCode(event: Event | undefined = undefined) {
+  function updateCode(event: Event | undefined = undefined): void {
     if (event) {
       const target = event.target as HTMLTextAreaElement;
       const lines = target.value.split("\n");
