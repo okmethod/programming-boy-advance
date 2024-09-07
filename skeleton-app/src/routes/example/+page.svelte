@@ -6,9 +6,19 @@ function helloWorld() {
   console.log('Hello, world!');
 }
 
+helloWorld();
+
 `;
 
   let code = sampleCode;
+  function executeCode() {
+    try {
+      eval(code);
+      console.log("Executed successfully.");
+    } catch (error) {
+      console.error("Failed to execute code:", error);
+    }
+  }
 </script>
 
 <div class="cRouteBodyStyle">
@@ -20,5 +30,10 @@ function helloWorld() {
   <!-- コンテンツ部 -->
   <div class="cContentPartStyle !m-4">
     <HighlightCodeEditor bind:code cLanguage="language-javascript" />
+    <button type="submit" on:click={executeCode} class="cIconButtonStyle">
+      <div class="cButtonSpan">
+        <span> Execute </span>
+      </div>
+    </button>
   </div>
 </div>
