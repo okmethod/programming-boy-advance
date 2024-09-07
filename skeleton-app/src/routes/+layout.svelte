@@ -31,14 +31,14 @@
 </svelte:head>
 
 <Modal />
-<Toast position="tr" rounded="rounded-lg" />
+<Toast position="tr" rounded="rounded-lg" class="font-pixel12" />
 
 <div class="flex flex-col h-screen">
   <div class="border-b border-gray-400">
     <AppBar class="!p-1 md:!p-2">
       <div class="flex items-center h-full">
         <a href="/" class="flex items-center" on:click|preventDefault={() => navigateTo("/")}>
-          <div class="text-sm md:text-lg">TOP</div>
+          <div class="font-pixel12 text-sm md:text-lg">TOP</div>
         </a>
       </div>
     </AppBar>

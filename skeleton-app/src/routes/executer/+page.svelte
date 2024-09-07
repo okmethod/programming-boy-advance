@@ -87,7 +87,7 @@ return oddNumbers;
   <!-- コンテンツ部 -->
   <div class="grid grid-cols-1 lg:grid-cols-12 justify-center items-center gap-4 m-4">
     <div class="col-span-1 lg:col-span-5">
-      <strong class="ml-2 font-mono underline">Editor</strong>
+      <strong class="cIndexSpan ml-2">Editor</strong>
       <HighlightCodeEditor bind:code cLanguage="language-javascript" />
     </div>
 
@@ -102,21 +102,21 @@ return oddNumbers;
     <div class="col-span-1 lg:col-span-5 space-y-4">
       <div>
         <div class="flex justify-between ml-2 mr-2">
-          <strong class="font-mono underline">Result</strong>
+          <strong class="cIndexSpan">Result</strong>
           <button type="submit" on:click={clearResult} class=""> ✕ </button>
         </div>
         <div class="w-96 h-24 p-4 border border-gray-300 rounded-md overflow-y-auto">
-          <span class="block font-mono">{resultString ?? ""}</span>
+          <span class="block font-pixel12">{resultString ?? ""}</span>
         </div>
       </div>
       <div>
         <div class="flex justify-between ml-2 mr-2">
-          <strong class="font-mono underline">Logs</strong>
+          <strong class="cIndexSpan">Logs</strong>
           <button type="submit" on:click={clearLogs} class=""> ✕ </button>
         </div>
         <div class="w-96 h-40 p-4 border border-gray-300 rounded-md space-y-1 overflow-y-auto">
           {#each logs as log}
-            <span class="block border border-gray-100 rounded-sm font-mono">{log}</span>
+            <span class="block border border-gray-100 rounded-sm font-pixel10">{log}</span>
           {/each}
         </div>
       </div>
