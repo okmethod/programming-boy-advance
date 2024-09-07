@@ -27,7 +27,7 @@
 </script>
 
 <svelte:head>
-  <title>PG Boy Advance</title>
+  <title>PGM Boy Advance</title>
 </svelte:head>
 
 <Modal />
