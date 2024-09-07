@@ -19,7 +19,7 @@
     newElement.id = id;
     newElement.innerHTML = code;
     newElement.className = codeElement.className;
-    hljs.highlightBlock(newElement);
+    hljs.highlightElement(newElement);
     codeElement.replaceWith(newElement);
   }
 
