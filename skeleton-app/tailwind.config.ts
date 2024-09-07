@@ -11,7 +11,12 @@ export default {
     join(require.resolve("@skeletonlabs/skeleton"), "../**/*.{html,js,svelte,ts}"),
   ],
   theme: {
-    extend: {},
+    extend: {
+      fontFamily: {
+        pixel10: ["PixelMplus10", "sans-serif"],
+        pixel12: ["PixelMplus12", "sans-serif"],
+      },
+    },
   },
   plugins: [
     forms,
