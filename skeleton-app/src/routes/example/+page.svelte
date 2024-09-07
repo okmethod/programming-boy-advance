@@ -4,10 +4,16 @@
   import { get } from "svelte/store";
 
   const hljs = get(storeHighlightJs);
-  function highlightCode() {
-    document.querySelectorAll("pre code").forEach((block) => {
-      hljs.highlightBlock(block);
-    });
+  function highlightCodeElement(id: string, code: string) {
+    const codeElement = document.getElementById(id) as HTMLElement;
+
+    // コードを書き換えて再適用することができないため、新しい要素を作成して置き換える
+    const newElement = document.createElement("code");
+    newElement.id = id;
+    newElement.innerHTML = code;
+    newElement.className = codeElement.className;
+    hljs.highlightBlock(newElement);
+    codeElement.replaceWith(newElement);
   }
 
   const sampleCode = `
@@ -17,8 +23,14 @@ function helloWorld() {
 
 `;
 
+  const id = "code-block";
+  let code = sampleCode;
+  function updateCode() {
+    highlightCodeElement(id, code);
+  }
+
   onMount(() => {
-    highlightCode();
+    updateCode();
   });
 </script>
 
@@ -30,9 +42,12 @@ function helloWorld() {
 
   <!-- コンテンツ部 -->
   <div class="cContentPartStyle !m-4">
+    <!-- 編集可能なコードブロック -->
+    <textarea id="code-editor" bind:value={code} on:input={updateCode} rows="10" cols="50"></textarea>
+
     <!-- コードブロック -->
     <pre>
-      <code class="language-javascript">{sampleCode}</code>
+      <code {id} class="language-javascript">{code}</code>
     </pre>
   </div>
 </div>
