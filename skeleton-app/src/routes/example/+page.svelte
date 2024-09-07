@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { getToastStore, type ToastSettings } from "@skeletonlabs/skeleton";
   import HighlightCodeEditor from "$lib/components/HighlightCodeEditor.svelte";
   import { safeEval, type AllowedGlobals } from "$lib/utils/safeEval";
 
@@ -24,12 +25,30 @@ customFunction();
 
   let code = sampleCode;
   function executeCode(): void {
+    let message: string;
+    let succeed: boolean;
     try {
       safeEval(allowedGlobals, code);
-      console.log("Executed successfully.");
-    } catch (error) {
+      message = "Executed successfully.";
+      succeed = true;
+    } catch (error: unknown) {
       console.error("Failed to execute code:", error);
+      message = error instanceof Error ? `${error.name}: ${error.message}` : "UnknownError";
+      succeed = false;
     }
+    toastStore.trigger(toastSettings(message, succeed));
+  }
+
+  // トースト表示
+  const toastStore = getToastStore();
+  function toastSettings(message: string, succeed: boolean): ToastSettings {
+    const cBackground = succeed ? "bg-green-100" : "bg-red-100";
+    return {
+      message: message,
+      background: `${cBackground} select-none`,
+      timeout: 2000,
+      autohide: succeed,
+    };
   }
 </script>
 
