@@ -52,7 +52,7 @@
     cols={linesLimit}
     class="
       {cCodeArea}
-      font-mono text-transparent bg-transparent caret-white
+      font-mono text-transparent bg-transparent caret-white custom-selection
       resize-none overflow-hidden
       absolute top-6 left-0 z-10
     "
@@ -65,3 +65,10 @@
     </code>
   </pre>
 </div>
+
+<style>
+  .custom-selection::selection {
+    background-color: rgba(255, 255, 255, 0.9); /* 背景色 */
+    color: black; /* テキスト色 */
+  }
+</style>
