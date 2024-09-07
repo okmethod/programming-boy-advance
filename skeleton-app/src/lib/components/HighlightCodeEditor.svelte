@@ -39,10 +39,10 @@
     updateCode();
   });
 
-  const cCodeArea = "w-96 h-80 p-4 border border-gray-300 rounded-md";
+  const cCodeAreaSize = "w-96 h-80";
 </script>
 
-<div class="relative">
+<div class="relative h-full">
   <!-- 編集可能なコードブロック -->
   <textarea
     id={textEditorElementId}
@@ -51,16 +51,16 @@
     rows="10"
     cols={linesLimit}
     class="
-      {cCodeArea}
+      {cCodeAreaSize} p-4 border border-gray-300 rounded-md
       font-mono text-transparent bg-transparent caret-white custom-selection
       resize-none overflow-hidden
-      absolute top-6 left-0 z-10
+      absolute top-0 left-0 z-10
     "
   ></textarea>
 
   <!-- ハイライトされたコードブロック -->
-  <pre>
-    <code id={highlightElementId} class="{cCodeArea} {cLanguage} relative z-0">
+  <pre class="{cCodeAreaSize} relative -top-6 z-0">
+    <code id={highlightElementId} class="{cLanguage} h-full w-full rounded-md">
       {code}
     </code>
   </pre>
