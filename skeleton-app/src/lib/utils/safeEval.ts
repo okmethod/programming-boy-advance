@@ -2,22 +2,24 @@ export type AllowedGlobals = Record<string, unknown>;
 
 const proxy = (allowedGlobals: AllowedGlobals) => {
   return new Proxy(allowedGlobals, {
-    // has: () => true,
-    get: (target, prop) => {
-      if (typeof prop === "string" && prop in target) {
-        return target[prop];
+    has: (target, key) => {
+      if (key in target) {
+        return true;
+      }
+      throw new Error(`"${String(key)}" is not exist or not allowed.`);
+    },
+    get: (target, key) => {
+      if (typeof key === "string" && key in target) {
+        return target[key];
       }
       return undefined;
     },
   });
 };
 
-const executeCode = (code: string, proxy: AllowedGlobals) => {
-  return new Function("proxy", `with (proxy) { "use strict"; ${code} }`)(proxy);
-};
-
 export function safeEval(code: string, allowedGlobals: AllowedGlobals): unknown {
-  return executeCode(code, proxy(allowedGlobals));
+  const functionBody = `with (proxy) { "use strict"; ${code} }`;
+  return new Function("proxy", functionBody)(proxy(allowedGlobals));
 }
 
 export function executeEval(
