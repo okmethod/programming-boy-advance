@@ -1,0 +1,1 @@
+function n(n,o){const t={},c={},e={$$scope:1};let i=n.length;for(;i--;){const r=n[i],s=o[i];if(s){for(const n in r)n in s||(c[n]=1);for(const n in s)e[n]||(t[n]=s[n],e[n]=1);n[i]=s}else for(const n in r)e[n]=1}for(const r in c)r in t||(t[r]=void 0);return t}function o(n){return"object"==typeof n&&null!==n?n:{}}export{o as a,n as g};
