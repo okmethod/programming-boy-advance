@@ -40,7 +40,7 @@
   </div>
 
   <!-- コンテンツ部 -->
-  <div class="grid grid-cols-1 lg:grid-cols-12 justify-center items-center gap-4 m-4">
+  <div class="cResponsiveCodeExecuter">
     <CodeExecuter bind:this={codeExecuterRef} bind:codeExeProps={$codeExeProps} {allowedGlobals} />
   </div>
 </div>

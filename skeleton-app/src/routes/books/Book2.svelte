@@ -22,4 +22,9 @@ return result;`;
   const allowedGlobals: AllowedGlobals = {};
 </script>
 
-<CodeExecuter bind:this={codeExecuterRef} bind:codeExeProps {allowedGlobals} />
+<div>
+  <div class="cResponsiveCodeExecuter">
+    <CodeExecuter bind:this={codeExecuterRef} bind:codeExeProps {allowedGlobals} />
+  </div>
+  <hr class="cBorderLine" />
+</div>
