@@ -26,8 +26,8 @@
 
   function handleExecute(): void {
     const result = executeEval(codeExeProps.code, { ...allowedGlobalsDefault, ...allowedGlobals });
-    codeExeProps.resultString = result.resultString;
-    toastStore.trigger(simpleToast(result.message, result.succeed));
+    toastStore.trigger(simpleToast(result.message, result.status));
+    if (result.resultString !== null) codeExeProps.resultString = result.resultString;
   }
 
   function clearCode(): void {

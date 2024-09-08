@@ -1,11 +1,24 @@
 import type { ToastSettings } from "@skeletonlabs/skeleton";
 
-export function simpleToast(message: string, succeed: boolean): ToastSettings {
-  const cBackground = succeed ? "bg-green-100" : "bg-red-100";
+export type ToastStatus = "Succeed" | "Warning" | "Error";
+
+interface ToastSetting {
+  cBackground: string;
+  autohide: boolean;
+}
+
+const toastSettingMap: Record<ToastStatus, ToastSetting> = {
+  Succeed: { cBackground: "bg-green-100", autohide: true },
+  Warning: { cBackground: "bg-yellow-100", autohide: true },
+  Error: { cBackground: "bg-red-100", autohide: false },
+};
+
+export function simpleToast(message: string, status: ToastStatus): ToastSettings {
+  const toastSetting = toastSettingMap[status];
   return {
     message: message,
-    background: `${cBackground} select-none`,
+    background: `${toastSetting.cBackground} select-none`,
     timeout: 2000,
-    autohide: succeed,
+    autohide: toastSetting.autohide,
   };
 }

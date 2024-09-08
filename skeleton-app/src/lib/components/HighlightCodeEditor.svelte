@@ -33,7 +33,7 @@
       const target = event.target as HTMLTextAreaElement;
       const lines = target.value.split("\n");
       if (isExceedLimit(lines)) {
-        toastStore.trigger(simpleToast("Textarea overflow.", true));
+        toastStore.trigger(simpleToast("Textarea overflow.", "Warning"));
         const start = target.selectionStart;
         event.preventDefault();
         event.stopImmediatePropagation();

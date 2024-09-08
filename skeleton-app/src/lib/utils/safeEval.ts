@@ -1,3 +1,5 @@
+import type { ToastStatus } from "$lib/utils/toastSettings";
+
 export type AllowedGlobals = Record<string, unknown>;
 
 const proxy = (allowedGlobals: AllowedGlobals) => {
@@ -25,14 +27,15 @@ export function safeEval(code: string, allowedGlobals: AllowedGlobals): unknown 
 export function executeEval(
   code: string,
   allowedGlobals: AllowedGlobals,
-): { resultString: string; message: string; succeed: boolean } {
-  let message = "";
-  let succeed = false;
-  let resultString = "";
+): { resultString: string | null; message: string; status: ToastStatus } {
+  let message: string;
+  let status: ToastStatus;
+  let resultString: string | null;
 
   if (!code) {
     message = "Code is empty.";
-    succeed = true;
+    status = "Warning";
+    resultString = null;
   } else {
     try {
       const result = safeEval(code, allowedGlobals);
@@ -44,14 +47,14 @@ export function executeEval(
         resultString = "(No Results)";
       }
       message = "Executed successfully.";
-      succeed = true;
+      status = "Succeed";
     } catch (error: unknown) {
       console.error("Failed to execute code:", error);
       resultString = "(Failed)";
       message = error instanceof Error ? `${error.name}: ${error.message}` : "UnknownError";
-      succeed = false;
+      status = "Error";
     }
   }
 
-  return { resultString, message, succeed };
+  return { resultString, message, status };
 }
