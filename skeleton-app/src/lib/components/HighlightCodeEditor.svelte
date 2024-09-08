@@ -1,15 +1,18 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import { storeHighlightJs } from "@skeletonlabs/skeleton";
+  import { getToastStore, storeHighlightJs } from "@skeletonlabs/skeleton";
   import { get } from "svelte/store";
   import { browser } from "$app/environment";
+  import { simpleToast } from "$lib/utils/toastSettings";
 
   export let code: string;
   export let cLanguage: string;
 
-  const uniqueId = Math.random().toString(36).substr(2, 9);
+  const uniqueId = Math.random().toString(36).slice(2, 11);
   const textEditorElementId = `code-editor-${uniqueId}`;
   const highlightElementId = `code-block-${uniqueId}`;
+
+  const toastStore = getToastStore();
 
   const hljs = get(storeHighlightJs);
   function highlightCodeElement(id: string, code: string): void {
@@ -24,21 +27,50 @@
     codeElement.replaceWith(newElement);
   }
 
-  const linesLimit = 12;
   function updateCode(event: Event | undefined = undefined): void {
     if (!browser) return;
     if (event) {
       const target = event.target as HTMLTextAreaElement;
       const lines = target.value.split("\n");
-      if (lines.length > linesLimit) {
+      if (isExceedLimit(lines)) {
+        toastStore.trigger(simpleToast("Textarea overflow.", true));
         const start = target.selectionStart;
-        const end = target.selectionEnd;
-
-        target.value = lines.slice(0, 12).join("\n");
-        target.setSelectionRange(start, end);
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        target.value = code; // 元の値に戻す
+        target.setSelectionRange(start - 1, start - 1);
+        return;
       }
+      code = target.value; // 現在の値を保存
     }
     highlightCodeElement(highlightElementId, code);
+  }
+
+  const linesLimit = 12;
+  const charsLimit = 36;
+  const isExceedLimit = (lines: string[]): boolean => {
+    if (lines.length > linesLimit) {
+      return true;
+    }
+    for (const line of lines) {
+      if (countChars(line) > charsLimit) {
+        return true;
+      }
+    }
+    return false;
+  };
+
+  function countChars(line: string): number {
+    let count = 0;
+    for (const char of line) {
+      // 日本語の文字（全角文字）を2文字分としてカウント
+      if (char.match(/[^\x00-\x7F]/)) {
+        count += 2;
+      } else {
+        count += 1;
+      }
+    }
+    return count;
   }
 
   let isMounted = false;
@@ -58,14 +90,14 @@
   <!-- 編集可能なコードブロック -->
   <textarea
     id={textEditorElementId}
-    bind:value={code}
+    value={code}
     on:input={updateCode}
     rows={linesLimit}
-    cols="10"
+    cols={charsLimit}
     class="
       {cCodeAreaSize} p-4 border border-gray-300 rounded-md
       font-mono text-transparent bg-transparent caret-white custom-selection
-      resize-none overflow-hidden
+      resize-none whitespace-nowrap overflow-hidden
       absolute top-0 left-0 z-10
     "
   ></textarea>
