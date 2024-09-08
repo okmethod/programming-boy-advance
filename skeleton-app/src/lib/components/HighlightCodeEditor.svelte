@@ -64,7 +64,8 @@
     let count = 0;
     for (const char of line) {
       // 日本語の文字（全角文字）を2文字分としてカウント
-      if (char.match(/[^\x00-\x7F]/)) {
+      const codePoint = char.codePointAt(0);
+      if (codePoint && (codePoint > 0xff || codePoint < 0x20)) {
         count += 2;
       } else {
         count += 1;
