@@ -51,6 +51,8 @@ return oddNumbers;
           resultString = String(result);
         } else if (Array.isArray(result) || typeof result === "object") {
           resultString = JSON.stringify(result, null, 2);
+        } else {
+          resultString = "(No Results)";
         }
         message = "Executed successfully.";
         succeed = true;
