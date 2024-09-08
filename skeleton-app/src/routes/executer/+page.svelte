@@ -1,27 +1,27 @@
 <script lang="ts">
+  import { onDestroy } from "svelte";
+  import { writable } from "svelte/store";
   import type { AllowedGlobals } from "$lib/utils/safeEval";
   import type { CodeExeProps } from "$lib/types/props";
+  import { testCode, unsubscribeTestCode } from "$lib/stores/testCode";
   import CodeExecuter from "$lib/components/CodeExecuter.svelte";
 
-  const sampleCode = `
-const oddNumbers = [];
-for (let i = 1; i <= 10; i++) {
-  if (i % 2 !== 0) {
-    log(i + " is Odd.");
-    oddNumbers.push(i);
-  } else {
-    log(i + " is Even.");
-  }
-}
-return oddNumbers;
-`;
-
   let codeExecuterRef: CodeExecuter;
-  let codeExeProps: CodeExeProps = {
-    code: sampleCode,
+  let codeExeProps = writable<CodeExeProps>({
+    code: $testCode,
     resultString: "",
     logs: [],
-  };
+  });
+
+  const unsubscribeCodeExeProps = codeExeProps.subscribe((value) => {
+    if (value.code !== $testCode) {
+      testCode.set(value.code);
+    }
+  });
+  onDestroy(() => {
+    unsubscribeCodeExeProps();
+    unsubscribeTestCode();
+  });
 
   function customFunction(): void {
     codeExecuterRef.log("Custom function called.");
@@ -41,6 +41,6 @@ return oddNumbers;
 
   <!-- コンテンツ部 -->
   <div class="grid grid-cols-1 lg:grid-cols-12 justify-center items-center gap-4 m-4">
-    <CodeExecuter bind:this={codeExecuterRef} bind:codeExeProps {allowedGlobals} />
+    <CodeExecuter bind:this={codeExecuterRef} bind:codeExeProps={$codeExeProps} {allowedGlobals} />
   </div>
 </div>
