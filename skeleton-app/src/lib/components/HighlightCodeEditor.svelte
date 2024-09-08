@@ -2,6 +2,7 @@
   import { onMount } from "svelte";
   import { storeHighlightJs } from "@skeletonlabs/skeleton";
   import { get } from "svelte/store";
+  import { browser } from "$app/environment";
 
   export let code: string;
   export let cLanguage: string;
@@ -25,6 +26,7 @@
 
   const linesLimit = 12;
   function updateCode(event: Event | undefined = undefined): void {
+    if (!browser) return;
     if (event) {
       const target = event.target as HTMLTextAreaElement;
       const lines = target.value.split("\n");
@@ -35,9 +37,15 @@
     highlightCodeElement(highlightElementId, code);
   }
 
+  let isMounted = false;
   onMount(() => {
     updateCode();
+    isMounted = true;
   });
+
+  $: if (isMounted && code !== undefined) {
+    updateCode();
+  }
 
   const cCodeAreaSize = "w-96 h-80";
 </script>

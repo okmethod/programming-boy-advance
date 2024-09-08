@@ -70,6 +70,9 @@ return oddNumbers;
     };
   }
 
+  function clearCode(): void {
+    code = "";
+  }
   function clearResult(): void {
     resultString = "";
   }
@@ -87,7 +90,10 @@ return oddNumbers;
   <!-- コンテンツ部 -->
   <div class="grid grid-cols-1 lg:grid-cols-12 justify-center items-center gap-4 m-4">
     <div class="col-span-1 lg:col-span-5">
-      <strong class="cIndexSpan ml-2">Editor</strong>
+      <div class="flex justify-between ml-2">
+        <strong class="cIndexSpan">Code Editor</strong>
+        <button type="submit" on:click={clearCode} class="relative z-30"> ✕ </button>
+      </div>
       <HighlightCodeEditor bind:code cLanguage="language-javascript" />
     </div>
 
@@ -101,18 +107,18 @@ return oddNumbers;
 
     <div class="col-span-1 lg:col-span-5 space-y-4">
       <div>
-        <div class="flex justify-between ml-2 mr-2">
+        <div class="flex justify-between ml-2">
           <strong class="cIndexSpan">Result</strong>
-          <button type="submit" on:click={clearResult} class=""> ✕ </button>
+          <button type="submit" on:click={clearResult} class="relative z-30"> ✕ </button>
         </div>
         <div class="w-96 h-24 p-4 border border-gray-300 rounded-md overflow-y-auto">
           <span class="block font-pixel12">{resultString ?? ""}</span>
         </div>
       </div>
       <div>
-        <div class="flex justify-between ml-2 mr-2">
+        <div class="flex justify-between ml-2">
           <strong class="cIndexSpan">Logs</strong>
-          <button type="submit" on:click={clearLogs} class=""> ✕ </button>
+          <button type="submit" on:click={clearLogs} class="relative z-30"> ✕ </button>
         </div>
         <div class="w-96 h-40 p-4 border border-gray-300 rounded-md space-y-1 overflow-y-auto">
           {#each logs as log}
