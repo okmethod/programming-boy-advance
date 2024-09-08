@@ -31,7 +31,11 @@
       const target = event.target as HTMLTextAreaElement;
       const lines = target.value.split("\n");
       if (lines.length > linesLimit) {
+        const start = target.selectionStart;
+        const end = target.selectionEnd;
+
         target.value = lines.slice(0, 12).join("\n");
+        target.setSelectionRange(start, end);
       }
     }
     highlightCodeElement(highlightElementId, code);
@@ -56,8 +60,8 @@
     id={textEditorElementId}
     bind:value={code}
     on:input={updateCode}
-    rows="10"
-    cols={linesLimit}
+    rows={linesLimit}
+    cols="10"
     class="
       {cCodeAreaSize} p-4 border border-gray-300 rounded-md
       font-mono text-transparent bg-transparent caret-white custom-selection
