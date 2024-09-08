@@ -1,36 +1,25 @@
 <script lang="ts">
-  import type { AllowedGlobals } from "$lib/utils/safeEval";
-  import type { CodeExeProps } from "$lib/types/props";
-  import CodeExecuter from "$lib/components/CodeExecuter.svelte";
+  import type { ComponentType } from "svelte";
+  import { TabGroup, Tab } from "@skeletonlabs/skeleton";
+  import Book1 from "./Book1.svelte";
+  import Book2 from "./Book2.svelte";
+  import Book3 from "./Book3.svelte";
+  import Book4 from "./Book4.svelte";
 
-  const sampleCode = `
-  const oddNumbers = [];
-  for (let i = 1; i <= 10; i++) {
-    if (i % 2 !== 0) {
-      log(i + " is Odd.");
-      oddNumbers.push(i);
-    } else {
-      log(i + " is Even.");
-    }
-  }
-  return oddNumbers;
-  `;
-
-  let codeExecuterRef: CodeExecuter;
-  let codeExeProps: CodeExeProps = {
-    code: sampleCode,
-    resultString: "",
-    logs: [],
-  };
-
-  function customFunction(): void {
-    codeExecuterRef.log("Custom function called.");
+  interface TabSetting {
+    index: number;
+    name: string;
+    label: string;
+    component: ComponentType;
   }
 
-  const allowedGlobals: AllowedGlobals = {
-    customFunction: customFunction,
-    // 必要に応じて追加
-  };
+  let currentTab = 1;
+  const tabSettings: TabSetting[] = [
+    { index: 1, name: "book1", label: "(Book 1)", component: Book1 },
+    { index: 2, name: "book2", label: "(Book 2)", component: Book2 },
+    { index: 3, name: "book3", label: "(Book 3)", component: Book3 },
+    { index: 4, name: "book4", label: "(Book 4)", component: Book4 },
+  ];
 </script>
 
 <div class="cRouteBodyStyle">
@@ -40,7 +29,22 @@
   </div>
 
   <!-- コンテンツ部 -->
-  <div class="grid grid-cols-1 lg:grid-cols-12 justify-center items-center gap-4 m-4">
-    <CodeExecuter bind:this={codeExecuterRef} bind:codeExeProps {allowedGlobals} />
+  <div class="w-full">
+    <TabGroup>
+      {#each tabSettings as { index, name, label }}
+        <Tab bind:group={currentTab} {name} value={index}>
+          <span class="font-pixel10 {currentTab === index ? 'font-bold' : ''}">{label}</span>
+        </Tab>
+      {/each}
+      <svelte:fragment slot="panel">
+        <div class="flex flex-row w-full justify-center items-center gap-4 m-4">
+          {#each tabSettings as { index, component }}
+            {#if currentTab === index}
+              <svelte:component this={component} />
+            {/if}
+          {/each}
+        </div>
+      </svelte:fragment>
+    </TabGroup>
   </div>
 </div>
