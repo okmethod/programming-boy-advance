@@ -2,7 +2,7 @@ export type AllowedGlobals = Record<string, unknown>;
 
 const proxy = (allowedGlobals: AllowedGlobals) => {
   return new Proxy(allowedGlobals, {
-    has: () => true,
+    // has: () => true,
     get: (target, prop) => {
       if (typeof prop === "string" && prop in target) {
         return target[prop];
@@ -13,7 +13,7 @@ const proxy = (allowedGlobals: AllowedGlobals) => {
 };
 
 const executeCode = (proxy: AllowedGlobals, code: string) => {
-  return new Function("proxy", `with (proxy) { ${code} }`)(proxy);
+  return new Function("proxy", `with (proxy) { "use strict"; ${code} }`)(proxy);
 };
 
 export function safeEval(allowedGlobals: AllowedGlobals, code: string): unknown {
