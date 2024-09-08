@@ -18,6 +18,8 @@ return str;`;
 </script>
 
 <div>
+  <h2 class="cBookTitle">Book1 : 結果の出力</h2>
+  <hr class="cBorderLine" />
   <div class="cResponsiveCodeExecuter">
     <CodeExecuter bind:this={codeExecuterRef} bind:codeExeProps {allowedGlobals} />
   </div>

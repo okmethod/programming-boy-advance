@@ -23,6 +23,8 @@ return result;`;
 </script>
 
 <div>
+  <h2 class="cBookTitle">Book2 : 条件分岐</h2>
+  <hr class="cBorderLine" />
   <div class="cResponsiveCodeExecuter">
     <CodeExecuter bind:this={codeExecuterRef} bind:codeExeProps {allowedGlobals} />
   </div>

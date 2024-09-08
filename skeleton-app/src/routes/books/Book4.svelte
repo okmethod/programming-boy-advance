@@ -25,6 +25,8 @@ return oddNumbers;`;
 </script>
 
 <div>
+  <h2 class="cBookTitle">Book4 : ループ と 条件分岐 の組み合わせ</h2>
+  <hr class="cBorderLine" />
   <div class="cResponsiveCodeExecuter">
     <CodeExecuter bind:this={codeExecuterRef} bind:codeExeProps {allowedGlobals} />
   </div>

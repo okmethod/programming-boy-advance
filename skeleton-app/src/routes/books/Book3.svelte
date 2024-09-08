@@ -21,6 +21,8 @@ return list;`;
 </script>
 
 <div>
+  <h2 class="cBookTitle">Book3 : 繰り返し(ループ)</h2>
+  <hr class="cBorderLine" />
   <div class="cResponsiveCodeExecuter">
     <CodeExecuter bind:this={codeExecuterRef} bind:codeExeProps {allowedGlobals} />
   </div>
