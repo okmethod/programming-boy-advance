@@ -1,7 +1,10 @@
 <script lang="ts">
-  import { getToastStore, type ToastSettings } from "@skeletonlabs/skeleton";
+  import { getToastStore } from "@skeletonlabs/skeleton";
   import HighlightCodeEditor from "$lib/components/HighlightCodeEditor.svelte";
   import { safeEval, type AllowedGlobals } from "$lib/utils/safeEval";
+  import { simpleToast } from "$lib/utils/toastSettings";
+
+  const toastStore = getToastStore();
 
   const sampleCode = `
 const oddNumbers = [];
@@ -62,19 +65,7 @@ return oddNumbers;
         succeed = false;
       }
     }
-    toastStore.trigger(toastSettings(message, succeed));
-  }
-
-  // トースト表示
-  const toastStore = getToastStore();
-  function toastSettings(message: string, succeed: boolean): ToastSettings {
-    const cBackground = succeed ? "bg-green-100" : "bg-red-100";
-    return {
-      message: message,
-      background: `${cBackground} select-none`,
-      timeout: 2000,
-      autohide: succeed,
-    };
+    toastStore.trigger(simpleToast(message, succeed));
   }
 
   function clearCode(): void {
