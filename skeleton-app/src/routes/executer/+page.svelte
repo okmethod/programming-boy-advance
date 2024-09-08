@@ -41,19 +41,24 @@ return oddNumbers;
   function executeCode(): void {
     let message: string;
     let succeed: boolean;
-    try {
-      const result = safeEval(allowedGlobals, code);
-      if (typeof result === "string" || typeof result === "number" || typeof result === "boolean") {
-        resultString = String(result);
-      } else if (Array.isArray(result) || typeof result === "object") {
-        resultString = JSON.stringify(result, null, 2);
-      }
-      message = "Executed successfully.";
+    if (!code) {
+      message = "Code is empty.";
       succeed = true;
-    } catch (error: unknown) {
-      console.error("Failed to execute code:", error);
-      message = error instanceof Error ? `${error.name}: ${error.message}` : "UnknownError";
-      succeed = false;
+    } else {
+      try {
+        const result = safeEval(allowedGlobals, code);
+        if (typeof result === "string" || typeof result === "number" || typeof result === "boolean") {
+          resultString = String(result);
+        } else if (Array.isArray(result) || typeof result === "object") {
+          resultString = JSON.stringify(result, null, 2);
+        }
+        message = "Executed successfully.";
+        succeed = true;
+      } catch (error: unknown) {
+        console.error("Failed to execute code:", error);
+        message = error instanceof Error ? `${error.name}: ${error.message}` : "UnknownError";
+        succeed = false;
+      }
     }
     toastStore.trigger(toastSettings(message, succeed));
   }
