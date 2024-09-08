@@ -1,5 +1,6 @@
 <script lang="ts">
   import type { AllowedGlobals } from "$lib/utils/safeEval";
+  import type { CodeExeProps } from "$lib/types/props";
   import CodeExecuter from "$lib/components/CodeExecuter.svelte";
 
   const sampleCode = `
@@ -15,12 +16,15 @@ for (let i = 1; i <= 10; i++) {
 return oddNumbers;
 `;
 
-  let logs: string[] = [];
-  let code = sampleCode;
-  let resultString: string;
+  let codeExecuterRef: CodeExecuter;
+  let codeExeProps: CodeExeProps = {
+    code: sampleCode,
+    resultString: "",
+    logs: [],
+  };
 
   function customFunction(): void {
-    console.log("Custom function called.");
+    codeExecuterRef.log("Custom function called.");
   }
 
   const allowedGlobals: AllowedGlobals = {
@@ -37,6 +41,6 @@ return oddNumbers;
 
   <!-- コンテンツ部 -->
   <div class="grid grid-cols-1 lg:grid-cols-12 justify-center items-center gap-4 m-4">
-    <CodeExecuter bind:code bind:resultString bind:logs {allowedGlobals} />
+    <CodeExecuter bind:this={codeExecuterRef} bind:codeExeProps {allowedGlobals} />
   </div>
 </div>

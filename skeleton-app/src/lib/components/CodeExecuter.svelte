@@ -1,12 +1,11 @@
 <script lang="ts">
   import { getToastStore } from "@skeletonlabs/skeleton";
   import HighlightCodeEditor from "$lib/components/HighlightCodeEditor.svelte";
+  import type { CodeExeProps } from "$lib/types/props";
   import { executeEval, type AllowedGlobals } from "$lib/utils/safeEval";
   import { simpleToast } from "$lib/utils/toastSettings";
 
-  export let code: string;
-  export let resultString: string;
-  export let logs: string[];
+  export let codeExeProps: CodeExeProps;
   export let allowedGlobals: AllowedGlobals;
 
   const allowedGlobalsDefault: AllowedGlobals = {
@@ -19,26 +18,26 @@
 
   const toastStore = getToastStore();
 
-  function log(message: string): void {
+  export function log(message: string): void {
     const timestamp = new Date().toLocaleString();
-    logs.push(`[${timestamp}] ${message}`);
-    logs = [...logs];
+    codeExeProps.logs.push(`[${timestamp}] ${message}`);
+    codeExeProps.logs = [...codeExeProps.logs];
   }
 
   function handleExecute(): void {
-    const result = executeEval(code, { ...allowedGlobalsDefault, ...allowedGlobals });
-    resultString = result.resultString;
+    const result = executeEval(codeExeProps.code, { ...allowedGlobalsDefault, ...allowedGlobals });
+    codeExeProps.resultString = result.resultString;
     toastStore.trigger(simpleToast(result.message, result.succeed));
   }
 
   function clearCode(): void {
-    code = "";
+    codeExeProps.code = "";
   }
   function clearResult(): void {
-    resultString = "";
+    codeExeProps.resultString = "";
   }
   function clearLogs(): void {
-    logs = [];
+    codeExeProps.logs = [];
   }
 </script>
 
@@ -47,7 +46,7 @@
     <strong class="cIndexSpan">Code Editor</strong>
     <button type="submit" on:click={clearCode} class="relative z-30"> ✕ </button>
   </div>
-  <HighlightCodeEditor bind:code cLanguage="language-javascript" />
+  <HighlightCodeEditor bind:code={codeExeProps.code} cLanguage="language-javascript" />
 </div>
 
 <div class="col-span-1 lg:col-span-2 flex justify-center items-center">
@@ -65,7 +64,7 @@
       <button type="submit" on:click={clearResult} class="relative z-30"> ✕ </button>
     </div>
     <div class="w-96 h-24 p-4 border border-gray-300 rounded-md overflow-y-auto">
-      <span class="block font-pixel12">{resultString ?? ""}</span>
+      <span class="block font-pixel12">{codeExeProps.resultString ?? ""}</span>
     </div>
   </div>
   <div>
@@ -74,7 +73,7 @@
       <button type="submit" on:click={clearLogs} class="relative z-30"> ✕ </button>
     </div>
     <div class="w-96 h-40 p-4 border border-gray-300 rounded-md space-y-1 overflow-y-auto">
-      {#each logs as log}
+      {#each codeExeProps.logs as log}
         <span class="block border border-gray-100 rounded-sm font-pixel10">{log}</span>
       {/each}
     </div>
