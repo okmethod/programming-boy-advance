@@ -1,7 +1,7 @@
 <script lang="ts">
   import { getToastStore } from "@skeletonlabs/skeleton";
   import HighlightCodeEditor from "$lib/components/HighlightCodeEditor.svelte";
-  import { safeEval, type AllowedGlobals } from "$lib/utils/safeEval";
+  import { executeEval, type AllowedGlobals } from "$lib/utils/safeEval";
   import { simpleToast } from "$lib/utils/toastSettings";
 
   const toastStore = getToastStore();
@@ -41,31 +41,10 @@ return oddNumbers;
 
   let code = sampleCode;
   let resultString: string;
-  function executeCode(): void {
-    let message: string;
-    let succeed: boolean;
-    if (!code) {
-      message = "Code is empty.";
-      succeed = true;
-    } else {
-      try {
-        const result = safeEval(allowedGlobals, code);
-        if (typeof result === "string" || typeof result === "number" || typeof result === "boolean") {
-          resultString = String(result);
-        } else if (Array.isArray(result) || typeof result === "object") {
-          resultString = JSON.stringify(result, null, 2);
-        } else {
-          resultString = "(No Results)";
-        }
-        message = "Executed successfully.";
-        succeed = true;
-      } catch (error: unknown) {
-        console.error("Failed to execute code:", error);
-        message = error instanceof Error ? `${error.name}: ${error.message}` : "UnknownError";
-        succeed = false;
-      }
-    }
-    toastStore.trigger(simpleToast(message, succeed));
+  function handleExecute(): void {
+    const result = executeEval(code, allowedGlobals);
+    resultString = result.resultString;
+    toastStore.trigger(simpleToast(result.message, result.succeed));
   }
 
   function clearCode(): void {
@@ -96,7 +75,7 @@ return oddNumbers;
     </div>
 
     <div class="col-span-1 lg:col-span-2 flex justify-center items-center">
-      <button type="submit" on:click={executeCode} class="cIconButtonStyle relative">
+      <button type="submit" on:click={handleExecute} class="cIconButtonStyle relative">
         <div class="cButtonSpan">
           <span> Execute </span>
         </div>
