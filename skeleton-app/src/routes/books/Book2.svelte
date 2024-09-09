@@ -29,7 +29,7 @@ return number;`;
 <div class="max-w-[1000px]">
   <h2 class="cBookTitle">Book2 : 変数 と 関数</h2>
   <hr class="cBorderLine" />
-  <div class="font-pixel12">
+  <div>
     <p>プログラムには、2つの重要なアイテムがあります。それは「変数」と「関数」です。</p>
     <hr class="cBorderLine" />
     <p>
@@ -77,7 +77,7 @@ return number;`;
     <CodeExecuter bind:this={codeExecuterRef} bind:codeExeProps {allowedGlobals} />
   </div>
   <hr class="cBorderLine" />
-  <div class="font-pixel12">
+  <div>
     <p>
       実は、変数は 2種類あります。それは <span class="cBookCodeBlock hljs-keyword">let</span> と
       <span class="cBookCodeBlock hljs-keyword">const</span> です。<br />

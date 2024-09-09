@@ -64,7 +64,7 @@
       <button type="submit" on:click={clearResult} class="relative z-30"> ✕ </button>
     </div>
     <div class="w-96 h-24 p-4 border border-gray-500 bg-gray-100 rounded-md overflow-y-auto">
-      <span class="block font-pixel12">{codeExeProps.resultString ?? ""}</span>
+      <span class="block">{codeExeProps.resultString ?? ""}</span>
     </div>
   </div>
   <div>

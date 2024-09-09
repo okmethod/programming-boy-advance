@@ -20,10 +20,10 @@ return str;`;
 <div class="max-w-[1000px]">
   <h2 class="cBookTitle">Book1 : プログラムを実行してみよう！</h2>
   <hr class="cBorderLine" />
-  <div class="font-pixel12">
+  <div>
     <p>
       画面左側の <span class="cIndexSpan">Code Editor</span> に書かれたプログラムを、 画面中央の
-      <span class="px-2 py-1 font-pixel12 text-white bg-green-800 rounded">Execute</span> ボタンを押して実行してみましょう。
+      <span class="px-2 py-1 text-white bg-green-800 rounded">Execute</span> ボタンを押して実行してみましょう。
     </p>
     <p>
       プログラムを実行すると、
@@ -41,7 +41,7 @@ return str;`;
     <CodeExecuter bind:this={codeExecuterRef} bind:codeExeProps {allowedGlobals} />
   </div>
   <hr class="cBorderLine" />
-  <div class="font-pixel12">
+  <div>
     <p>
       もちろん、プログラムは書き換えることができます。<br />
       例えば、このプログラムでは
