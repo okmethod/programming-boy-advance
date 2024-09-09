@@ -33,7 +33,7 @@
 <Modal />
 <Toast position="tr" rounded="rounded-lg" class="font-pixel12" />
 
-<div class="flex flex-col h-screen">
+<div class="flex flex-col h-screen bg-gameboy-green text-gameboy-dark-green">
   <div class="border-b border-gray-400">
     <AppBar class="!p-1 md:!p-2">
       <div class="flex items-center h-full">

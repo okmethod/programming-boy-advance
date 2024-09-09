@@ -23,7 +23,7 @@ return str;`;
   <div class="font-pixel12">
     <p>
       画面左側の <span class="cIndexSpan">Code Editor</span> に書かれたプログラムを、 画面中央の
-      <span class="px-2 py-1 font-pixel12 text-white bg-blue-500 rounded">Execute</span> ボタンを押して実行してみましょう。
+      <span class="px-2 py-1 font-pixel12 text-white bg-green-800 rounded">Execute</span> ボタンを押して実行してみましょう。
     </p>
     <p>
       プログラムを実行すると、

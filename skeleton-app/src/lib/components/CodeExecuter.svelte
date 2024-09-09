@@ -63,7 +63,7 @@
       <strong class="cIndexSpan">Result</strong>
       <button type="submit" on:click={clearResult} class="relative z-30"> ✕ </button>
     </div>
-    <div class="w-96 h-24 p-4 border border-gray-300 rounded-md overflow-y-auto">
+    <div class="w-96 h-24 p-4 border border-gray-500 bg-gray-100 rounded-md overflow-y-auto">
       <span class="block font-pixel12">{codeExeProps.resultString ?? ""}</span>
     </div>
   </div>
@@ -72,9 +72,9 @@
       <strong class="cIndexSpan">Logs</strong>
       <button type="submit" on:click={clearLogs} class="relative z-30"> ✕ </button>
     </div>
-    <div class="w-96 h-40 p-4 border border-gray-300 rounded-md space-y-1 overflow-y-auto">
+    <div class="w-96 h-40 p-4 border border-gray-500 bg-gray-100 rounded-md space-y-1 overflow-y-auto">
       {#each codeExeProps.logs as log}
-        <span class="block border border-gray-100 rounded-sm font-pixel10">{log}</span>
+        <span class="block border border-gray-200 rounded-sm font-pixel10">{log}</span>
       {/each}
     </div>
   </div>

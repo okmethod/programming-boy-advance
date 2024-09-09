@@ -31,6 +31,21 @@
   font-weight: 700;
 }
 
+@layer utilities {
+  .bg-gameboy-green {
+    background-color: #CADC9F;
+  }
+  .bg-gameboy-dark-green {
+    background-color: #0F380F;
+  }
+  .text-gameboy-green {
+    color: #CADC9F;
+  }
+  .text-gameboy-dark-green {
+    color: #0F380F;
+  }
+}
+
 html,
 body {
   @apply h-full overflow-hidden;
@@ -57,11 +72,11 @@ body {
 }
 
 .cLinkButtonStyle {
-  @apply text-lg text-blue-500 hover:underline font-pixel12;
+  @apply text-lg text-green-800 hover:underline font-pixel12;
 }
 
 .cIconButtonStyle {
-  @apply px-2 py-1 text-white rounded bg-blue-500 hover:bg-blue-600;
+  @apply px-2 py-1 text-white rounded bg-green-800 hover:bg-gameboy-dark-green;
 }
 
 .cIconDivStyle {
