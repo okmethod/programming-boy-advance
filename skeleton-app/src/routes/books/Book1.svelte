@@ -1,6 +1,7 @@
 <script lang="ts">
   import type { AllowedGlobals } from "$lib/utils/safeEval";
   import type { CodeExeProps } from "$lib/types/props";
+  import CodeSpan from "$lib/components/CodeSpan.svelte";
   import CodeExecuter from "$lib/components/CodeExecuter.svelte";
 
   const sampleCode = `const str = "Hello, World!";
@@ -27,12 +28,16 @@ return str;`;
     </p>
     <p>
       プログラムを実行すると、
-      <span class="cBookCodeBlock hljs-keyword">return</span> が結果を出力します。 結果は、画面右側の
+      <CodeSpan data={["return", "hljs-keyword"]} /> が結果を出力します。 結果は、画面右側の
       <span class="cIndexSpan">Result</span> に表示されます。
     </p>
     <p>
-      また、実行中に
-      <span class="cBookCodeBlock hljs-title">log()</span> がログを出力します。 ログは、画面右側の
+      また、実行中に <CodeSpan
+        data={[
+          ["log", "hljs-title"],
+          ["()", "text-white"],
+        ]}
+      /> がログを出力します。 ログは、画面右側の
       <span class="cIndexSpan">logs</span> に表示されます。
     </p>
   </div>
@@ -43,11 +48,17 @@ return str;`;
   <hr class="cBorderLine" />
   <div>
     <p>
-      もちろん、プログラムは書き換えることができます。<br />
-      例えば、このプログラムでは
-      <span class="cBookCodeBlock"><span class="hljs-keyword">const</span> <span class="text-white">str</span></span>
-      という変数に
-      <span class="cBookCodeBlock hljs-string">"Hello, World!"</span> という文字列を代入しています。<br />
+      もちろん、プログラムは書き換えることができます。
+      <br />
+      例えば、このプログラムでは <CodeSpan
+        data={[
+          ["const", "hljs-keyword"],
+          [" ", ""],
+          ["str", "text-white"],
+        ]}
+      /> という変数に
+      <CodeSpan data={["Hello, World!", "hljs-string"]} /> という文字列を代入しています。
+      <br />
       もし、この文字列を書き換えてから実行したら、結果はどうなるでしょうか？
     </p>
   </div>
