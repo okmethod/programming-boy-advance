@@ -1,3 +1,4 @@
+// import ts from "typescript";
 import type { ToastStatus } from "$lib/utils/toastSettings";
 
 export type AllowedGlobals = Record<string, unknown>;
@@ -19,7 +20,20 @@ const proxy = (allowedGlobals: AllowedGlobals) => {
   });
 };
 
-export function safeEval(code: string, allowedGlobals: AllowedGlobals): unknown {
+/**
+function compileTypeScript(code: string): string {
+  const result = ts.transpileModule(code, {
+    compilerOptions: {
+      module: ts.ModuleKind.CommonJS,
+      target: ts.ScriptTarget.ES2023,
+      sourceMap: false,
+    },
+  });
+  return result.outputText;
+}
+**/
+
+function safeEval(code: string, allowedGlobals: AllowedGlobals): unknown {
   const functionBody = `with (proxy) { "use strict"; ${code} }`;
   return new Function("proxy", functionBody)(proxy(allowedGlobals));
 }
@@ -38,6 +52,7 @@ export function executeEval(
     resultString = null;
   } else {
     try {
+      // const compiledCode = compileTypeScript(code);
       const result = safeEval(code, allowedGlobals);
       if (typeof result === "string" || typeof result === "number" || typeof result === "boolean") {
         resultString = String(result);

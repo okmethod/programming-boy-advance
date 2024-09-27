@@ -11,7 +11,6 @@
   const allowedGlobalsDefault: AllowedGlobals = {
     log: log,
     Math: Math,
-    Date: Date,
     // console: console,
     // 必要に応じて追加
   };
