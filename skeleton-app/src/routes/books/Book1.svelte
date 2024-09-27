@@ -24,18 +24,18 @@ return str;`;
   <div>
     <p>
       画面左側の <span class="cIndexSpan">Code Editor</span> に書かれたプログラムを、 画面中央の
-      <span class="px-2 py-1 text-white bg-green-800 rounded">Execute</span> ボタンを押して実行してみましょう。
+      <span class="cIconButtonStyle hover:!bg-green-800">Execute</span> ボタンを押して実行してみましょう。
     </p>
     <p>
       プログラムを実行すると、
-      <CodeSpan data={["return", "hljs-keyword"]} /> が結果を出力します。 結果は、画面右側の
+      <CodeSpan data={["return", "red"]} /> が結果を出力します。 結果は、画面右側の
       <span class="cIndexSpan">Result</span> に表示されます。
     </p>
     <p>
       また、実行中に <CodeSpan
         data={[
-          ["log", "hljs-title"],
-          ["()", "text-white"],
+          ["log", "purple"],
+          ["()", "white"],
         ]}
       /> がログを出力します。 ログは、画面右側の
       <span class="cIndexSpan">logs</span> に表示されます。
@@ -52,9 +52,9 @@ return str;`;
       <br />
       例えば、このプログラムでは <CodeSpan
         data={[
-          ["const", "hljs-keyword"],
+          ["const", "red"],
           [" ", ""],
-          ["str", "text-white"],
+          ["str", "white"],
         ]}
       /> という変数に
       <CodeSpan data={["Hello, World!", "hljs-string"]} /> という文字列を代入しています。

@@ -39,15 +39,15 @@ return number;`;
     <p>
       このプログラムでは、<CodeSpan
         data={[
-          ["let", "hljs-keyword"],
+          ["let", "red"],
           [" ", ""],
-          ["number", "text-white"],
+          ["number", "white"],
         ]}
       /> で変数を定義しています。
-      <CodeSpan data={["let", "hljs-keyword"]} /> は変数の種類で、
-      <CodeSpan data={["number", "text-white"]} /> は変数の名前です。
+      <CodeSpan data={["let", "red"]} /> は変数の種類で、
+      <CodeSpan data={["number", "white"]} /> は変数の名前です。
       <br />
-      この変数に <CodeSpan data={["10", "hljs-number"]} /> という数値を代入しています。
+      この変数に <CodeSpan data={["10", "blue"]} /> という数値を代入しています。
     </p>
     <hr class="cBorderLine" />
     <p>
@@ -59,22 +59,22 @@ return number;`;
     <p>
       このプログラムでは、<CodeSpan
         data={[
-          ["function", "hljs-keyword"],
+          ["function", "red"],
           [" ", ""],
-          ["double", "hljs-title"],
-          ["()", "text-white"],
+          ["double", "purple"],
+          ["()", "white"],
         ]}
       /> で関数を定義しています。
       <br />
-      <CodeSpan data={["function", "hljs-keyword"]} /> は関数を表しており、
-      <CodeSpan data={["double", "hljs-title"]} /> は関数の名前です。
+      <CodeSpan data={["function", "red"]} /> は関数を表しており、
+      <CodeSpan data={["double", "purple"]} /> は関数の名前です。
       <br />
-      この関数は、引数<CodeSpan data={["num", "text-white"]} /> を受け取り、その値を2倍にして返します。
+      この関数は、引数<CodeSpan data={["num", "white"]} /> を受け取り、その値を2倍にして返します。
     </p>
     <hr class="cBorderLine" />
     <p>
       では、このプログラムを実行してみましょう。 <br />
-      変数<CodeSpan data={["number", "text-white"]} /> が、関数<CodeSpan data={["double", "hljs-title"]} /> によって変化していく様子がわかるでしょうか？
+      変数<CodeSpan data={["number", "white"]} /> が、関数<CodeSpan data={["double", "purple"]} /> によって変化していく様子がわかるでしょうか？
       <br />
       （ヒント：<span class="cIndexSpan">logs</span> で、実行中の値の変化を確認できます）
     </p>
@@ -86,27 +86,27 @@ return number;`;
   <hr class="cBorderLine" />
   <div>
     <p>
-      実は、変数は 2種類あります。それは <CodeSpan data={["let", "hljs-keyword"]} /> と
-      <CodeSpan data={["const", "hljs-keyword"]} /> です。
+      実は、変数は 2種類あります。それは <CodeSpan data={["let", "red"]} /> と
+      <CodeSpan data={["const", "red"]} /> です。
       <br />
-      <CodeSpan data={["let", "hljs-keyword"]} /> は何度でも代入でき、値を書き換えることができる変数です。
+      <CodeSpan data={["let", "red"]} /> は何度でも代入でき、値を書き換えることができる変数です。
       <br />
-      一方で、<CodeSpan data={["const", "hljs-keyword"]} />
+      一方で、<CodeSpan data={["const", "red"]} />
       は一度しか代入できず、値を書き換えることができない変数です。
       <br />
       このプログラムでは <CodeSpan
         data={[
-          ["let", "hljs-keyword"],
+          ["let", "red"],
           [" ", ""],
-          ["number", "text-white"],
+          ["number", "white"],
         ]}
       /> で変数を定義していますが、
       <br />
       もし、これを <CodeSpan
         data={[
-          ["const", "hljs-keyword"],
+          ["const", "red"],
           [" ", ""],
-          ["number", "text-white"],
+          ["number", "white"],
         ]}
       /> に変更してから実行したら、結果はどうなるでしょうか？
     </p>
