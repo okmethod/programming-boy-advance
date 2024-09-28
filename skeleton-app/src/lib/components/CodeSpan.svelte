@@ -18,7 +18,7 @@
   }
 </script>
 
-<span class="px-2 py-1 font-mono bg-gray-800 rounded">
+<span class="px-1 font-mono bg-gray-800 rounded">
   {#if isCodeBlockDataArray(data)}
     {#each data as [text, color]}
       <span class={cTextColor(color)}>{text}</span>
