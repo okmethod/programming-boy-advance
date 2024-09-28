@@ -57,7 +57,7 @@
         </Tab>
       {/each}
       <svelte:fragment slot="panel">
-        <div class="max-h-[calc(100vh-15rem)] overflow-y-auto">
+        <div class="max-h-[calc(100vh-12rem)] overflow-y-auto">
           <slot />
         </div>
       </svelte:fragment>
