@@ -32,10 +32,14 @@ return linl;`;
   <div>
     <hr class="cBorderLine" />
     <p>
-      「数値型」「文字列型」とは別のデータ型として、「配列(リスト)型」というものがあります。
+      「数値型」「文字列型」とは別のデータ型として、「配列(<CodeSpan
+        data={["Array", "white"]}
+      />)型」というものがあります。
       <br />
-      配列は、複数のデータを一つの変数にまとめて保存するためのもので、括弧<CodeSpan data={["[]", "white"]} />
+      配列は複数のデータを一つの変数にまとめて保存するためのもので、括弧<CodeSpan data={["[]", "white"]} />
       とカンマ<CodeSpan data={[",", "white"]} /> を使って定義します。
+      <br />
+      「リスト」とよばれることもあります。
     </p>
     <hr class="cBorderLine" />
     <p>
