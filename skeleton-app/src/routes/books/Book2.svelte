@@ -29,8 +29,8 @@ return number;`;
 
 <div class="max-w-[1000px]">
   <h2 class="cBookTitle">Book2 : 変数 と 関数</h2>
-  <hr class="cBorderLine" />
   <div>
+    <hr class="cBorderLine" />
     <p>プログラムには、2つの重要なアイテムがあります。それは「変数」と「関数」です。</p>
     <hr class="cBorderLine" />
     <p>
@@ -39,8 +39,7 @@ return number;`;
     <p>
       このプログラムでは、<CodeSpan
         data={[
-          ["let", "red"],
-          [" ", ""],
+          ["let ", "red"],
           ["number", "white"],
         ]}
       /> で変数を定義しています。
@@ -59,8 +58,7 @@ return number;`;
     <p>
       このプログラムでは、<CodeSpan
         data={[
-          ["function", "red"],
-          [" ", ""],
+          ["function ", "red"],
           ["double", "purple"],
           ["()", "white"],
         ]}
@@ -78,38 +76,37 @@ return number;`;
       <br />
       （ヒント：<span class="cIndexSpan">logs</span> で、実行中の値の変化を確認できます）
     </p>
+    <hr class="cBorderLine" />
   </div>
-  <hr class="cBorderLine" />
+
   <div class="cResponsiveCodeExecuter">
     <CodeExecuter bind:this={codeExecuterRef} bind:codeExeProps {allowedGlobals} />
   </div>
-  <hr class="cBorderLine" />
+
   <div>
+    <hr class="cBorderLine" />
     <p>
       実は、変数は 2種類あります。それは <CodeSpan data={["let", "red"]} /> と
       <CodeSpan data={["const", "red"]} /> です。
       <br />
       <CodeSpan data={["let", "red"]} /> は何度でも代入でき、値を書き換えることができる変数です。
       <br />
-      一方で、<CodeSpan data={["const", "red"]} />
-      は一度しか代入できず、値を書き換えることができない変数です。
+      一方で、<CodeSpan data={["const", "red"]} /> は一度しか代入できず、値を書き換えることができない変数です。
       <br />
       このプログラムでは <CodeSpan
         data={[
-          ["let", "red"],
-          [" ", ""],
+          ["let ", "red"],
           ["number", "white"],
         ]}
       /> で変数を定義していますが、
       <br />
       もし、これを <CodeSpan
         data={[
-          ["const", "red"],
-          [" ", ""],
+          ["const ", "red"],
           ["number", "white"],
         ]}
       /> に変更してから実行したら、結果はどうなるでしょうか？
     </p>
+    <hr class="cBorderLine" />
   </div>
-  <hr class="cBorderLine" />
 </div>

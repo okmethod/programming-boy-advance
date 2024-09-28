@@ -20,8 +20,8 @@ return str;`;
 
 <div class="max-w-[1000px]">
   <h2 class="cBookTitle">Book1 : プログラムを実行してみよう！</h2>
-  <hr class="cBorderLine" />
   <div>
+    <hr class="cBorderLine" />
     <p>
       画面左側の <span class="cIndexSpan">Code Editor</span> に書かれたプログラムを、 画面中央の
       <span class="cIconButtonStyle hover:!bg-green-800">Execute</span> ボタンを押して実行してみましょう。
@@ -40,20 +40,21 @@ return str;`;
       /> がログを出力します。 ログは、画面右側の
       <span class="cIndexSpan">logs</span> に表示されます。
     </p>
+    <hr class="cBorderLine" />
   </div>
-  <hr class="cBorderLine" />
+
   <div class="cResponsiveCodeExecuter">
     <CodeExecuter bind:this={codeExecuterRef} bind:codeExeProps {allowedGlobals} />
   </div>
-  <hr class="cBorderLine" />
+
   <div>
+    <hr class="cBorderLine" />
     <p>
       もちろん、プログラムは書き換えることができます。
       <br />
       例えば、このプログラムでは <CodeSpan
         data={[
-          ["const", "red"],
-          [" ", ""],
+          ["const ", "red"],
           ["str", "white"],
         ]}
       /> という変数に
@@ -61,6 +62,6 @@ return str;`;
       <br />
       もし、この文字列を書き換えてから実行したら、結果はどうなるでしょうか？
     </p>
+    <hr class="cBorderLine" />
   </div>
-  <hr class="cBorderLine" />
 </div>
