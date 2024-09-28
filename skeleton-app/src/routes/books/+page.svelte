@@ -6,6 +6,7 @@
   import Book3 from "./Book3.svelte";
   import Book4 from "./Book4.svelte";
   import Book5 from "./Book5.svelte";
+  import Book6 from "./Book6.svelte";
 
   interface TabSetting {
     index: number;
@@ -21,6 +22,7 @@
     { index: 3, name: "book3", label: "(Book 3)", component: Book3 },
     { index: 4, name: "book4", label: "(Book 4)", component: Book4 },
     { index: 5, name: "book5", label: "(Book 5)", component: Book5 },
+    { index: 6, name: "book6", label: "(Book 6)", component: Book6 },
   ];
 </script>
 
