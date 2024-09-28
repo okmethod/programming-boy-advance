@@ -1,13 +1,13 @@
 <script lang="ts">
   import type { ComponentType } from "svelte";
   import { TabGroup, Tab } from "@skeletonlabs/skeleton";
-  import Book1 from "./Book1.svelte";
-  import Book2 from "./Book2.svelte";
-  import Book3 from "./Book3.svelte";
-  import Book4 from "./Book4.svelte";
-  import Book5 from "./Book5.svelte";
-  import Book6 from "./Book6.svelte";
-  import Book7 from "./Book7.svelte";
+  import Lesson1 from "./Lesson1.svelte";
+  import Lesson2 from "./Lesson2.svelte";
+  import Lesson3 from "./Lesson3.svelte";
+  import Lesson4 from "./Lesson4.svelte";
+  import Lesson5 from "./Lesson5.svelte";
+  import Lesson6 from "./Lesson6.svelte";
+  import Lesson7 from "./Lesson7.svelte";
 
   interface TabSetting {
     index: number;
@@ -18,24 +18,18 @@
 
   let currentTab = 1;
   const tabSettings: TabSetting[] = [
-    { index: 1, name: "book1", label: "(Book 1)", component: Book1 },
-    { index: 2, name: "book2", label: "(Book 2)", component: Book2 },
-    { index: 3, name: "book3", label: "(Book 3)", component: Book3 },
-    { index: 4, name: "book4", label: "(Book 4)", component: Book4 },
-    { index: 5, name: "book5", label: "(Book 5)", component: Book5 },
-    { index: 6, name: "book6", label: "(Book 6)", component: Book6 },
-    { index: 7, name: "book7", label: "(Book 7)", component: Book7 },
+    { index: 1, name: "lesson1", label: "(Lesson 1)", component: Lesson1 },
+    { index: 2, name: "lesson2", label: "(Lesson 2)", component: Lesson2 },
+    { index: 3, name: "lesson3", label: "(Lesson 3)", component: Lesson3 },
+    { index: 4, name: "lesson4", label: "(Lesson 4)", component: Lesson4 },
+    { index: 5, name: "lesson5", label: "(Lesson 5)", component: Lesson5 },
+    { index: 6, name: "lesson6", label: "(Lesson 6)", component: Lesson6 },
+    { index: 7, name: "lesson7", label: "(Lesson 7)", component: Lesson7 },
   ];
 </script>
 
 <div class="cRouteBodyStyle">
-  <!-- タイトル部 -->
-  <div class="cTitlePartStyle md:!mb-4">
-    <h1 class="cTitleStyle md:!text-3xl">PGM Books</h1>
-  </div>
-
-  <!-- コンテンツ部 -->
-  <div class="w-full">
+  <div class="flex justefy-center w-11/12">
     <TabGroup>
       {#each tabSettings as { index, name, label }}
         <Tab bind:group={currentTab} {name} value={index}>

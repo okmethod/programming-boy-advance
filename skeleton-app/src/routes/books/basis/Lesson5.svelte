@@ -24,7 +24,7 @@ return result;`;
 </script>
 
 <div class="max-w-[1000px]">
-  <h2 class="cBookTitle">Book5 : 条件分岐</h2>
+  <h2 class="cBookTitle">プログラムの基礎 Lesson5 : 条件分岐</h2>
   <div>
     <hr class="cBorderLine" />
     <p>

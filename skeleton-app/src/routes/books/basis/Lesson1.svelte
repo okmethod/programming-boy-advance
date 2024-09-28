@@ -19,7 +19,7 @@ return str;`;
 </script>
 
 <div class="max-w-[1000px]">
-  <h2 class="cBookTitle">Book1 : プログラムを実行してみよう！</h2>
+  <h2 class="cBookTitle">プログラムの基礎 Lesson1 : プログラムを実行してみよう！</h2>
   <div>
     <hr class="cBorderLine" />
     <p>

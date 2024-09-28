@@ -23,7 +23,7 @@ return list;`;
 </script>
 
 <div>
-  <h2 class="cBookTitle">Book6 : 繰り返し(ループ)</h2>
+  <h2 class="cBookTitle">プログラムの基礎 Lesson6 : 繰り返し(ループ)</h2>
   <div>
     <hr class="cBorderLine" />
     <p>

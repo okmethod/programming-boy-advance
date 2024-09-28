@@ -28,7 +28,7 @@ return number;`;
 </script>
 
 <div class="max-w-[1000px]">
-  <h2 class="cBookTitle">Book2 : 変数 と 関数</h2>
+  <h2 class="cBookTitle">プログラムの基礎 Lesson2 : 変数 と 関数</h2>
   <div>
     <hr class="cBorderLine" />
     <p>プログラムには、2つの重要なアイテムがあります。それは「変数」と「関数」です。</p>

@@ -27,7 +27,7 @@ return str + num;`;
 </script>
 
 <div class="max-w-[1000px]">
-  <h2 class="cBookTitle">Book3 : データの型</h2>
+  <h2 class="cBookTitle">プログラムの基礎 Lesson3 : データの型</h2>
   <div>
     <hr class="cBorderLine" />
     <p>

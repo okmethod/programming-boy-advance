@@ -28,7 +28,7 @@ return linl;`;
 </script>
 
 <div class="max-w-[1000px]">
-  <h2 class="cBookTitle">Book4 : データの配列</h2>
+  <h2 class="cBookTitle">プログラムの基礎 Lesson4 : データの配列</h2>
   <div>
     <hr class="cBorderLine" />
     <p>

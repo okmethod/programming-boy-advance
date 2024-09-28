@@ -27,7 +27,7 @@ return oddNums;`;
 </script>
 
 <div>
-  <h2 class="cBookTitle">Book7 : ループ と 条件分岐 の組み合わせ</h2>
+  <h2 class="cBookTitle">プログラムの基礎 Lesson7 : ループ と 条件分岐 の組み合わせ</h2>
   <div>
     <hr class="cBorderLine" />
     <p>ループと条件分岐を組み合わせることで、より複雑な処理を行うことができます。</p>
@@ -71,7 +71,7 @@ return oddNums;`;
   <div>
     <hr class="cBorderLine" />
     <p>
-      ここまでで、プログラミングの基本的な概念を学びました。
+      ここまでで、プログラミングの基礎的な概念を学びました。
       <br />
       「<button on:click|preventDefault={() => navigateTo("/executer")}>
         <span class="cLinkButtonStyle">Test Code Executer</span>
