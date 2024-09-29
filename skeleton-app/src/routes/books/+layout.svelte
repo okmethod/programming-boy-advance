@@ -3,19 +3,13 @@
   import { TabGroup, Tab } from "@skeletonlabs/skeleton";
   import { page } from "$app/stores";
   import { base } from "$app/paths";
+  import type { SlotTabSetting } from "$lib/types/tabSetting";
   import { navigateTo } from "$lib/utils/navigation.client";
 
-  interface TabSetting {
-    index: number;
-    label: string;
-    path: string;
-  }
-
-  const tabSettings: TabSetting[] = [
-    { index: 0, label: "(Index)", path: "" },
-    { index: 1, label: "(Book 1)", path: "cheat" },
-    { index: 2, label: "(Book 2)", path: "basis" },
-  ];
+  export let data: {
+    slotTabSettings: SlotTabSetting[];
+  };
+  const tabSettings = data.slotTabSettings;
 
   let currentTabIndex = 0;
   function updateCurrentTabIndex(path: string) {
