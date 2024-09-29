@@ -2,7 +2,7 @@ import type { SlotTabSetting } from "$lib/types/tabSetting";
 
 export async function load(): Promise<{ slotTabSettings: SlotTabSetting[] }> {
   const slotTabSettings: SlotTabSetting[] = [
-    { index: 0, label: "(index)", title: "プログラミングの基礎", path: "" },
+    { index: 0, label: "(Index)", title: "プログラミングの基礎", path: "" },
     { index: 1, label: "(Lesson 1)", title: "プログラムを実行してみよう！", path: "hello-world" },
     { index: 2, label: "(Lesson 2)", title: "変数と関数", path: "vars-and-functions" },
     { index: 3, label: "(Lesson 3)", title: "データの型", path: "data-type" },
