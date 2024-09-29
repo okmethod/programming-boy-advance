@@ -4,18 +4,18 @@
   import CodeSpan from "$lib/components/CodeSpan.svelte";
   import CodeExecuter from "$lib/components/CodeExecuter.svelte";
 
-  const sampleCode = `function double(num) {
-  return num * 2;
+  const sampleCode = `function double(arg) {
+  return arg * 2;
 }
 
-let number = 10;
-log("number: " + number);
-number = double(number);
-log("number: " + number);
-number = double(number);
-log("number: " + number);
+let num = 10;
+log("num1: " + num);
+num = double(num);
+log("num2: " + num);
+num = double(num);
+log("num3: " + num);
 
-return number;`;
+return num;`;
 
   let codeExecuterRef: CodeExecuter;
   let codeExeProps: CodeExeProps = {
@@ -40,13 +40,25 @@ return number;`;
       このプログラムでは、<CodeSpan
         data={[
           ["let ", "red"],
-          ["number", "white"],
+          ["num", "white"],
         ]}
       /> で変数を定義しています。
       <CodeSpan data={["let", "red"]} /> は変数の種類で、
-      <CodeSpan data={["number", "white"]} /> は変数の名前です。
+      <CodeSpan data={["num", "white"]} /> は変数の名前です。
       <br />
-      この変数に <CodeSpan data={["10", "blue"]} /> という数値を代入しています。
+      変数名は何でもOKですが、わかりやすい名前をつけることが大切です。（ちなみに、<CodeSpan data={["num", "white"]} /> は
+      "number" の頭文字からとった名前です）
+      <br />
+      また、<CodeSpan
+        data={[
+          ["num = ", "white"],
+          ["10", "blue"],
+        ]}
+      /> という式は、変数
+      <CodeSpan data={["num", "white"]} />
+      に <CodeSpan data={["10", "blue"]} /> という数値を代入しています。
+      <br />
+      （注意：プログラムにおける <CodeSpan data={["=", "white"]} /> は「等しい」という意味ではなく、「代入する」という意味です）
     </p>
     <hr class="cBorderLine" />
     <p>
@@ -67,12 +79,12 @@ return number;`;
       <CodeSpan data={["function", "red"]} /> は関数を表しており、
       <CodeSpan data={["double", "purple"]} /> は関数の名前です。
       <br />
-      この関数は、引数<CodeSpan data={["num", "white"]} /> を受け取り、その値を2倍にして返します。
+      この関数は、引数<CodeSpan data={["arg", "white"]} /> を受け取り、その値を2倍にして返します。
     </p>
     <hr class="cBorderLine" />
     <p>
       では、このプログラムを実行してみましょう。 <br />
-      変数<CodeSpan data={["number", "white"]} /> が、関数<CodeSpan data={["double", "purple"]} /> によって変化していく様子がわかるでしょうか？
+      変数<CodeSpan data={["num", "white"]} /> が、関数<CodeSpan data={["double", "purple"]} /> によって変化していく様子がわかるでしょうか？
       <br />
       （ヒント：<span class="cIndexSpan">logs</span> で、実行中の値の変化を確認できます）
     </p>
@@ -96,14 +108,14 @@ return number;`;
       このプログラムでは <CodeSpan
         data={[
           ["let ", "red"],
-          ["number", "white"],
+          ["num", "white"],
         ]}
       /> で変数を定義していますが、
       <br />
       もし、これを <CodeSpan
         data={[
           ["const ", "red"],
-          ["number", "white"],
+          ["num", "white"],
         ]}
       /> に変更してから実行したら、結果はどうなるでしょうか？
     </p>
