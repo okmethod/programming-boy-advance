@@ -52,10 +52,10 @@ for (const item of list) {
 </script>
 
 <div class="cBookContents">
-  <h2 class="cLessonTitle">チートシート</h2>
+  <h2 class="cLessonTitle">よく使うプログラムの書き方</h2>
   <hr class="cBorderLine" />
 
-  <div class="p-4 rounded-lg">
+  <div class="p-4">
     {#each codeSnippets as snippet}
       <h3 class="text-lg font-bold mt-4">{snippet.title}</h3>
       <HighlightCodeEditor code={snippet.code} cLanguage="language-javascript" />
