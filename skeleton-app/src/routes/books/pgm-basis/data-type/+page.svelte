@@ -66,10 +66,12 @@ return str + num;`;
     </p>
     <hr class="cBorderLine" />
     <p>
-      では、演算子 <CodeSpan data={["-", "white"]} /> を使うとどうなるでしょう？
+      では、演算子<CodeSpan data={["-", "white"]} /> を使うとどうなるでしょう？
       <CodeSpan data={["str - num", "white"]} /> に書き換えて実行してみましょう。
       <br />
       結果は予想通りでしたか？それとも不思議な結果でしたか？
+      <br />
+      （ヒント：<CodeSpan data={[`+`, "white"]} />の場合は、プログラムが自動的に数値を文字列に変換してくれましたね。）
     </p>
     <hr class="cBorderLine" />
   </div>
