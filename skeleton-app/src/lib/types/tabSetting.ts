@@ -1,5 +1,3 @@
-import type { ComponentType } from "svelte";
-
 interface TabSetting {
   index: number;
   label: string;
@@ -8,8 +6,4 @@ interface TabSetting {
 
 export interface SlotTabSetting extends TabSetting {
   path: string;
-}
-
-export interface ComponentTabSetting extends TabSetting {
-  component: ComponentType;
 }
