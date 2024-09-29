@@ -18,9 +18,9 @@ return str;`;
   const allowedGlobals: AllowedGlobals = {};
 </script>
 
-<div class="max-w-[1000px]">
-  <h2 class="cBookTitle">プログラムの基礎 Lesson1 : プログラムを実行してみよう！</h2>
-  <div>
+<div class="cBookContents">
+  <h2 class="cLessonTitle">プログラムを実行してみよう！</h2>
+  <div class="w-full">
     <hr class="cBorderLine" />
     <p>
       画面左側の <span class="cIndexSpan">Code Editor</span> に書かれたプログラムを、 画面中央の
@@ -47,7 +47,7 @@ return str;`;
     <CodeExecuter bind:this={codeExecuterRef} bind:codeExeProps {allowedGlobals} />
   </div>
 
-  <div>
+  <div class="w-full">
     <hr class="cBorderLine" />
     <p>
       もちろん、プログラムは書き換えることができます。

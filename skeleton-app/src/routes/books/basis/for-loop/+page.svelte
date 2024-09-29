@@ -22,9 +22,9 @@ return list;`;
   const allowedGlobals: AllowedGlobals = {};
 </script>
 
-<div>
-  <h2 class="cBookTitle">プログラムの基礎 Lesson6 : 繰り返し(ループ)</h2>
-  <div>
+<div class="cBookContents">
+  <h2 class="cLessonTitle">繰り返し(ループ)</h2>
+  <div class="w-full">
     <hr class="cBorderLine" />
     <p>
       最後に紹介する強力なアイテムは「繰り返し(<CodeSpan data={["for", "red"]} />ループ)」です。
@@ -68,7 +68,7 @@ return list;`;
     <CodeExecuter bind:this={codeExecuterRef} bind:codeExeProps {allowedGlobals} />
   </div>
 
-  <div>
+  <div class="w-full">
     <hr class="cBorderLine" />
     <p>
       初めに「同じ処理を繰り返す」と書きましたが、実際はこのプログラムのように変数を使って、

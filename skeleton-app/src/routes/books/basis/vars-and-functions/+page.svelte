@@ -27,9 +27,9 @@ return number;`;
   const allowedGlobals: AllowedGlobals = {};
 </script>
 
-<div class="max-w-[1000px]">
-  <h2 class="cBookTitle">プログラムの基礎 Lesson2 : 変数 と 関数</h2>
-  <div>
+<div class="cBookContents">
+  <h2 class="cLessonTitle">変数と関数</h2>
+  <div class="w-full">
     <hr class="cBorderLine" />
     <p>プログラムには、2つの重要なアイテムがあります。それは「変数」と「関数」です。</p>
     <hr class="cBorderLine" />
@@ -83,7 +83,7 @@ return number;`;
     <CodeExecuter bind:this={codeExecuterRef} bind:codeExeProps {allowedGlobals} />
   </div>
 
-  <div>
+  <div class="w-full">
     <hr class="cBorderLine" />
     <p>
       実は、変数は 2種類あります。それは <CodeSpan data={["let", "red"]} /> と

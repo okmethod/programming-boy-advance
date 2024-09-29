@@ -26,9 +26,9 @@ return oddNums;`;
   const allowedGlobals: AllowedGlobals = {};
 </script>
 
-<div>
-  <h2 class="cBookTitle">プログラムの基礎 Lesson7 : ループ と 条件分岐 の組み合わせ</h2>
-  <div>
+<div class="cBookContents">
+  <h2 class="cLessonTitle">ループと条件分岐の組み合わせ</h2>
+  <div class="w-full">
     <hr class="cBorderLine" />
     <p>ループと条件分岐を組み合わせることで、より複雑な処理を行うことができます。</p>
     <hr class="cBorderLine" />
@@ -68,7 +68,7 @@ return oddNums;`;
     <CodeExecuter bind:this={codeExecuterRef} bind:codeExeProps {allowedGlobals} />
   </div>
 
-  <div>
+  <div class="w-full">
     <hr class="cBorderLine" />
     <p>
       ここまでで、プログラミングの基礎的な概念を学びました。

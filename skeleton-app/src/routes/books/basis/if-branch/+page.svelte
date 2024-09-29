@@ -23,9 +23,9 @@ return result;`;
   const allowedGlobals: AllowedGlobals = {};
 </script>
 
-<div class="max-w-[1000px]">
-  <h2 class="cBookTitle">プログラムの基礎 Lesson5 : 条件分岐</h2>
-  <div>
+<div class="cBookContents">
+  <h2 class="cLessonTitle">条件分岐</h2>
+  <div class="w-full">
     <hr class="cBorderLine" />
     <p>
       次に紹介する強力なアイテムは「条件分岐(<CodeSpan data={["if", "red"]} />分岐)」です。
@@ -64,7 +64,7 @@ return result;`;
     <CodeExecuter bind:this={codeExecuterRef} bind:codeExeProps {allowedGlobals} />
   </div>
 
-  <div>
+  <div class="w-full">
     <hr class="cBorderLine" />
     <p>
       <CodeSpan data={["===", "white"]} /> は等しいかどうかを判定する演算子で、「真偽値」を返します。

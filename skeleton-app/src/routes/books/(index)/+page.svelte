@@ -13,7 +13,7 @@
   $: currentPath = $page.url.pathname;
 </script>
 
-<div class="flex flex-col items-center justify-center text-lg">
+<div class="cBookContents text-lg">
   <span> プログラミングを学びましょう！ </span>
   <ul class="m-5 space-y-4">
     {#each tabSettings as { label, title, path }}

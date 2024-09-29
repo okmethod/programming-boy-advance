@@ -27,9 +27,9 @@ return linl;`;
   const allowedGlobals: AllowedGlobals = {};
 </script>
 
-<div class="max-w-[1000px]">
-  <h2 class="cBookTitle">プログラムの基礎 Lesson4 : データの配列</h2>
-  <div>
+<div class="cBookContents">
+  <h2 class="cLessonTitle">データの配列</h2>
+  <div class="w-full">
     <hr class="cBorderLine" />
     <p>
       「数値型」「文字列型」とは別のデータ型として、「配列(<CodeSpan
@@ -64,7 +64,7 @@ return linl;`;
     <CodeExecuter bind:this={codeExecuterRef} bind:codeExeProps {allowedGlobals} />
   </div>
 
-  <div>
+  <div class="w-full">
     <hr class="cBorderLine" />
     <p>配列は、数値型のデータだけでなく、様々な型のデータを要素として入れることができます。</p>
     <hr class="cBorderLine" />

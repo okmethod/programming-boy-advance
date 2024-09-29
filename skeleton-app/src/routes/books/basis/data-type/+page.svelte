@@ -26,9 +26,9 @@ return str + num;`;
   const allowedGlobals: AllowedGlobals = {};
 </script>
 
-<div class="max-w-[1000px]">
-  <h2 class="cBookTitle">プログラムの基礎 Lesson3 : データの型</h2>
-  <div>
+<div class="cBookContents">
+  <h2 class="cLessonTitle">データの型</h2>
+  <div class="w-full">
     <hr class="cBorderLine" />
     <p>
       変数には様々なデータを代入することができます。データの種類を「型」とよびます。
@@ -53,7 +53,7 @@ return str + num;`;
     <CodeExecuter bind:this={codeExecuterRef} bind:codeExeProps {allowedGlobals} />
   </div>
 
-  <div>
+  <div class="w-full">
     <hr class="cBorderLine" />
     <p>
       また、<CodeSpan data={[`+`, "white"]} /> のような操作を「演算子」とよびますが、データの型によって演算子の効果が変わることがあります。
