@@ -1,12 +1,16 @@
 <script lang="ts">
   import Icon from "@iconify/svelte";
+  import { page } from "$app/stores";
+  import { goto } from "$app/navigation";
   import type { SlotTabSetting } from "$lib/types/tabSetting";
-  import { navigateTo } from "$lib/utils/navigation.client";
 
   export let data: {
     slotTabSettings: SlotTabSetting[];
   };
   const tabSettings = data.slotTabSettings;
+
+  let currentPath: string;
+  $: currentPath = $page.url.pathname;
 </script>
 
 <div class="flex flex-col items-center justify-center text-lg">
@@ -14,7 +18,7 @@
   <ul class="m-5 space-y-4">
     {#each tabSettings as { label, title, path }}
       <li class="hover:underline">
-        <button on:click|preventDefault={() => navigateTo(`/books/${path}`)} class="flex items-center">
+        <button on:click|preventDefault={() => goto(`${currentPath}/${path}`)} class="flex items-center">
           <Icon icon="mdi:book-open-variant-outline" class="mx-2" />
           <span class="font-bold"> {label}: {title} </span>
         </button>
