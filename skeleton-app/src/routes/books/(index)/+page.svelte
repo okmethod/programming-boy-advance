@@ -7,7 +7,7 @@
   export let data: {
     slotTabSettings: SlotTabSetting[];
   };
-  const tabSettings = data.slotTabSettings;
+  const tabSettings = data.slotTabSettings.filter((tab) => tab.index !== 0);
 
   let currentPath: string;
   $: currentPath = $page.url.pathname;
