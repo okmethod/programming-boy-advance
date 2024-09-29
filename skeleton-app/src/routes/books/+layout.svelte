@@ -37,8 +37,8 @@
   <!-- コンテンツ部 -->
   <div class="w-full">
     <TabGroup bind:group={currentTabIndex}>
-      {#each tabSettings as { index, label, path }}
-        <Tab group={currentTabIndex} name={path} value={index} on:click={() => handleTabChange(index)}>
+      {#each tabSettings as { index, label }}
+        <Tab bind:group={currentTabIndex} name={label} value={index} on:click={() => handleTabChange(index)}>
           <span class="font-pixel10 {currentTabIndex === index ? 'font-bold' : ''}">{label}</span>
         </Tab>
       {/each}

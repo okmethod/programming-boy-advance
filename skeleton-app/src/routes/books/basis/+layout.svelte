@@ -29,15 +29,15 @@
 </script>
 
 <div class="cRouteBodyStyle">
-  <div class="flex justefy-center w-11/12">
-    <TabGroup>
+  <div class="w-11/12">
+    <TabGroup bind:group={currentTabIndex}>
       {#each tabSettings as { index, label }}
         <Tab bind:group={currentTabIndex} name={label} value={index} on:click={() => handleTabChange(index)}>
           <span class="font-pixel10 {currentTabIndex === index ? 'font-bold' : ''}">{label}</span>
         </Tab>
       {/each}
       <svelte:fragment slot="panel">
-        <div class="flex flex-row w-full justify-center items-center gap-4 m-4">
+        <div class="w-full">
           <slot />
         </div>
       </svelte:fragment>
