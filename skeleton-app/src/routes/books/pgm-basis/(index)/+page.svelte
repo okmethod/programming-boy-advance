@@ -13,9 +13,10 @@
   $: currentPath = $page.url.pathname;
 </script>
 
-<div class="cBookContents text-lg">
-  <span> プログラムの基礎 </span>
-  <ul class="m-5 space-y-4">
+<div class="cBookContents">
+  <h2 class="cLessonTitle">プログラミングの基礎</h2>
+  <hr class="cBorderLine" />
+  <ul class="space-y-4 text-lg">
     {#each tabSettings as { label, title, path }}
       <li class="hover:underline">
         <button on:click|preventDefault={() => goto(`${currentPath}/${path}`)} class="flex items-center">
