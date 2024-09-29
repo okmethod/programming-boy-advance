@@ -1,8 +1,6 @@
 <script lang="ts">
-  import { onMount } from "svelte";
   import { TabGroup, Tab } from "@skeletonlabs/skeleton";
   import { page } from "$app/stores";
-  import { base } from "$app/paths";
   import type { SlotTabSetting } from "$lib/types/tabSetting";
   import { navigateTo } from "$lib/utils/navigation.client";
 
@@ -13,19 +11,13 @@
 
   let currentTabIndex = 0;
   function updateCurrentTabIndex(path: string) {
-    const relativePath = path.slice(base.length + "/books/".length);
+    const relativePath = path.split("/").at(-1);
     const tabSetting = tabSettings.find((tab) => tab.path === relativePath);
     if (tabSetting) {
       currentTabIndex = tabSetting.index;
     }
   }
-
-  onMount(() => {
-    const unsubscribe = page.subscribe(($page) => {
-      updateCurrentTabIndex($page.url.pathname);
-    });
-    return () => unsubscribe();
-  });
+  $: updateCurrentTabIndex($page.url.pathname);
 
   function handleTabChange(index: number) {
     const tabSetting = tabSettings.find((tab) => tab.index === index);
