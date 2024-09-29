@@ -23,7 +23,7 @@
     const tabSetting = tabSettings.find((tab) => tab.index === index);
     if (tabSetting) {
       currentTabIndex = index;
-      navigateTo(`/books/basis/${tabSetting.path}`);
+      navigateTo(`/books/pgm-basis/${tabSetting.path}`);
     }
   }
 </script>
