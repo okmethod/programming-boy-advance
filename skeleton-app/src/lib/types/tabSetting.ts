@@ -9,3 +9,7 @@ interface TabSetting {
 export interface SlotTabSetting extends TabSetting {
   path: string;
 }
+
+export interface ComponentTabSetting extends TabSetting {
+  component: ComponentType;
+}
