@@ -8,22 +8,29 @@
   export let codeExeProps: CodeExeProps;
   export let allowedGlobals: AllowedGlobals;
 
-  type Cell = {
-    r: 0 | 1; // right wall: 0 -> false, 1 -> true
-    b: 0 | 1; // bottom wall: 0 -> false, 1 -> true
-  };
+  type Cell = "00" | "01" | "10" | "11";
+  // "00" -> {r:0, b:0}, "01" -> {r:0, b:1}, etc.
 
   // prettier-ignore
   const maze: Cell[][] = [
-    [{r:1,b:0}, {r:1,b:1}, {r:1,b:0}, {r:1,b:1}, {r:1,b:0}, {r:1,b:1}, {r:1,b:0}, {r:0,b:1}],
-    [{r:1,b:1}, {r:1,b:0}, {r:1,b:1}, {r:1,b:0}, {r:1,b:1}, {r:1,b:0}, {r:1,b:1}, {r:0,b:0}],
-    [{r:1,b:0}, {r:0,b:1}, {r:1,b:0}, {r:1,b:1}, {r:1,b:0}, {r:1,b:1}, {r:1,b:0}, {r:0,b:1}],
-    [{r:1,b:1}, {r:1,b:0}, {r:1,b:1}, {r:1,b:0}, {r:1,b:1}, {r:1,b:0}, {r:1,b:1}, {r:0,b:0}],
-    [{r:1,b:0}, {r:1,b:1}, {r:1,b:0}, {r:1,b:1}, {r:1,b:0}, {r:1,b:1}, {r:1,b:0}, {r:0,b:1}],
-    [{r:1,b:1}, {r:1,b:0}, {r:1,b:1}, {r:1,b:0}, {r:1,b:1}, {r:1,b:0}, {r:1,b:1}, {r:0,b:0}],
-    [{r:1,b:0}, {r:0,b:1}, {r:1,b:0}, {r:1,b:1}, {r:1,b:0}, {r:1,b:1}, {r:1,b:0}, {r:0,b:1}],
-    [{r:1,b:1}, {r:1,b:0}, {r:1,b:1}, {r:1,b:0}, {r:1,b:1}, {r:1,b:0}, {r:1,b:1}, {r:0,b:0}],
+    ["10", "00", "01", "01", "00", "01", "00", "01", "01"],
+    ["10", "01", "01", "11", "10", "10", "01", "10", "00"],
+    ["10", "01", "01", "01", "10", "10", "10", "10", "00"],
+    ["01", "01", "01", "01", "10", "10", "10", "10", "00"],
+    ["00", "00", "01", "01", "10", "10", "10", "10", "00"],
+    ["10", "01", "01", "10", "01", "01", "10", "10", "00"],
+    ["10", "00", "11", "10", "00", "01", "01", "01", "01"],
+    ["10", "00", "01", "11", "01", "01", "01", "01", "00"],
+    ["10", "00", "00", "00", "00", "00", "00", "00", "00"],
   ];
+
+  function parseCell(cell: string): { r: boolean; b: boolean } {
+    return {
+      r: parseInt(cell[0]) === 1,
+      b: parseInt(cell[1]) === 1,
+    };
+  }
+  const parsedMaze = maze.map((row) => row.map(parseCell));
 
   const allowedGlobalsDefault: AllowedGlobals = {
     log: log,
@@ -63,7 +70,7 @@
           <strong class="cIndexSpan">Maze</strong>
         </div>
         <div class="bg-gray-400 border border-gray-500 p-4">
-          {#each maze as row}
+          {#each parsedMaze as row}
             <div class="flex">
               {#each row as cell}
                 <div
