@@ -24,6 +24,11 @@ const contents: Content[] = [
     route: "/executer",
   },
   {
+    title: "Labyrinth Explorer",
+    action: "navigate",
+    route: "/labyrinth",
+  },
+  {
     title: "Github Repository",
     action: "redirect",
     route: GITHUB_REPO_URL,
