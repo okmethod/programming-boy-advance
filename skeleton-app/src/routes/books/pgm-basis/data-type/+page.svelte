@@ -49,9 +49,7 @@ return str + num;`;
     <hr class="cBorderLine" />
   </div>
 
-  <div class="cResponsiveCodeExecuter">
-    <CodeExecuter bind:this={codeExecuterRef} bind:codeExeProps {allowedGlobals} />
-  </div>
+  <CodeExecuter bind:this={codeExecuterRef} bind:codeExeProps {allowedGlobals} />
 
   <div class="w-full">
     <hr class="cBorderLine" />

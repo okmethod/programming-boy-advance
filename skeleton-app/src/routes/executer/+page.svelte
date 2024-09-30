@@ -40,7 +40,5 @@
   </div>
 
   <!-- コンテンツ部 -->
-  <div class="cResponsiveCodeExecuter">
-    <CodeExecuter bind:this={codeExecuterRef} bind:codeExeProps={$codeExeProps} {allowedGlobals} />
-  </div>
+  <CodeExecuter bind:this={codeExecuterRef} bind:codeExeProps={$codeExeProps} {allowedGlobals} />
 </div>
