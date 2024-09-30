@@ -21,7 +21,5 @@
 </script>
 
 <div class="cRouteBodyStyle">
-  <div class="cResponsiveCodeExecuter">
-    <LabyrinthExplorer bind:this={labyrinthExplorerRef} bind:codeExeProps {allowedGlobals} />
-  </div>
+  <LabyrinthExplorer bind:this={labyrinthExplorerRef} bind:codeExeProps {allowedGlobals} />
 </div>
