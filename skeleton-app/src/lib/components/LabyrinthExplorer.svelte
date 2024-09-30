@@ -32,6 +32,14 @@
   }
   const parsedMaze = maze.map((row) => row.map(parseCell));
 
+  interface Position {
+    row: number;
+    col: number;
+  }
+  const startPos: Position = { row: maze.length - 1, col: 0 };
+  const goalPos: Position = { row: 0, col: maze[0].length - 1 };
+  let currentPos: Position = { row: maze.length - 1, col: 0 };
+
   const allowedGlobalsDefault: AllowedGlobals = {
     log: log,
     Math: Math,
@@ -70,16 +78,32 @@
           <strong class="cIndexSpan">Maze</strong>
         </div>
         <div class="bg-gray-400 border border-gray-500 p-4">
-          {#each parsedMaze as row}
+          {#each parsedMaze as row, rowIndex}
             <div class="flex">
-              {#each row as cell}
+              {#each row as cell, colIndex}
                 <div
-                  class="w-10 h-10 bg-gray-200 box-border border border-gray-300"
+                  class="relative w-10 h-10 bg-gray-200 box-border border border-gray-300"
                   class:border-r-2={cell.r}
                   class:border-r-black={cell.r}
                   class:border-b-2={cell.b}
                   class:border-b-black={cell.b}
-                ></div>
+                >
+                  {#if startPos.row === rowIndex && startPos.col === colIndex}
+                    <div class="absolute inset-0 flex items-center justify-center">
+                      <span class="text-blue-500">S</span>
+                    </div>
+                  {/if}
+                  {#if goalPos.row === rowIndex && goalPos.col === colIndex}
+                    <div class="absolute inset-0 flex items-center justify-center">
+                      <span class="text-blue-500">G</span>
+                    </div>
+                  {/if}
+                  {#if currentPos.row === rowIndex && currentPos.col === colIndex}
+                    <div class="absolute inset-0 flex items-center justify-center">
+                      <span class="text-blue-500 text-xl">◯</span>
+                    </div>
+                  {/if}
+                </div>
               {/each}
             </div>
           {/each}
