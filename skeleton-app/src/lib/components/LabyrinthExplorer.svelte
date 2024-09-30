@@ -42,6 +42,7 @@
 
   const allowedGlobalsDefault: AllowedGlobals = {
     log: log,
+    up: up,
     Math: Math,
     // console: console,
     // 必要に応じて追加
@@ -49,10 +50,20 @@
 
   const toastStore = getToastStore();
 
+  export function up(): void {
+    if (currentPos.row > 0 && !parsedMaze[currentPos.row - 1][currentPos.col].b) {
+      currentPos = { row: currentPos.row - 1, col: currentPos.col };
+    } else {
+      log("(): Can't move up.");
+    }
+    turnCounter++;
+  }
+
   export function log(message: string): void {
     const timestamp = new Date().toLocaleString();
     codeExeProps.logs.push(`[${timestamp}] ${message}`);
     codeExeProps.logs = [...codeExeProps.logs];
+    scrollToBottom();
   }
 
   let turnCounter = 0;
@@ -60,6 +71,13 @@
     const result = executeEval(codeExeProps.code, { ...allowedGlobalsDefault, ...allowedGlobals });
     toastStore.trigger(simpleToast(result.message, result.status));
     if (result.resultString !== null) codeExeProps.resultString = result.resultString;
+  }
+
+  let logContainer: HTMLDivElement;
+  function scrollToBottom() {
+    if (logContainer) {
+      logContainer.scrollTo({ top: logContainer.scrollHeight, behavior: "smooth" });
+    }
   }
 
   function clearCode(): void {
@@ -145,7 +163,10 @@
           <strong class="cIndexSpan">Logs</strong>
           <button type="submit" on:click={clearLogs} class="relative z-30"> ✕ </button>
         </div>
-        <div class="w-96 h-40 p-4 border border-gray-500 bg-gray-100 rounded-md space-y-1 overflow-y-auto">
+        <div
+          bind:this={logContainer}
+          class="w-96 h-40 p-4 border border-gray-500 bg-gray-100 rounded-md space-y-1 overflow-y-auto"
+        >
           {#each codeExeProps.logs as log}
             <span class="block border border-gray-200 rounded-sm font-pixel10">{log}</span>
           {/each}
