@@ -38,6 +38,7 @@
   const startPos: Position = { row: maze.length - 1, col: 0 };
   const goalPos: Position = { row: 0, col: maze[0].length - 1 };
   let currentPos: Position = { row: maze.length - 1, col: 0 };
+  let turnCounter = 0;
 
   const allowedGlobalsDefault: AllowedGlobals = {
     log: log,
@@ -47,7 +48,12 @@
     // 必要に応じて追加
   };
 
-  const toastStore = getToastStore();
+  export function log(message: string): void {
+    const timestamp = new Date().toLocaleTimeString();
+    const log = `[${timestamp}] ${message}`;
+    codeExeProps.logs = [...codeExeProps.logs, log];
+    scrollToBottom();
+  }
 
   export function up(): void {
     if (currentPos.row > 0 && !parsedMaze[currentPos.row - 1][currentPos.col].b) {
@@ -58,14 +64,7 @@
     turnCounter++;
   }
 
-  export function log(message: string): void {
-    const timestamp = new Date().toLocaleTimeString();
-    const log = `[${timestamp}] ${message}`;
-    codeExeProps.logs = [...codeExeProps.logs, log];
-    scrollToBottom();
-  }
-
-  let turnCounter = 0;
+  const toastStore = getToastStore();
   function handleExecute(): void {
     const result = executeEval(codeExeProps.code, {
       ...allowedGlobalsDefault,

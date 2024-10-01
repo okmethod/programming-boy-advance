@@ -13,14 +13,13 @@
     log: log,
   };
 
-  const toastStore = getToastStore();
-
   export function log(message: string): void {
     const timestamp = new Date().toLocaleTimeString();
     const log = `[${timestamp}] ${message}`;
     codeExeProps.logs = [...codeExeProps.logs, log];
   }
 
+  const toastStore = getToastStore();
   function handleExecute(): void {
     const result = executeEval(codeExeProps.code, {
       ...allowedGlobalsDefault,
