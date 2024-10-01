@@ -44,6 +44,7 @@
     { term: "Return", english: "Return", reading: "リターン", description: "関数が値を返すキーワード" },
     { term: "戻り値", english: "Return Value", reading: "リターンバリュー", description: "関数が返す値" },
     { term: "forループ", english: "for", reading: "フォー", description: "同じ処理を繰り返し実行する機構" },
+    { term: "whileループ", english: "while", reading: "ワイル", description: "同上" },
     {
       term: "if分岐",
       english: "if",

@@ -12,8 +12,7 @@ let x = 10;
 const y = 20;
 
 // 配列
-const list = [1, 2, 3, 4, 5];
-`,
+const list = [1, 2, 3, 4, 5];`,
     },
     {
       title: "関数",
@@ -45,8 +44,22 @@ for (let i = 0; i < 5; i++) {
 const list = [1, 2, 3, 4, 5];
 for (const item of list) {
   console.log(item);
+}`,
+    },
+    {
+      title: "whileループ",
+      code: `
+// 5回繰り返す
+let count = 0;
+while (count < 5) {
+  console.log(count);
+  count++;
 }
-`,
+
+// 無限ループ
+while (true) {
+  if (condition) break; // 終了
+}`,
     },
   ];
 </script>
