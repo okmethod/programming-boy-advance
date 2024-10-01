@@ -6,25 +6,26 @@
   import { simpleToast } from "$lib/utils/toastSettings";
 
   export let codeExeProps: CodeExeProps;
-  export let allowedGlobals: AllowedGlobals;
 
   const allowedGlobalsDefault: AllowedGlobals = {
-    log: log,
     Math: Math,
     // console: console,
-    // 必要に応じて追加
+    log: log,
   };
 
   const toastStore = getToastStore();
 
   export function log(message: string): void {
-    const timestamp = new Date().toLocaleString();
-    codeExeProps.logs.push(`[${timestamp}] ${message}`);
-    codeExeProps.logs = [...codeExeProps.logs];
+    const timestamp = new Date().toLocaleTimeString();
+    const log = `[${timestamp}] ${message}`;
+    codeExeProps.logs = [...codeExeProps.logs, log];
   }
 
   function handleExecute(): void {
-    const result = executeEval(codeExeProps.code, { ...allowedGlobalsDefault, ...allowedGlobals });
+    const result = executeEval(codeExeProps.code, {
+      ...allowedGlobalsDefault,
+      ...codeExeProps.allowedGlobals,
+    });
     toastStore.trigger(simpleToast(result.message, result.status));
     if (result.resultString !== null) codeExeProps.resultString = result.resultString;
   }

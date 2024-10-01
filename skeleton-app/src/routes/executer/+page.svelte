@@ -1,7 +1,6 @@
 <script lang="ts">
   import { onDestroy } from "svelte";
   import { writable } from "svelte/store";
-  import type { AllowedGlobals } from "$lib/utils/safeEval";
   import type { CodeExeProps } from "$lib/types/props";
   import { testCode, unsubscribeTestCode } from "$lib/stores/testCode";
   import CodeExecuter from "$lib/components/CodeExecuter.svelte";
@@ -11,6 +10,10 @@
     code: $testCode,
     resultString: "",
     logs: [],
+    allowedGlobals: {
+      customFunction: customFunction,
+      // 必要に応じて追加
+    },
   });
 
   const unsubscribeCodeExeProps = codeExeProps.subscribe((value) => {
@@ -26,11 +29,6 @@
   function customFunction(): void {
     codeExecuterRef.log("Custom function called.");
   }
-
-  const allowedGlobals: AllowedGlobals = {
-    customFunction: customFunction,
-    // 必要に応じて追加
-  };
 </script>
 
 <div class="cRouteBodyStyle">
@@ -40,5 +38,5 @@
   </div>
 
   <!-- コンテンツ部 -->
-  <CodeExecuter bind:this={codeExecuterRef} bind:codeExeProps={$codeExeProps} {allowedGlobals} />
+  <CodeExecuter bind:this={codeExecuterRef} bind:codeExeProps={$codeExeProps} />
 </div>

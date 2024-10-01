@@ -1,5 +1,4 @@
 <script lang="ts">
-  import type { AllowedGlobals } from "$lib/utils/safeEval";
   import type { CodeExeProps } from "$lib/types/props";
   import CodeSpan from "$lib/components/CodeSpan.svelte";
   import CodeExecuter from "$lib/components/CodeExecuter.svelte";
@@ -18,12 +17,11 @@ return oddNums;`;
 
   let codeExecuterRef: CodeExecuter;
   let codeExeProps: CodeExeProps = {
+    allowedGlobals: {},
     code: sampleCode,
     resultString: "",
     logs: [],
   };
-
-  const allowedGlobals: AllowedGlobals = {};
 </script>
 
 <div class="cBookContents">
@@ -64,7 +62,7 @@ return oddNums;`;
     <hr class="cBorderLine" />
   </div>
 
-  <CodeExecuter bind:this={codeExecuterRef} bind:codeExeProps {allowedGlobals} />
+  <CodeExecuter bind:this={codeExecuterRef} bind:codeExeProps />
 
   <div class="w-full">
     <hr class="cBorderLine" />

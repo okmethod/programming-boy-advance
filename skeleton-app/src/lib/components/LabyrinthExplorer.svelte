@@ -6,7 +6,6 @@
   import { simpleToast } from "$lib/utils/toastSettings";
 
   export let codeExeProps: CodeExeProps;
-  export let allowedGlobals: AllowedGlobals;
 
   type Cell = "00" | "01" | "10" | "11";
   // "00" -> {r:0, b:0}, "01" -> {r:0, b:1}, etc.
@@ -60,15 +59,18 @@
   }
 
   export function log(message: string): void {
-    const timestamp = new Date().toLocaleString();
-    codeExeProps.logs.push(`[${timestamp}] ${message}`);
-    codeExeProps.logs = [...codeExeProps.logs];
+    const timestamp = new Date().toLocaleTimeString();
+    const log = `[${timestamp}] ${message}`;
+    codeExeProps.logs = [...codeExeProps.logs, log];
     scrollToBottom();
   }
 
   let turnCounter = 0;
   function handleExecute(): void {
-    const result = executeEval(codeExeProps.code, { ...allowedGlobalsDefault, ...allowedGlobals });
+    const result = executeEval(codeExeProps.code, {
+      ...allowedGlobalsDefault,
+      ...codeExeProps.allowedGlobals,
+    });
     toastStore.trigger(simpleToast(result.message, result.status));
     if (result.resultString !== null) codeExeProps.resultString = result.resultString;
   }
