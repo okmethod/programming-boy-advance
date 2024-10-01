@@ -3,6 +3,19 @@ import type { ToastStatus } from "$lib/utils/toastSettings";
 
 export type AllowedGlobals = Record<string, unknown>;
 
+/**
+function compileTypeScript(code: string): string {
+  const result = ts.transpileModule(code, {
+    compilerOptions: {
+      module: ts.ModuleKind.CommonJS,
+      target: ts.ScriptTarget.ES2023,
+      sourceMap: false,
+    },
+  });
+  return result.outputText;
+}
+**/
+
 const proxy = (allowedGlobals: AllowedGlobals) => {
   return new Proxy(allowedGlobals, {
     has: (target, key) => {
@@ -19,19 +32,6 @@ const proxy = (allowedGlobals: AllowedGlobals) => {
     },
   });
 };
-
-/**
-function compileTypeScript(code: string): string {
-  const result = ts.transpileModule(code, {
-    compilerOptions: {
-      module: ts.ModuleKind.CommonJS,
-      target: ts.ScriptTarget.ES2023,
-      sourceMap: false,
-    },
-  });
-  return result.outputText;
-}
-**/
 
 function safeEval(code: string, allowedGlobals: AllowedGlobals): unknown {
   const functionBody = `with (proxy) { "use strict"; ${code} }`;
