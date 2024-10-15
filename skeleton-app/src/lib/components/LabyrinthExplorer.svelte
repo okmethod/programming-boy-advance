@@ -38,6 +38,16 @@
   const startPos: Position = { row: maze.length - 1, col: 0 };
   const goalPos: Position = { row: 0, col: maze[0].length - 1 };
   let currentPos: Position = { row: maze.length - 1, col: 0 };
+
+  type Direction = "up" | "down" | "left" | "right";
+  const directionStringMap: Record<Direction, string> = {
+    up: "⬆",
+    down: "⬇",
+    left: "⬅",
+    right: "➡️",
+  };
+  let currentDirection: Direction = "up";
+
   let turnCounter = 0;
 
   const allowedGlobalsDefault: AllowedGlobals = {
@@ -87,6 +97,8 @@
   function clearLogs(): void {
     codeExeProps.logs = [];
   }
+
+  const cAbsoluteCenter = "absolute inset-0 flex items-center justify-center";
 </script>
 
 <div class="grid grid-cols-1 lg:grid-cols-3 justify-center items-top gap-4 m-4">
@@ -108,18 +120,23 @@
                   class:border-b-black={cell.b}
                 >
                   {#if startPos.row === rowIndex && startPos.col === colIndex}
-                    <div class="absolute inset-0 flex items-center justify-center">
+                    <div class={cAbsoluteCenter}>
                       <span class="text-blue-500">S</span>
                     </div>
                   {/if}
                   {#if goalPos.row === rowIndex && goalPos.col === colIndex}
-                    <div class="absolute inset-0 flex items-center justify-center">
+                    <div class={cAbsoluteCenter}>
                       <span class="text-blue-500">G</span>
                     </div>
                   {/if}
                   {#if currentPos.row === rowIndex && currentPos.col === colIndex}
-                    <div class="absolute inset-0 flex items-center justify-center">
-                      <span class="text-blue-500 text-xl">◯</span>
+                    <div class={cAbsoluteCenter}>
+                      <div class="relative">
+                        <span class="{cAbsoluteCenter} text-blue-500 text-2xl">●</span>
+                        <span class="{cAbsoluteCenter} text-white text-sm">
+                          {directionStringMap[currentDirection]}
+                        </span>
+                      </div>
                     </div>
                   {/if}
                 </div>
