@@ -46,13 +46,13 @@
     left: "⬅",
     right: "➡️",
   };
-  let currentDirection: Direction = "up";
+  let currentDirection: Direction = "right";
 
   let turnCounter = 0;
 
   const allowedGlobalsDefault: AllowedGlobals = {
     log: log,
-    up: up,
+    goStraight: goStraight,
     Math: Math,
     // console: console,
     // 必要に応じて追加
@@ -65,12 +65,35 @@
     scrollToBottom();
   }
 
-  export function up(): void {
-    if (currentPos.row > 0 && !parsedMaze[currentPos.row - 1][currentPos.col].b) {
-      currentPos = { row: currentPos.row - 1, col: currentPos.col };
-    } else {
-      log("(): Can't move up.");
+  export function goStraight(): void {
+    const directions: Record<string, { row: number; col: number; wall: "r" | "b"; checkCurrentCell: boolean }> = {
+      up: { row: -1, col: 0, wall: "b", checkCurrentCell: false },
+      down: { row: 1, col: 0, wall: "b", checkCurrentCell: true },
+      left: { row: 0, col: -1, wall: "r", checkCurrentCell: false },
+      right: { row: 0, col: 1, wall: "r", checkCurrentCell: true },
+    };
+    const direction = directions[currentDirection];
+    if (!direction) {
+      log("goStraight(): Invalid direction.");
+      return;
     }
+
+    const newRow = currentPos.row + direction.row;
+    const newCol = currentPos.col + direction.col;
+    const currentCell = parsedMaze[currentPos.row][currentPos.col];
+    const nextCell = parsedMaze[newRow]?.[newCol];
+    if (
+      newRow >= 0 &&
+      newRow < parsedMaze.length &&
+      newCol >= 0 &&
+      newCol < parsedMaze[0].length &&
+      (!direction.checkCurrentCell ? !nextCell[direction.wall] : !currentCell[direction.wall])
+    ) {
+      currentPos = { row: newRow, col: newCol };
+    } else {
+      log(`goStraight(): Can't move ${currentDirection}.`);
+    }
+
     turnCounter++;
   }
 

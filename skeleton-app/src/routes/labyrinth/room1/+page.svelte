@@ -2,7 +2,7 @@
   import type { CodeExeProps } from "$lib/types/props";
   import LabyrinthExplorer from "$lib/components/LabyrinthExplorer.svelte";
 
-  const initialCode = "";
+  const initialCode = "goStraight()";
 
   let labyrinthExplorerRef: LabyrinthExplorer;
   let codeExeProps: CodeExeProps = {
