@@ -38,10 +38,13 @@ function safeEval(code: string, allowedGlobals: AllowedGlobals): unknown {
   return new Function("proxy", functionBody)(proxy(allowedGlobals));
 }
 
-export function executeEval(
-  code: string,
-  allowedGlobals: AllowedGlobals,
-): { resultString: string | null; message: string; status: ToastStatus } {
+export interface EvalResult {
+  resultString: string | null;
+  message: string;
+  status: ToastStatus;
+}
+
+export function executeEval(code: string, allowedGlobals: AllowedGlobals): EvalResult {
   let message: string;
   let status: ToastStatus;
   let resultString: string | null;
@@ -72,4 +75,53 @@ export function executeEval(
   }
 
   return { resultString, message, status };
+}
+
+function asyncExecuteEval(code: string, allowedGlobals: AllowedGlobals, signal: AbortSignal): Promise<EvalResult> {
+  return new Promise((resolve, reject) => {
+    if (signal.aborted) {
+      return reject(new Error("Execution aborted"));
+    }
+
+    const onAbort = () => {
+      reject(new Error("Execution aborted"));
+    };
+
+    signal.addEventListener("abort", onAbort);
+
+    try {
+      const result = executeEval(code, allowedGlobals);
+      signal.removeEventListener("abort", onAbort);
+      resolve(result);
+    } catch (error) {
+      signal.removeEventListener("abort", onAbort);
+      reject(error);
+    }
+  });
+}
+
+export function evalWithTimeout(
+  code: string,
+  allowedGlobals: AllowedGlobals,
+  timeout: number = 1000,
+): Promise<EvalResult> {
+  const controller = new AbortController();
+  const { signal } = controller;
+
+  return new Promise((resolve, reject) => {
+    const timeoutId = setTimeout(() => {
+      controller.abort();
+      reject(new Error("Execution timed out"));
+    }, timeout);
+
+    asyncExecuteEval(code, allowedGlobals, signal)
+      .then((result) => {
+        clearTimeout(timeoutId);
+        resolve(result);
+      })
+      .catch((error) => {
+        clearTimeout(timeoutId);
+        reject(error);
+      });
+  });
 }
