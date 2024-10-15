@@ -2,8 +2,7 @@
   import { getToastStore } from "@skeletonlabs/skeleton";
   import HighlightCodeEditor from "$lib/components/HighlightCodeEditor.svelte";
   import type { CodeExeProps } from "$lib/types/props";
-  import type { AllowedGlobals } from "$lib/utils/safeEval";
-  import { evalWithTimeout } from "$lib/utils/safeEval";
+  import { executeEval, type AllowedGlobals } from "$lib/utils/safeEval";
   import { simpleToast } from "$lib/utils/toastSettings";
 
   export let codeExeProps: CodeExeProps;
@@ -66,18 +65,13 @@
   }
 
   const toastStore = getToastStore();
-  async function handleExecute(): Promise<void> {
-    try {
-      const result = await evalWithTimeout(codeExeProps.code, {
-        ...allowedGlobalsDefault,
-        ...codeExeProps.allowedGlobals,
-      });
-      toastStore.trigger(simpleToast(result.message, result.status));
-      if (result.resultString !== null) codeExeProps.resultString = result.resultString;
-    } catch (error) {
-      toastStore.trigger(simpleToast("Time out", "Error"));
-      console.error("Execution error:", error);
-    }
+  function handleExecute(): void {
+    const result = executeEval(codeExeProps.code, {
+      ...allowedGlobalsDefault,
+      ...codeExeProps.allowedGlobals,
+    });
+    toastStore.trigger(simpleToast(result.message, result.status));
+    if (result.resultString !== null) codeExeProps.resultString = result.resultString;
   }
 
   let logContainer: HTMLDivElement;
