@@ -46,15 +46,15 @@
     left: "⬅",
     right: "➡️",
   };
-  let currentDirection: Direction = "right";
+  let currentDirection: Direction = "up";
 
   let turnCounter = 0;
 
   const allowedGlobalsDefault: AllowedGlobals = {
     log: log,
     goStraight: goStraight,
-    Math: Math,
-    // console: console,
+    turnRight: turnRight,
+    turnLeft: turnLeft,
     // 必要に応じて追加
   };
 
@@ -94,6 +94,28 @@
       log(`goStraight(): Can't move ${currentDirection}.`);
     }
 
+    turnCounter++;
+  }
+
+  function turnRight(): void {
+    const directions: Record<Direction, Direction> = {
+      up: "right",
+      right: "down",
+      down: "left",
+      left: "up",
+    };
+    currentDirection = directions[currentDirection];
+    turnCounter++;
+  }
+
+  function turnLeft(): void {
+    const directions: Record<Direction, Direction> = {
+      up: "left",
+      left: "down",
+      down: "right",
+      right: "up",
+    };
+    currentDirection = directions[currentDirection];
     turnCounter++;
   }
 
