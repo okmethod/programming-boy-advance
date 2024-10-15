@@ -34,7 +34,8 @@ const proxy = (allowedGlobals: AllowedGlobals) => {
 };
 
 function safeEval(code: string, allowedGlobals: AllowedGlobals): unknown {
-  const functionBody = `with (proxy) { "use strict"; ${code} }`;
+  const modifiedCode = code.replace(/(\b\w+\s*\([^)]*\))/g, "await $1");
+  const functionBody = `with (proxy) { "use strict"; return (async () => { ${modifiedCode} })(); }`;
   return new Function("proxy", functionBody)(proxy(allowedGlobals));
 }
 
