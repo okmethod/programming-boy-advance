@@ -65,11 +65,7 @@
     scrollToBottom();
   }
 
-  async function waitForOneSecond(): Promise<void> {
-    await new Promise((resolve) => setTimeout(resolve, 1000)); // 1秒待機
-  }
-
-  export async function goStraight(): Promise<void> {
+  export function goStraight(): void {
     const directions: Record<string, { row: number; col: number; wall: "r" | "b"; checkCurrentCell: boolean }> = {
       up: { row: -1, col: 0, wall: "b", checkCurrentCell: false },
       down: { row: 1, col: 0, wall: "b", checkCurrentCell: true },
@@ -99,10 +95,9 @@
     }
 
     turnCounter++;
-    await waitForOneSecond();
   }
 
-  async function turnRight(): Promise<void> {
+  function turnRight(): void {
     const directions: Record<Direction, Direction> = {
       up: "right",
       right: "down",
@@ -111,10 +106,9 @@
     };
     currentDirection = directions[currentDirection];
     turnCounter++;
-    await waitForOneSecond();
   }
 
-  async function turnLeft(): Promise<void> {
+  function turnLeft(): void {
     const directions: Record<Direction, Direction> = {
       up: "left",
       left: "down",
@@ -123,7 +117,6 @@
     };
     currentDirection = directions[currentDirection];
     turnCounter++;
-    await waitForOneSecond();
   }
 
   const toastStore = getToastStore();
