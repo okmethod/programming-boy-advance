@@ -1,15 +1,15 @@
 import { browser } from "$app/environment";
 
 const workerScript = `
-self.onmessage = function(event) {
-  const code = event.data;
-  try {
-    const result = eval(code);
-    self.postMessage({ result });
-  } catch (error) {
-    self.postMessage({ error: error.message });
-  }
-};
+  self.onmessage = async function(event) {
+    const code = event.data;
+    try {
+      const result = await eval(\`(async () => { \${code} })()\`);
+      self.postMessage({ result });
+    } catch (error) {
+      self.postMessage({ error: error.message });
+    }
+  };
 `;
 
 class WebWorkerClient {
