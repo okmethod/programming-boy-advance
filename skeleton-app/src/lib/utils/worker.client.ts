@@ -12,7 +12,11 @@ self.onmessage = function(event) {
 };
 `;
 
-function runScriptOnWorker<T>(code: string, callback: (result: T | null, error: string | null) => void): void {
+function runScriptOnWorker<T>(
+  code: string,
+  timeout: number = 5000,
+  callback: (result: T | null, error: string | null) => void,
+): void {
   if (!browser) {
     callback(null, "Web Worker is not supported in this environment.");
     return;
@@ -20,7 +24,13 @@ function runScriptOnWorker<T>(code: string, callback: (result: T | null, error: 
   const workerBlob = new Blob([workerScript], { type: "application/javascript" });
   const worker = new Worker(URL.createObjectURL(workerBlob));
 
+  const timeoutId: ReturnType<typeof setTimeout> = setTimeout(() => {
+    worker.terminate();
+    callback(null, "Worker execution timed out.");
+  }, timeout);
+
   worker.onmessage = function (event) {
+    clearTimeout(timeoutId);
     if (event.data.error) {
       callback(null, event.data.error);
     } else {
