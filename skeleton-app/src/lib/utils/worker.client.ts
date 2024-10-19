@@ -12,9 +12,9 @@ self.onmessage = function(event) {
 };
 `;
 
-function runScriptOnWorker(code: string): void {
+function runScriptOnWorker<T>(code: string, callback: (result: T | null, error: string | null) => void): void {
   if (!browser) {
-    console.warn("Worker is not supported in this environment.");
+    callback(null, "Web Worker is not supported in this environment.");
     return;
   }
   const workerBlob = new Blob([workerScript], { type: "application/javascript" });
@@ -22,12 +22,11 @@ function runScriptOnWorker(code: string): void {
 
   worker.onmessage = function (event) {
     if (event.data.error) {
-      console.error("Error:", event.data.error);
+      callback(null, event.data.error);
     } else {
-      console.log("Result:", event.data.result);
+      callback(event.data.result, null);
     }
   };
-
   worker.postMessage(code);
 }
 
