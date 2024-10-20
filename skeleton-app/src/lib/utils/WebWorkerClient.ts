@@ -1,16 +1,5 @@
 import { browser } from "$app/environment";
-
-const workerScript = `
-  self.onmessage = async function(event) {
-    const code = event.data;
-    try {
-      const result = await eval(\`(async () => { \${code} })()\`);
-      self.postMessage({ result });
-    } catch (error) {
-      self.postMessage({ error: error.message });
-    }
-  };
-`;
+import workerScript from "$lib/utils/workerScript.js?raw";
 
 class WebWorkerClient {
   private workerScript: string;
