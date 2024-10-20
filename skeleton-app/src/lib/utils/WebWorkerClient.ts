@@ -1,5 +1,5 @@
 import { browser } from "$app/environment";
-import workerScript from "$lib/utils/workerScript.js?raw";
+import safeWorkerScript from "$lib/utils/safeWorkerScript.js?raw";
 
 type AllowedGlobals = Record<string, unknown>;
 
@@ -10,7 +10,7 @@ class WebWorkerClient {
   private timeoutId: ReturnType<typeof setTimeout> | null = null;
 
   constructor() {
-    this.workerScript = workerScript;
+    this.workerScript = safeWorkerScript;
   }
 
   public init(timeoutMS?: number | undefined): void {
