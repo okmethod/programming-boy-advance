@@ -1,6 +1,8 @@
 import { browser } from "$app/environment";
 import workerScript from "$lib/utils/workerScript.js?raw";
 
+type AllowedGlobals = Record<string, unknown>;
+
 class WebWorkerClient {
   private workerScript: string;
   private webWorker: Worker | null = null;
@@ -28,7 +30,11 @@ class WebWorkerClient {
     return this.webWorker;
   }
 
-  public run<T>(code: string, callback: (result: T | null, error: string | null) => void): void {
+  public run<T>(
+    code: string,
+    allowedGlobals: AllowedGlobals,
+    callback: (result: T | null, error: string | null) => void,
+  ): void {
     this.timeoutId = setTimeout(() => {
       this.worker.terminate();
       console.warn("Web Worker timed out.");
@@ -46,7 +52,14 @@ class WebWorkerClient {
       }
     };
 
-    this.worker.postMessage(code);
+    const serializedGlobals = JSON.stringify(allowedGlobals, (_, value) => {
+      if (typeof value === "function") {
+        return value.toString();
+      }
+      return value;
+    });
+
+    this.worker.postMessage({ code, allowedGlobals: serializedGlobals });
   }
 
   public terminate() {
