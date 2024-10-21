@@ -2,6 +2,7 @@ import { browser } from "$app/environment";
 import safeWorkerScript from "$lib/utils/safeWorkerScript.js?raw";
 
 type AllowedGlobals = Record<string, unknown>;
+type Callback<T> = (result: T | null, error: string | null) => void;
 
 class WebWorkerClient {
   private workerScript: string;
@@ -30,26 +31,18 @@ class WebWorkerClient {
     return this.webWorker;
   }
 
-  public run<T>(
-    code: string,
-    allowedGlobals: AllowedGlobals,
-    callback: (result: T | null, error: string | null) => void,
-  ): void {
+  public run<T>(code: string, allowedGlobals: AllowedGlobals, callback: Callback<T>): void {
     this.timeoutId = setTimeout(() => {
       this.worker.terminate();
       console.warn("Web Worker timed out.");
     }, this.timeoutMS);
 
-    this.worker.onmessage = (event) => {
+    this.worker.onmessage = (event: MessageEvent) => {
       if (this.timeoutId) {
         clearTimeout(this.timeoutId);
         this.timeoutId = null;
       }
-      if (event.data.error) {
-        callback(null, event.data.error);
-      } else {
-        callback(event.data.result, null);
-      }
+      this.handleWorkerMessage<T>(event, callback);
     };
 
     const serializedGlobals = JSON.stringify(allowedGlobals, (_, value) => {
@@ -60,6 +53,15 @@ class WebWorkerClient {
     });
 
     this.worker.postMessage({ code, allowedGlobals: serializedGlobals });
+  }
+
+  private handleWorkerMessage<T>(event: MessageEvent, callback: Callback<T>) {
+    const { result, error } = event.data;
+    if (error) {
+      callback(null, error);
+    } else {
+      callback(result, null);
+    }
   }
 
   public terminate() {
