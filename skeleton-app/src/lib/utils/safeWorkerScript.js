@@ -28,6 +28,13 @@ self.onmessage = async function (event) {
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore: ts(7053)
         globals[key] = commonModules[key];
+      } else {
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore: ts(7053) ts(7019)
+        globals[key] = (...args) => {
+          const argsWithoutFunction = args.filter((arg) => typeof arg !== "function");
+          self.postMessage({ type: "invoke", functionName: key, args: argsWithoutFunction });
+        };
       }
     }
   } catch {

@@ -38,11 +38,8 @@ class WebWorkerClient {
     }, this.timeoutMS);
 
     this.worker.onmessage = (event: MessageEvent) => {
-      if (this.timeoutId) {
-        clearTimeout(this.timeoutId);
-        this.timeoutId = null;
-      }
-      this.handleWorkerMessage<T>(event, callback);
+      if (this.timeoutId) this.timeoutId = null;
+      this.handleWorkerMessage<T>(event, allowedGlobals, callback);
     };
 
     const serializedGlobals = JSON.stringify(allowedGlobals, (_, value) => {
@@ -55,12 +52,17 @@ class WebWorkerClient {
     this.worker.postMessage({ code, allowedGlobals: serializedGlobals });
   }
 
-  private handleWorkerMessage<T>(event: MessageEvent, callback: Callback<T>) {
-    const { result, error } = event.data;
-    if (error) {
+  private handleWorkerMessage<T>(event: MessageEvent, allowedGlobals: AllowedGlobals, callback: Callback<T>) {
+    const { type, functionName, args, result, error } = event.data;
+    if (type === "invoke") {
+      const func = allowedGlobals[functionName];
+      if (typeof func === "function") func(...args);
+    } else if (result !== undefined) {
+      callback(result, null);
+    } else if (error) {
       callback(null, error);
     } else {
-      callback(result, null);
+      console.warn("Unknown message type received from worker:", event.data);
     }
   }
 
