@@ -19,6 +19,9 @@ self.onmessage = async function (event) {
     }
     return acc;
   }, {});
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore: ts(2339)
+  commonModules.setTimeout = setTimeout.bind(self);
 
   let globals = {};
   try {
@@ -58,14 +61,23 @@ self.onmessage = async function (event) {
     },
   });
 
-  try {
-    const result = await new Function("proxy", `with (proxy) { return (async () => { ${code} })(); }`)(proxy);
-    self.postMessage({ result });
-  } catch (error) {
-    if (error instanceof Error) {
-      self.postMessage({ error: error.message });
-    } else {
-      self.postMessage({ error: "UnknownError" });
+  const executeCode = async () => {
+    try {
+      const result = await new Function("proxy", `with (proxy) { return (async () => { ${code} })(); }`)(proxy);
+      self.postMessage({ result });
+    } catch (error) {
+      if (error instanceof Error) {
+        self.postMessage({ error: error.message });
+      } else {
+        self.postMessage({ error: "UnknownError" });
+      }
     }
-  }
+  };
+
+  const executeRecursiveLoop = () => {
+    executeCode().then(() => {
+      setTimeout(executeRecursiveLoop, 0);
+    });
+  };
+  executeRecursiveLoop();
 };
