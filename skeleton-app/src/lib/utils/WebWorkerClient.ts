@@ -1,8 +1,14 @@
 import { browser } from "$app/environment";
 import safeWorkerScript from "$lib/utils/safeWorkerScript.js?raw";
 
-type AllowedGlobals = Record<string, unknown>;
-type Callback<T> = (result: T | null, error: string | null) => void;
+interface AllowedGlobal {
+  func: unknown;
+  wait: number;
+}
+
+export type AllowedGlobals = Record<string, AllowedGlobal>;
+
+type Callback<T> = (result: T | null, error: Error | null) => void;
 
 class WebWorkerClient {
   private workerScript: string;
@@ -43,10 +49,7 @@ class WebWorkerClient {
     };
 
     const serializedGlobals = JSON.stringify(allowedGlobals, (_, value) => {
-      if (typeof value === "function") {
-        return value.toString();
-      }
-      return value;
+      return typeof value === "function" ? value.toString() : value;
     });
 
     this.worker.postMessage({ code, allowedGlobals: serializedGlobals });
@@ -55,7 +58,7 @@ class WebWorkerClient {
   private handleWorkerMessage<T>(event: MessageEvent, allowedGlobals: AllowedGlobals, callback: Callback<T>) {
     const { type, functionName, args, result, error } = event.data;
     if (type === "invoke") {
-      const func = allowedGlobals[functionName];
+      const { func } = allowedGlobals[functionName];
       if (typeof func === "function") func(...args);
     } else if (result !== undefined) {
       callback(result, null);
