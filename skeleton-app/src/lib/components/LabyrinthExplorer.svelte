@@ -1,9 +1,16 @@
 <script lang="ts">
+  import { onMount } from "svelte";
   import { getToastStore } from "@skeletonlabs/skeleton";
   import HighlightCodeEditor from "$lib/components/HighlightCodeEditor.svelte";
   import type { CodeExeProps } from "$lib/types/props";
-  import { executeEval, type AllowedGlobals } from "$lib/utils/safeEval";
   import { simpleToast } from "$lib/utils/toastSettings";
+  import type { AllowedGlobals, WorkerResult } from "$lib/utils/WebWorkerClient";
+  import WebWorkerClient from "$lib/utils/WebWorkerClient";
+
+  const workerClient = new WebWorkerClient();
+  onMount(() => {
+    workerClient.init(60 * 1000);
+  });
 
   export let codeExeProps: CodeExeProps;
 
@@ -51,10 +58,10 @@
   let turnCounter = 0;
 
   const allowedGlobalsDefault: AllowedGlobals = {
-    log: log,
-    goStraight: goStraight,
-    turnRight: turnRight,
-    turnLeft: turnLeft,
+    log: { func: log, wait: 0 },
+    goStraight: { func: goStraight, wait: 1000 },
+    turnRight: { func: turnRight, wait: 1000 },
+    turnLeft: { func: turnLeft, wait: 1000 },
     // 必要に応じて追加
   };
 
@@ -93,7 +100,6 @@
     } else {
       log(`goStraight(): Can't move ${currentDirection}.`);
     }
-
     turnCounter++;
   }
 
@@ -121,12 +127,17 @@
 
   const toastStore = getToastStore();
   function handleExecute(): void {
-    const result = executeEval(codeExeProps.code, {
-      ...allowedGlobalsDefault,
-      ...codeExeProps.allowedGlobals,
-    });
-    toastStore.trigger(simpleToast(result.message, result.status));
-    if (result.resultString !== null) codeExeProps.resultString = result.resultString;
+    workerClient.run(
+      codeExeProps.code,
+      {
+        ...allowedGlobalsDefault,
+        // ...codeExeProps.allowedGlobals,
+      },
+      (result: WorkerResult) => {
+        codeExeProps.resultString = result.resultString;
+        toastStore.trigger(simpleToast(result.message, result.status));
+      },
+    );
   }
 
   let logContainer: HTMLDivElement;
