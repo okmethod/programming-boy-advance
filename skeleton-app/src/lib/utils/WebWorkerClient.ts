@@ -18,26 +18,20 @@ type Callback = (result: WorkerResult) => void;
 class WebWorkerClient {
   private workerScript: string;
   private webWorker: Worker | null = null;
+  private workerBlob: Blob;
   private timeoutMS: number = 5000;
   private timeoutId: ReturnType<typeof setTimeout> | null = null;
 
-  constructor() {
+  constructor(timeoutMS?: number | undefined) {
     this.workerScript = safeWorkerScript;
-  }
-
-  public init(timeoutMS?: number | undefined): void {
-    if (!browser) {
-      console.warn("Web Worker is not supported in this environment.");
-      return;
-    }
+    this.workerBlob = new Blob([this.workerScript], { type: "application/javascript" });
     this.timeoutMS = timeoutMS ? timeoutMS : this.timeoutMS;
-    const workerBlob = new Blob([this.workerScript], { type: "application/javascript" });
-    this.webWorker = new Worker(URL.createObjectURL(workerBlob));
   }
 
   private get worker(): Worker {
+    if (!browser) console.warn("Web Worker is not supported in this environment.");
     if (this.webWorker === null) {
-      throw new Error("Web Worker is not initialized.");
+      this.webWorker = new Worker(URL.createObjectURL(this.workerBlob));
     }
     return this.webWorker;
   }
@@ -98,6 +92,7 @@ class WebWorkerClient {
       clearTimeout(this.timeoutId);
     }
     this.worker.terminate();
+    this.webWorker = null;
   }
 }
 

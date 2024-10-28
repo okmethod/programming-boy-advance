@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { onMount } from "svelte";
   import { getToastStore } from "@skeletonlabs/skeleton";
   import HighlightCodeEditor from "$lib/components/HighlightCodeEditor.svelte";
   import type { CodeExeProps } from "$lib/types/props";
@@ -7,10 +6,7 @@
   import type { AllowedGlobals, WorkerResult } from "$lib/utils/WebWorkerClient";
   import WebWorkerClient from "$lib/utils/WebWorkerClient";
 
-  const workerClient = new WebWorkerClient();
-  onMount(() => {
-    workerClient.init(60 * 1000);
-  });
+  const workerClient = new WebWorkerClient(60 * 1000);
 
   export let codeExeProps: CodeExeProps;
 
@@ -125,19 +121,26 @@
     turnCounter++;
   }
 
+  let isRunning = false;
   const toastStore = getToastStore();
   function handleExecute(): void {
-    workerClient.run(
-      codeExeProps.code,
-      {
-        ...allowedGlobalsDefault,
-        // ...codeExeProps.allowedGlobals,
-      },
-      (result: WorkerResult) => {
-        codeExeProps.resultString = result.resultString;
-        toastStore.trigger(simpleToast(result.message, result.status));
-      },
-    );
+    if (isRunning) {
+      isRunning = false;
+      workerClient.terminate();
+    } else {
+      isRunning = true;
+      workerClient.run(
+        codeExeProps.code,
+        {
+          ...allowedGlobalsDefault,
+          // ...codeExeProps.allowedGlobals,
+        },
+        (result: WorkerResult) => {
+          codeExeProps.resultString = result.resultString;
+          toastStore.trigger(simpleToast(result.message, result.status));
+        },
+      );
+    }
   }
 
   let logContainer: HTMLDivElement;
@@ -217,7 +220,7 @@
       <div class="pt-2">
         <button type="submit" on:click={handleExecute} class="cIconButtonStyle relative">
           <div class="cButtonSpan">
-            <span> Execute </span>
+            <span> {isRunning ? "Stop" : "Execute"} </span>
           </div>
         </button>
       </div>
