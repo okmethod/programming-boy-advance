@@ -1,3 +1,6 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-nocheck
+
 self.onmessage = async function (event) {
   const { code, allowedGlobals } = event.data;
   if (typeof allowedGlobals !== "string") {
@@ -7,27 +10,15 @@ self.onmessage = async function (event) {
   const workerScope = self;
   const commonModules = Object.getOwnPropertyNames(workerScope).reduce((acc, key) => {
     if (key in workerScope) {
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore: ts(7015)
       const value = workerScope[key];
       const type = typeof value;
-      if (type === "function" || type === "object") {
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore: ts(7053)
-        acc[key] = value;
-      }
+      if (type === "function" || type === "object") acc[key] = value;
     }
     return acc;
   }, {});
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore: ts(2339)
   commonModules.setTimeout = setTimeout.bind(self);
 
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore: ts(7006)
   const createCustomFunction = (key, value) => {
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore: ts(7019)
     return async (...args) => {
       const argsWithoutFunction = args.filter((arg) => typeof arg !== "function");
       self.postMessage({ type: "invoke", functionName: key, args: argsWithoutFunction });
@@ -41,12 +32,8 @@ self.onmessage = async function (event) {
     const parsedGlobals = JSON.parse(allowedGlobals);
     for (const [key, value] of Object.entries(parsedGlobals)) {
       if (key in commonModules) {
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore: ts(7053)
         commonGlobals[key] = commonModules[key];
       } else {
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore: ts(7053)
         customGlobals[key] = createCustomFunction(key, value);
       }
     }
@@ -57,23 +44,14 @@ self.onmessage = async function (event) {
 
   const proxy = new Proxy(globals, {
     has: (target, key) => {
-      if (key in target) {
-        return true;
-      }
+      if (key in target) return true;
       throw new Error(`"${String(key)}" is not exist or not allowed.`);
     },
     get: (target, key) => {
-      if (typeof key === "string" && key in target) {
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore: ts(7053)
-        return target[key];
-      }
-      return undefined;
+      return key in target ? target[key] : undefined;
     },
   });
 
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore: ts(7006)
   const wrappedCode = (userCode) => `
 with (proxy) {
   return (async () => {
@@ -82,8 +60,6 @@ with (proxy) {
 }
 `;
 
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore: ts(7006)
   const replacedCode = (userCode) => {
     let replacedCode = userCode;
     for (const key of Object.keys(customGlobals)) {
@@ -98,11 +74,7 @@ with (proxy) {
       const result = await new Function("proxy", wrappedCode(replacedCode(code)))(proxy);
       self.postMessage({ result });
     } catch (error) {
-      if (error instanceof Error) {
-        self.postMessage({ error: error.message });
-      } else {
-        self.postMessage({ error: "UnknownError" });
-      }
+      self.postMessage({ error: error instanceof Error ? error.message : "UnknownError" });
     }
   };
 
