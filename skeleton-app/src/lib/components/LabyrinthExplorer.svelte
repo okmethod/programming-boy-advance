@@ -96,7 +96,17 @@
     } else {
       log(`goStraight(): Can't move ${currentDirection}.`);
     }
+    checkGoal();
     turnCounter++;
+  }
+
+  function checkGoal(): void {
+    if (currentPos.row === goalPos.row && currentPos.col === goalPos.col) {
+      log("Reached Goal!");
+      toastStore.trigger(simpleToast("Goal!!", "Succeed"));
+      isRunning = false;
+      workerClient.terminate();
+    }
   }
 
   function turnRight(): void {
