@@ -2,6 +2,8 @@
   import { getToastStore } from "@skeletonlabs/skeleton";
   import HighlightCodeEditor from "$lib/components/HighlightCodeEditor.svelte";
   import type { CodeExeProps } from "$lib/types/props";
+  import type { LabyrinthSetting, Direction } from "$lib/types/labyrinthSetting";
+  import { directionStringMap } from "$lib/types/labyrinthSetting";
   import { simpleToast } from "$lib/utils/toastSettings";
   import type { AllowedGlobals, WorkerResult } from "$lib/utils/WebWorkerClient";
   import WebWorkerClient from "$lib/utils/WebWorkerClient";
@@ -9,22 +11,7 @@
   const workerClient = new WebWorkerClient(60 * 1000);
 
   export let codeExeProps: CodeExeProps;
-
-  type Cell = "00" | "01" | "10" | "11";
-  // "00" -> {r:0, b:0}, "01" -> {r:0, b:1}, etc.
-
-  // prettier-ignore
-  const maze: Cell[][] = [
-    ["10", "00", "01", "01", "00", "01", "00", "01", "01"],
-    ["10", "01", "01", "11", "10", "10", "01", "10", "00"],
-    ["10", "01", "01", "01", "10", "10", "10", "10", "00"],
-    ["01", "01", "01", "01", "10", "10", "10", "10", "00"],
-    ["00", "00", "01", "01", "10", "10", "10", "10", "00"],
-    ["10", "01", "01", "10", "01", "01", "10", "10", "00"],
-    ["10", "00", "11", "10", "00", "01", "01", "01", "01"],
-    ["10", "00", "01", "11", "01", "01", "01", "01", "00"],
-    ["10", "00", "00", "00", "00", "00", "00", "00", "00"],
-  ];
+  export let labyrinthSetting: LabyrinthSetting;
 
   function parseCell(cell: string): { r: boolean; b: boolean } {
     return {
@@ -32,28 +19,13 @@
       b: parseInt(cell[1]) === 1,
     };
   }
-  const parsedMaze = maze.map((row) => row.map(parseCell));
-
-  interface Position {
-    row: number;
-    col: number;
-  }
-  const startPos: Position = { row: maze.length - 1, col: 0 };
-  const goalPos: Position = { row: 0, col: maze[0].length - 1 };
-  let currentPos: Position = { row: maze.length - 1, col: 0 };
-
-  type Direction = "up" | "down" | "left" | "right";
-  const directionStringMap: Record<Direction, string> = {
-    up: "⬆",
-    down: "⬇",
-    left: "⬅",
-    right: "➡️",
-  };
-  let currentDirection: Direction = "up";
+  const parsedMaze = labyrinthSetting.maze.map((row) => row.map(parseCell));
+  let currentPos = labyrinthSetting.startPos;
+  let currentDirection = labyrinthSetting.initialDirection;
 
   let turnCounter = 0;
 
-  const allowedGlobalsDefault: AllowedGlobals = {
+  const labyrinthGlobals: AllowedGlobals = {
     log: { func: log, wait: 0 },
     goStraight: { func: goStraight, wait: 1000 },
     turnRight: { func: turnRight, wait: 1000 },
@@ -101,7 +73,7 @@
   }
 
   function checkGoal(): void {
-    if (currentPos.row === goalPos.row && currentPos.col === goalPos.col) {
+    if (currentPos.row === labyrinthSetting.goalPos.row && currentPos.col === labyrinthSetting.goalPos.col) {
       log("Reached Goal!");
       toastStore.trigger(simpleToast("Goal!!", "Succeed"));
       isRunning = false;
@@ -142,7 +114,7 @@
       workerClient.run(
         codeExeProps.code,
         {
-          ...allowedGlobalsDefault,
+          ...labyrinthGlobals,
           // ...codeExeProps.allowedGlobals,
         },
         (result: WorkerResult) => {
@@ -188,17 +160,17 @@
                   class:border-b-2={cell.b}
                   class:border-b-black={cell.b}
                 >
-                  {#if startPos.row === rowIndex && startPos.col === colIndex}
+                  {#if rowIndex === labyrinthSetting.startPos.row && colIndex === labyrinthSetting.startPos.col}
                     <div class={cAbsoluteCenter}>
                       <span class="text-blue-500">S</span>
                     </div>
                   {/if}
-                  {#if goalPos.row === rowIndex && goalPos.col === colIndex}
+                  {#if rowIndex === labyrinthSetting.goalPos.row && colIndex === labyrinthSetting.goalPos.col}
                     <div class={cAbsoluteCenter}>
                       <span class="text-blue-500">G</span>
                     </div>
                   {/if}
-                  {#if currentPos.row === rowIndex && currentPos.col === colIndex}
+                  {#if rowIndex === currentPos.row && colIndex === currentPos.col}
                     <div class={cAbsoluteCenter}>
                       <div class="relative">
                         <span class="{cAbsoluteCenter} text-blue-500 text-2xl">●</span>
