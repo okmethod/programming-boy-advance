@@ -2,8 +2,8 @@
   import { getToastStore } from "@skeletonlabs/skeleton";
   import HighlightCodeEditor from "$lib/components/HighlightCodeEditor.svelte";
   import type { CodeExeProps } from "$lib/types/props";
-  import type { LabyrinthSetting, Direction } from "$lib/types/labyrinthSetting";
-  import { directionStringMap } from "$lib/types/labyrinthSetting";
+  import type { LabyrinthSetting } from "$lib/types/labyrinthSetting";
+  import { Direction, directionStringMap } from "$lib/types/labyrinthSetting";
   import { simpleToast } from "$lib/utils/toastSettings";
   import type { AllowedGlobals, WorkerResult } from "$lib/utils/WebWorkerClient";
   import WebWorkerClient from "$lib/utils/WebWorkerClient";
@@ -30,6 +30,7 @@
     goStraight: { func: goStraight, wait: 1000 },
     turnRight: { func: turnRight, wait: 1000 },
     turnLeft: { func: turnLeft, wait: 1000 },
+    turnAround: { func: turnAround, wait: 1000 },
     // 必要に応じて追加
   };
 
@@ -41,7 +42,7 @@
   }
 
   export function goStraight(): void {
-    const directions: Record<string, { row: number; col: number; wall: "r" | "b"; checkCurrentCell: boolean }> = {
+    const directions: Record<Direction, { row: number; col: number; wall: "r" | "b"; checkCurrentCell: boolean }> = {
       up: { row: -1, col: 0, wall: "b", checkCurrentCell: false },
       down: { row: 1, col: 0, wall: "b", checkCurrentCell: true },
       left: { row: 0, col: -1, wall: "r", checkCurrentCell: false },
@@ -81,25 +82,26 @@
     }
   }
 
+  function turn(to: "left" | "right" | "around", currentDirection: Direction): Direction {
+    const directions = Object.values(Direction);
+    const currentIndex = directions.indexOf(currentDirection);
+    const bias = to === "around" ? 2 : to === "right" ? 1 : -1;
+    const newIndex = (currentIndex + bias + directions.length) % directions.length;
+    return directions[newIndex];
+  }
+
   function turnRight(): void {
-    const directions: Record<Direction, Direction> = {
-      up: "right",
-      right: "down",
-      down: "left",
-      left: "up",
-    };
-    currentDirection = directions[currentDirection];
+    currentDirection = turn("right", currentDirection);
     turnCounter++;
   }
 
   function turnLeft(): void {
-    const directions: Record<Direction, Direction> = {
-      up: "left",
-      left: "down",
-      down: "right",
-      right: "up",
-    };
-    currentDirection = directions[currentDirection];
+    currentDirection = turn("left", currentDirection);
+    turnCounter++;
+  }
+
+  function turnAround(): void {
+    currentDirection = turn("around", currentDirection);
     turnCounter++;
   }
 

@@ -6,7 +6,12 @@ export interface Position {
   col: number;
 }
 
-export type Direction = "up" | "down" | "left" | "right";
+export enum Direction {
+  Up = "up",
+  Right = "right",
+  Down = "down",
+  Left = "left",
+}
 
 export interface LabyrinthSetting {
   maze: Cell[][];
