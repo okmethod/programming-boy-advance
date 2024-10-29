@@ -27,7 +27,7 @@
 
   const labyrinthGlobals: AllowedGlobals = {
     log: { func: log, wait: 0 },
-    goStraight: { func: goStraight, wait: 1000 },
+    stepForward: { func: stepForward, wait: 1000 },
     turnRight: { func: turnRight, wait: 1000 },
     turnLeft: { func: turnLeft, wait: 1000 },
     turnAround: { func: turnAround, wait: 1000 },
@@ -41,7 +41,7 @@
     scrollToBottom();
   }
 
-  export function goStraight(): void {
+  export function stepForward(): void {
     const directions: Record<Direction, { row: number; col: number; wall: "r" | "b"; checkCurrentCell: boolean }> = {
       up: { row: -1, col: 0, wall: "b", checkCurrentCell: false },
       down: { row: 1, col: 0, wall: "b", checkCurrentCell: true },
@@ -62,7 +62,7 @@
     ) {
       currentPos = { row: newRow, col: newCol };
     } else {
-      log(`goStraight(): Can't move ${currentDirection}.`);
+      log(`stepForward(): Can't move ${currentDirection}.`);
     }
     checkGoal();
     turnCounter++;

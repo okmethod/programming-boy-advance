@@ -7,7 +7,7 @@
   const initialCode = `let loops = 0
 while (true) {
   for (let i = 0; i < 4; i++) {
-    goStraight();
+    stepForward();
   }
   if (loops % 2 === 0) {
     turnRight();

@@ -4,10 +4,10 @@
   import { Direction } from "$lib/types/labyrinthSetting";
   import LabyrinthExplorer from "$lib/components/LabyrinthExplorer.svelte";
 
-  const initialCode = `goStraight();
-goStraight();
-goStraight();
-goStraight();`;
+  const initialCode = `stepForward();
+stepForward();
+stepForward();
+stepForward();`;
 
   // prettier-ignore
   const maze: Cell[][] = [

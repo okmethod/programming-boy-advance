@@ -4,11 +4,11 @@
   import { Direction } from "$lib/types/labyrinthSetting";
   import LabyrinthExplorer from "$lib/components/LabyrinthExplorer.svelte";
 
-  const initialCode = `goStraight();
-goStraight();
+  const initialCode = `stepForward();
+stepForward();
 turnRight();
-goStraight();
-goStraight();`;
+stepForward();
+stepForward();`;
 
   // prettier-ignore
 
