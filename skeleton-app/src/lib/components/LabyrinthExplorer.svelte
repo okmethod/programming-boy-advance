@@ -3,7 +3,7 @@
   import HighlightCodeEditor from "$lib/components/HighlightCodeEditor.svelte";
   import type { CodeExeProps } from "$lib/types/props";
   import type { LabyrinthSetting } from "$lib/types/labyrinthSetting";
-  import { Direction, directionStringMap } from "$lib/types/labyrinthSetting";
+  import { parseMazeMatrix, Direction, directionStringMap } from "$lib/types/labyrinthSetting";
   import { simpleToast } from "$lib/utils/toastSettings";
   import type { AllowedGlobals, WorkerResult } from "$lib/utils/WebWorkerClient";
   import WebWorkerClient from "$lib/utils/WebWorkerClient";
@@ -13,13 +13,7 @@
   export let codeExeProps: CodeExeProps;
   export let labyrinthSetting: LabyrinthSetting;
 
-  function parseCell(cell: string): { r: boolean; b: boolean } {
-    return {
-      r: parseInt(cell[0]) === 1,
-      b: parseInt(cell[1]) === 1,
-    };
-  }
-  const parsedMazeMatrix = labyrinthSetting.mazeMatrix.map((row) => row.map(parseCell));
+  const parsedMazeMatrix = parseMazeMatrix(labyrinthSetting.mazeMatrix);
   let currentPos = labyrinthSetting.startPos;
   let currentDirection = labyrinthSetting.initialDirection;
 
