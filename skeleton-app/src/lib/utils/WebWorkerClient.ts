@@ -80,7 +80,7 @@ class WebWorkerClient {
       callback({
         status: "Error",
         resultString: "",
-        message: error instanceof Error ? `${error.name}: ${error.message}` : "UnknownError",
+        message: error,
       });
     } else {
       console.warn("Unknown message type received from worker:", event.data);
