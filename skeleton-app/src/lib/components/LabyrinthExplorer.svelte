@@ -8,7 +8,7 @@
   import type { AllowedGlobals, WorkerResult } from "$lib/utils/WebWorkerClient";
   import WebWorkerClient from "$lib/utils/WebWorkerClient";
 
-  const workerClient = new WebWorkerClient(60 * 1000);
+  const workerClient = new WebWorkerClient(60);
 
   export let codeExeProps: CodeExeProps;
   export let labyrinthSetting: LabyrinthSetting;

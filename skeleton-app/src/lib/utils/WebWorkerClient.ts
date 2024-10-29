@@ -19,13 +19,13 @@ class WebWorkerClient {
   private workerScript: string;
   private webWorker: Worker | null = null;
   private workerBlob: Blob;
-  private timeoutMS: number = 5000;
+  private timeoutSec: number = 5;
   private timeoutId: ReturnType<typeof setTimeout> | null = null;
 
-  constructor(timeoutMS?: number | undefined) {
+  constructor(timeoutSec?: number | undefined) {
     this.workerScript = safeWorkerScript;
     this.workerBlob = new Blob([this.workerScript], { type: "application/javascript" });
-    this.timeoutMS = timeoutMS ? timeoutMS : this.timeoutMS;
+    this.timeoutSec = timeoutSec ? timeoutSec : this.timeoutSec;
   }
 
   private get worker(): Worker {
@@ -47,9 +47,14 @@ class WebWorkerClient {
     }
 
     this.timeoutId = setTimeout(() => {
-      this.worker.terminate();
-      console.warn("Web Worker timed out.");
-    }, this.timeoutMS);
+      console.warn(`Web Worker time out. (${this.timeoutSec} sec)`);
+      callback({
+        status: "Warning",
+        resultString: "",
+        message: `Time out. (${this.timeoutSec} sec)`,
+      });
+      this.terminate();
+    }, this.timeoutSec * 1000);
 
     this.worker.onmessage = (event: MessageEvent) => {
       if (this.timeoutId) this.timeoutId = null;
@@ -84,6 +89,7 @@ class WebWorkerClient {
         resultString: this.formatResultToString(result),
         message: "Executed successfully.",
       });
+      this.terminate();
     } else if (error) {
       console.error("Error:", error);
       callback({
@@ -91,6 +97,7 @@ class WebWorkerClient {
         resultString: "",
         message: error,
       });
+      this.terminate();
     } else {
       console.warn("Unknown message type received from worker:", event.data);
     }
