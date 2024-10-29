@@ -117,6 +117,7 @@
         (result: WorkerResult) => {
           codeExeProps.resultString = result.resultString;
           toastStore.trigger(simpleToast(result.message, result.status));
+          isRunning = false;
         },
       );
     }

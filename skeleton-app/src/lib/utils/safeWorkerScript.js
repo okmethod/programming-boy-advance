@@ -1,6 +1,8 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 
+let isProgress = true;
+
 self.onmessage = async function (event) {
   const { code, allowedGlobals } = event.data;
   if (typeof allowedGlobals !== "string") {
@@ -72,16 +74,20 @@ with (proxy) {
   const executeCode = async () => {
     try {
       const result = await new Function("proxy", wrappedCode(replacedCode(code)))(proxy);
-      self.postMessage({ result });
+      isProgress = false;
+      self.postMessage({ result: result ?? null });
     } catch (error) {
+      isProgress = false;
       self.postMessage({ error: error instanceof Error ? error.message : "UnknownError" });
     }
   };
 
   const executeRecursiveLoop = () => {
-    executeCode().then(() => {
-      setTimeout(executeRecursiveLoop, 0);
-    });
+    if (isProgress) {
+      executeCode().then(() => {
+        setTimeout(executeRecursiveLoop, 0);
+      });
+    }
   };
   executeRecursiveLoop();
 };
