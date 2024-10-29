@@ -37,6 +37,15 @@ class WebWorkerClient {
   }
 
   public run(code: string, allowedGlobals: AllowedGlobals, callback: Callback): void {
+    if (code === "") {
+      callback({
+        status: "Warning",
+        resultString: "",
+        message: "Code is empty.",
+      });
+      return;
+    }
+
     this.timeoutId = setTimeout(() => {
       this.worker.terminate();
       console.warn("Web Worker timed out.");
