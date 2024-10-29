@@ -1,6 +1,7 @@
 <script lang="ts">
   import type { CodeExeProps } from "$lib/types/props";
-  import type { Cell, Position, Direction, LabyrinthSetting } from "$lib/types/labyrinthSetting";
+  import type { Cell, Position, LabyrinthSetting } from "$lib/types/labyrinthSetting";
+  import { Direction } from "$lib/types/labyrinthSetting";
   import LabyrinthExplorer from "$lib/components/LabyrinthExplorer.svelte";
 
   const initialCode = `let loops = 0
@@ -31,7 +32,7 @@ while (true) {
   ];
   const startPos: Position = { row: maze.length - 1, col: 0 };
   const goalPos: Position = { row: 0, col: maze[0].length - 1 };
-  const initialDirection: Direction = "up";
+  const initialDirection = Direction.Up;
   const labyrinthSetting: LabyrinthSetting = {
     maze,
     startPos,
