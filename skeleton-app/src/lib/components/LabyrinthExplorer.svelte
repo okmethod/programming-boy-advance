@@ -49,11 +49,6 @@
       right: { row: 0, col: 1, wall: "r", checkCurrentCell: true },
     };
     const direction = directions[currentDirection];
-    if (!direction) {
-      log("goStraight(): Invalid direction.");
-      return;
-    }
-
     const newRow = currentPos.row + direction.row;
     const newCol = currentPos.col + direction.col;
     const currentCell = parsedMaze[currentPos.row][currentPos.col];
