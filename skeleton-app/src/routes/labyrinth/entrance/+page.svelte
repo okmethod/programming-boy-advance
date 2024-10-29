@@ -10,18 +10,18 @@ stepForward();
 stepForward();`;
 
   // prettier-ignore
-  const maze: Cell[][] = [
+  const mazeMatrix: Cell[][] = [
     ["00", "10", "10", "00", "00"],
     ["00", "10", "10", "00", "00"],
     ["00", "10", "10", "00", "00"],
     ["00", "10", "10", "00", "00"],
     ["00", "10", "10", "00", "00"],
   ];
-  const startPos: Position = { row: maze.length - 1, col: 2 };
+  const startPos: Position = { row: mazeMatrix.length - 1, col: 2 };
   const goalPos: Position = { row: 0, col: 2 };
   const initialDirection = Direction.Up;
   const labyrinthSetting: LabyrinthSetting = {
-    maze,
+    mazeMatrix,
     startPos,
     goalPos,
     initialDirection,

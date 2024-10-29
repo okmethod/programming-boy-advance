@@ -19,7 +19,7 @@
       b: parseInt(cell[1]) === 1,
     };
   }
-  const parsedMaze = labyrinthSetting.maze.map((row) => row.map(parseCell));
+  const parsedMazeMatrix = labyrinthSetting.mazeMatrix.map((row) => row.map(parseCell));
   let currentPos = labyrinthSetting.startPos;
   let currentDirection = labyrinthSetting.initialDirection;
 
@@ -51,13 +51,13 @@
     const direction = directions[currentDirection];
     const newRow = currentPos.row + direction.row;
     const newCol = currentPos.col + direction.col;
-    const currentCell = parsedMaze[currentPos.row][currentPos.col];
-    const nextCell = parsedMaze[newRow]?.[newCol];
+    const currentCell = parsedMazeMatrix[currentPos.row][currentPos.col];
+    const nextCell = parsedMazeMatrix[newRow]?.[newCol];
     if (
       newRow >= 0 &&
-      newRow < parsedMaze.length &&
+      newRow < parsedMazeMatrix.length &&
       newCol >= 0 &&
-      newCol < parsedMaze[0].length &&
+      newCol < parsedMazeMatrix[0].length &&
       (!direction.checkCurrentCell ? !nextCell[direction.wall] : !currentCell[direction.wall])
     ) {
       currentPos = { row: newRow, col: newCol };
@@ -148,7 +148,7 @@
           <strong class="cIndexSpan">Maze</strong>
         </div>
         <div class="bg-gray-400 border border-gray-500 p-4">
-          {#each parsedMaze as row, rowIndex}
+          {#each parsedMazeMatrix as row, rowIndex}
             <div class="flex">
               {#each row as cell, colIndex}
                 <div

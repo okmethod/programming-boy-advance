@@ -14,7 +14,7 @@ export enum Direction {
 }
 
 export interface LabyrinthSetting {
-  maze: Cell[][];
+  mazeMatrix: Cell[][];
   startPos: Position;
   goalPos: Position;
   initialDirection: Direction;

@@ -18,8 +18,7 @@ while (true) {
 }`;
 
   // prettier-ignore
-
-  const maze: Cell[][] = [
+  const mazeMatrix: Cell[][] = [
     ["10", "00", "01", "01", "00", "01", "00", "01", "01"],
     ["10", "01", "01", "11", "10", "10", "01", "10", "00"],
     ["10", "01", "01", "01", "10", "10", "10", "10", "00"],
@@ -30,11 +29,11 @@ while (true) {
     ["10", "00", "01", "11", "01", "01", "01", "01", "00"],
     ["10", "00", "00", "00", "00", "00", "00", "00", "00"],
   ];
-  const startPos: Position = { row: maze.length - 1, col: 0 };
-  const goalPos: Position = { row: 0, col: maze[0].length - 1 };
+  const startPos: Position = { row: mazeMatrix.length - 1, col: 0 };
+  const goalPos: Position = { row: 0, col: mazeMatrix[0].length - 1 };
   const initialDirection = Direction.Up;
   const labyrinthSetting: LabyrinthSetting = {
-    maze,
+    mazeMatrix,
     startPos,
     goalPos,
     initialDirection,
