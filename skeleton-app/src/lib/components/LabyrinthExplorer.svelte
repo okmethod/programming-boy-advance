@@ -2,8 +2,8 @@
   import { getToastStore } from "@skeletonlabs/skeleton";
   import HighlightCodeEditor from "$lib/components/HighlightCodeEditor.svelte";
   import type { CodeExeProps } from "$lib/types/props";
-  import type { LabyrinthSetting } from "$lib/types/labyrinthSetting";
-  import { parseMazeMatrix, Direction, directionStringMap } from "$lib/types/labyrinthSetting";
+  import type { MazeSetting } from "$lib/types/mazeSetting";
+  import { parseMazeMatrix, Direction, directionStringMap } from "$lib/types/mazeSetting";
   import { simpleToast } from "$lib/utils/toastSettings";
   import type { AllowedGlobals, WorkerResult } from "$lib/utils/WebWorkerClient";
   import WebWorkerClient from "$lib/utils/WebWorkerClient";
@@ -11,11 +11,11 @@
   const workerClient = new WebWorkerClient(60);
 
   export let codeExeProps: CodeExeProps;
-  export let labyrinthSetting: LabyrinthSetting;
+  export let mazeSetting: MazeSetting;
 
-  const parsedMazeMatrix = parseMazeMatrix(labyrinthSetting.mazeMatrix);
-  let currentPos = labyrinthSetting.startPos;
-  let currentDirection = labyrinthSetting.initialDirection;
+  const parsedMazeMatrix = parseMazeMatrix(mazeSetting.mazeMatrix);
+  let currentPos = mazeSetting.startPos;
+  let currentDirection = mazeSetting.initialDirection;
 
   let turnCounter = 0;
 
@@ -63,7 +63,7 @@
   }
 
   function checkGoal(): void {
-    if (currentPos.row === labyrinthSetting.goalPos.row && currentPos.col === labyrinthSetting.goalPos.col) {
+    if (currentPos.row === mazeSetting.goalPos.row && currentPos.col === mazeSetting.goalPos.col) {
       log("Reached Goal!");
       toastStore.trigger(simpleToast("Goal!!", "Succeed"));
       isRunning = false;
@@ -152,12 +152,12 @@
                   class:border-b-2={cell.b}
                   class:border-b-black={cell.b}
                 >
-                  {#if rowIndex === labyrinthSetting.startPos.row && colIndex === labyrinthSetting.startPos.col}
+                  {#if rowIndex === mazeSetting.startPos.row && colIndex === mazeSetting.startPos.col}
                     <div class={cAbsoluteCenter}>
                       <span class="text-blue-500">S</span>
                     </div>
                   {/if}
-                  {#if rowIndex === labyrinthSetting.goalPos.row && colIndex === labyrinthSetting.goalPos.col}
+                  {#if rowIndex === mazeSetting.goalPos.row && colIndex === mazeSetting.goalPos.col}
                     <div class={cAbsoluteCenter}>
                       <span class="text-blue-500">G</span>
                     </div>

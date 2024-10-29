@@ -29,16 +29,16 @@ export enum Direction {
   Left = "left",
 }
 
-export interface LabyrinthSetting {
-  mazeMatrix: Cell[][];
-  startPos: Position;
-  goalPos: Position;
-  initialDirection: Direction;
-}
-
 export const directionStringMap: Record<Direction, string> = {
   up: "↑",
   down: "↓",
   left: "←",
   right: "→",
 };
+
+export interface MazeSetting {
+  mazeMatrix: Cell[][];
+  startPos: Position;
+  goalPos: Position;
+  initialDirection: Direction;
+}

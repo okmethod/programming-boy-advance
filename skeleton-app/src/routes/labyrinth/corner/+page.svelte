@@ -1,7 +1,7 @@
 <script lang="ts">
   import type { CodeExeProps } from "$lib/types/props";
-  import type { Cell, Position, LabyrinthSetting } from "$lib/types/labyrinthSetting";
-  import { Direction } from "$lib/types/labyrinthSetting";
+  import type { Cell, Position, MazeSetting } from "$lib/types/mazeSetting";
+  import { Direction } from "$lib/types/mazeSetting";
   import LabyrinthExplorer from "$lib/components/LabyrinthExplorer.svelte";
 
   const initialCode = `stepForward();
@@ -22,7 +22,7 @@ stepForward();`;
   const startPos: Position = { row: mazeMatrix.length - 1, col: 2 };
   const goalPos: Position = { row: 2, col: mazeMatrix[0].length - 1 };
   const initialDirection = Direction.Up;
-  const labyrinthSetting: LabyrinthSetting = {
+  const mazeSetting: MazeSetting = {
     mazeMatrix,
     startPos,
     goalPos,
@@ -39,5 +39,5 @@ stepForward();`;
 </script>
 
 <div class="cRouteBodyStyle">
-  <LabyrinthExplorer bind:this={labyrinthExplorerRef} bind:codeExeProps {labyrinthSetting} />
+  <LabyrinthExplorer bind:this={labyrinthExplorerRef} bind:codeExeProps {mazeSetting} />
 </div>
