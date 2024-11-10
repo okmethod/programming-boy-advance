@@ -44,7 +44,7 @@
     </AppBar>
   </div>
 
-  <div class="container mx-auto overflow-y-auto pb-2">
+  <div class="w-screen mx-auto overflow-y-auto scrollbar-gutter-stable pb-2">
     <slot />
   </div>
 </div>
