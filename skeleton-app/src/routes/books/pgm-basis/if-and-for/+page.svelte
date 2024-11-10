@@ -70,7 +70,7 @@ return oddNums;`;
       ここまでで、プログラミングの基礎的な概念を学びました。
       <br />
       「<button on:click|preventDefault={() => navigateTo("/executer")}>
-        <span class="cLinkButtonStyle">Test Code Executer</span>
+        <strong class="bg-initial text-surface-900 hover:underline">Test Code Executer</strong>
       </button>」は自由にプログラムを書いて実行できる環境です。試してみましょう！
     </p>
     <hr class="cBorderLine" />

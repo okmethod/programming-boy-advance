@@ -1,4 +1,5 @@
 <script lang="ts">
+  import CursorButton from "$lib/components/CursorButton.svelte";
   import type { ContentButtonProps } from "./+page";
 
   export let data: {
@@ -7,19 +8,20 @@
 </script>
 
 <div class="cRouteBodyStyle">
-  <!-- タイトル部 -->
   <div class="cTitlePartStyle md:!mb-4">
     <h1 class="cTitleStyle md:!text-3xl">PGM Boy Advance</h1>
   </div>
 
-  <!-- コンテンツ部 -->
-  <div class="cContentPartStyle !m-4">
-    {#each data.propsArray as props}
-      <div>
-        <button on:click|preventDefault={props.onClick} class="flex items-center">
-          <span class="cLinkButtonStyle md:!text-2xl">{props.title}</span>
-        </button>
-      </div>
-    {/each}
+  <div class="cContentPartStyle">
+    <div class="flex flex-col items-start space-y-4">
+      {#each data.propsArray as props}
+        <CursorButton
+          label={props.title}
+          cButton="text-lg md:text-2xl"
+          cCursor="!text-xs md:!text-sm"
+          onClick={props.onClick}
+        />
+      {/each}
+    </div>
   </div>
 </div>
