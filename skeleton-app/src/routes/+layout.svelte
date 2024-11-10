@@ -31,9 +31,9 @@
 </svelte:head>
 
 <Modal />
-<Toast position="tr" rounded="rounded-lg" class="font-pixel12" />
+<Toast position="tr" rounded="rounded-lg" />
 
-<div class="flex flex-col h-screen font-pixel12 bg-gameboy-green text-gameboy-dark-green">
+<div class="h-screen flex flex-col">
   <div class="border-b border-gray-400">
     <AppBar class="!p-1 md:!p-2">
       <div class="flex items-center h-full">
