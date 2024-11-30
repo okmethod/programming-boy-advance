@@ -1,11 +1,9 @@
 {
 	"folders": [
 		{
-			"name": "programming-boy-advance",
 			"path": "."
 		},
 		{
-			"name": "skeleton-app",
 			"path": "skeleton-app"
 		},
 	],
