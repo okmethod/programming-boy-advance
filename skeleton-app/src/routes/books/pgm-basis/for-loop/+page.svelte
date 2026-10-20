@@ -55,8 +55,7 @@ return list;`;
         ]}
       /> は、変数<CodeSpan data={["i", "white"]} /> が <CodeSpan data={["10", "blue"]} /> 以下である限り、繰り返し処理を続けることを示しています。
       <br />
-      最後の条件式 <CodeSpan data={[["i++;", "white"]]} /> は、ループ毎に変数<CodeSpan data={["i", "white"]} /> の値を 1
-      ずつ増やすことを示しています。
+      最後の条件式 <CodeSpan data={[["i++;", "white"]]} /> は、ループ毎に変数<CodeSpan data={["i", "white"]} /> の値を 1 ずつ増やすことを示しています。
       <br />
       実行して、ループがどのように動くか見てみましょう。
     </p>

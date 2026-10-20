@@ -1,15 +1,12 @@
 <script lang="ts">
-  import { page } from "$app/stores";
+  import { page } from "$app/state";
   import type { SlotTabSetting } from "$lib/types/tabSetting";
   import ContentsIndex from "$lib/components/ContentsIndex.svelte";
 
-  export let data: {
-    slotTabSettings: SlotTabSetting[];
-  };
-  const tabSettings = data.slotTabSettings.filter((tab) => tab.index !== 0);
+  let { data }: { data: { slotTabSettings: SlotTabSetting[] } } = $props();
+  const tabSettings = $derived(data.slotTabSettings.filter((tab) => tab.index !== 0));
 
-  let currentPath: string;
-  $: currentPath = $page.url.pathname;
+  const currentPath = $derived(page.url.pathname);
 </script>
 
 <ContentsIndex title="プログラミングの基礎" icon="mdi:script-text-outline" {tabSettings} {currentPath} />

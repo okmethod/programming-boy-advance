@@ -1,28 +1,42 @@
 <script lang="ts">
-  import { TabGroup, Tab } from "@skeletonlabs/skeleton";
-  import { page } from "$app/stores";
+  import type { Snippet } from "svelte";
+  import { Tabs } from "@skeletonlabs/skeleton-svelte";
+  import { page } from "$app/state";
   import type { SlotTabSetting } from "$lib/types/tabSetting";
   import { navigateTo } from "$lib/utils/navigation.client";
 
-  export let currentTabIndex: number;
-  export let tabSettings: SlotTabSetting[];
-  export let navigatePathPrefix: string;
-  export let cContainer: string = "w-full";
-  export let cPanel: string = "w-full";
+  interface ContentsTabGroupProps {
+    currentTabIndex: number;
+    tabSettings: SlotTabSetting[];
+    navigatePathPrefix: string;
+    cContainer?: string;
+    cPanel?: string;
+    children?: Snippet;
+  }
 
-  function updateCurrentTabIndex(path: string) {
+  let {
+    currentTabIndex = $bindable(0),
+    tabSettings,
+    navigatePathPrefix,
+    cContainer = "w-full",
+    cPanel = "w-full",
+    children,
+  }: ContentsTabGroupProps = $props();
+
+  // URL から現在のタブ index を特定する
+  function resolveTabIndex(path: string): number {
     const splittedPath = path.split("/");
     const relativePaths = [splittedPath.at(-2), splittedPath.at(-1)];
     const tabSetting = tabSettings.find((tab) => relativePaths.includes(tab.path));
-    if (tabSetting) {
-      currentTabIndex = tabSetting.index;
-    } else {
-      currentTabIndex = 0;
-    }
+    return tabSetting ? tabSetting.index : 0;
   }
-  $: updateCurrentTabIndex($page.url.pathname);
 
-  function handleTabChange(index: number) {
+  // URL 変化に追従して現在タブを同期する
+  $effect(() => {
+    currentTabIndex = resolveTabIndex(page.url.pathname);
+  });
+
+  function handleTabChange(index: number): void {
     const tabSetting = tabSettings.find((tab) => tab.index === index);
     if (tabSetting) {
       currentTabIndex = index;
@@ -32,16 +46,18 @@
 </script>
 
 <div class={cContainer}>
-  <TabGroup bind:group={currentTabIndex}>
-    {#each tabSettings as { index, label }}
-      <Tab bind:group={currentTabIndex} name={label} value={index} on:click={() => handleTabChange(index)}>
-        <span class="font-pixel10 {currentTabIndex === index ? 'font-bold' : ''}">{label}</span>
-      </Tab>
-    {/each}
-    <svelte:fragment slot="panel">
+  <Tabs value={String(currentTabIndex)} onValueChange={(e) => handleTabChange(Number(e.value))}>
+    <Tabs.List>
+      {#each tabSettings as { index, label } (index)}
+        <Tabs.Trigger value={String(index)}>
+          <span class="font-pixel10 {currentTabIndex === index ? 'font-bold' : ''}">{label}</span>
+        </Tabs.Trigger>
+      {/each}
+    </Tabs.List>
+    <Tabs.Content value={String(currentTabIndex)}>
       <div class={cPanel}>
-        <slot />
+        {@render children?.()}
       </div>
-    </svelte:fragment>
-  </TabGroup>
+    </Tabs.Content>
+  </Tabs>
 </div>

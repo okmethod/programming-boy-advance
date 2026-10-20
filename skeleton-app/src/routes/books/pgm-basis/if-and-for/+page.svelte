@@ -69,7 +69,12 @@ return oddNums;`;
     <p>
       ここまでで、プログラミングの基礎的な概念を学びました。
       <br />
-      「<button on:click|preventDefault={() => navigateTo("/executer")}>
+      「<button
+        onclick={(e) => {
+          e.preventDefault();
+          navigateTo("/executer");
+        }}
+      >
         <strong class="bg-initial text-surface-900 hover:underline">Test Code Executer</strong>
       </button>」は自由にプログラムを書いて実行できる環境です。試してみましょう！
     </p>

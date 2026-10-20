@@ -88,7 +88,7 @@
         </tr>
       </thead>
       <tbody class="">
-        {#each pgmTerms as { term, english, reading, description }}
+        {#each pgmTerms as { term, english, reading, description } (term)}
           <tr>
             <td class="py-2 px-4 border-b border-gray-400">{term}</td>
             <td class="py-2 px-4 border-b border-gray-400"><CodeSpan data={[english, "white"]} /></td>

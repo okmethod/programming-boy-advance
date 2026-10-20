@@ -1,20 +1,20 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import { getToastStore, storeHighlightJs } from "@skeletonlabs/skeleton";
-  import { get } from "svelte/store";
-  import { browser } from "$app/environment";
-  import { simpleToast } from "$lib/utils/toastSettings";
+  import { browser } from "$app/env";
+  import hljs from "$lib/utils/highlight";
+  import { simpleToast } from "$lib/utils/toaster";
 
-  export let code: string;
-  export let cLanguage: string;
+  interface HighlightCodeEditorProps {
+    code: string;
+    cLanguage: string;
+  }
+
+  let { code = $bindable(), cLanguage }: HighlightCodeEditorProps = $props();
 
   const uniqueId = Math.random().toString(36).slice(2, 11);
   const textEditorElementId = `code-editor-${uniqueId}`;
   const highlightElementId = `code-block-${uniqueId}`;
 
-  const toastStore = getToastStore();
-
-  const hljs = get(storeHighlightJs);
   function highlightCodeElement(id: string, code: string): void {
     const codeElement = document.getElementById(id) as HTMLElement;
 
@@ -33,7 +33,7 @@
       const target = event.target as HTMLTextAreaElement;
       const lines = target.value.split("\n");
       if (isExceedLimit(lines)) {
-        toastStore.trigger(simpleToast("Textarea overflow.", "Warning"));
+        simpleToast("Textarea overflow.", "Warning");
         const start = target.selectionStart;
         event.preventDefault();
         event.stopImmediatePropagation();
@@ -74,15 +74,18 @@
     return count;
   }
 
-  let isMounted = false;
+  let isMounted = $state(false);
   onMount(() => {
     updateCode();
     isMounted = true;
   });
 
-  $: if (isMounted && code !== undefined) {
-    updateCode();
-  }
+  // code 変更に追従して再ハイライトする
+  $effect(() => {
+    if (isMounted && code !== undefined) {
+      updateCode();
+    }
+  });
 
   const cCodeAreaSize = "w-96 h-80";
 </script>
@@ -92,16 +95,16 @@
   <textarea
     id={textEditorElementId}
     value={code}
-    on:input={updateCode}
+    oninput={updateCode}
     rows={linesLimit}
     cols={charsLimit}
     class="
       {cCodeAreaSize} p-4 border border-gray-300 rounded-md
-      font-mono text-transparent bg-transparent caret-white custom-selection
+      font-mono text-transparent bg-transparent caret-white
+      selection:bg-white/90 selection:text-black
       resize-none whitespace-nowrap overflow-hidden
       absolute top-0 left-0 z-10
-    "
-  ></textarea>
+    "></textarea>
 
   <!-- ハイライトされたコードブロック -->
   <pre class="{cCodeAreaSize} relative -top-6 z-0">
@@ -110,10 +113,3 @@
     </code>
   </pre>
 </div>
-
-<style>
-  .custom-selection::selection {
-    background-color: rgba(255, 255, 255, 0.9); /* 背景色 */
-    color: black; /* テキスト色 */
-  }
-</style>

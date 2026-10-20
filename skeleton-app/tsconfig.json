@@ -1,20 +1,26 @@
 {
-  "extends": "./.svelte-kit/tsconfig.json",
+  "extends": "$app/tsconfig",
   "compilerOptions": {
+    /* 基本設定 */
+    "moduleResolution": "Bundler",
+
+    /* 厳格な型チェック */
+    "strict": true,
     "allowJs": true,
     "checkJs": true,
+
+    /* 開発体験・互換性 */
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
     "skipLibCheck": true,
     "sourceMap": true,
-    "strict": true,
-    "moduleResolution": "bundler",
-    "module": "esnext"
-  }
-  // Path aliases are handled by https://kit.svelte.dev/docs/configuration#alias
-  // except $lib which is handled by https://kit.svelte.dev/docs/configuration#files
-  //
-  // If you want to overwrite includes/excludes, make sure to copy over the relevant includes/excludes
-  // from the referenced tsconfig.json - TypeScript does not merge them in
+
+    /* 役割の明確化 */
+    "noEmit": true // コンパイルはViteに任せる
+  },
+  "include": ["src", "tests", "*"],
+  "exclude": ["src/service-worker"]
+  // Path aliases are handled by https://svelte.dev/docs/kit/configuration#alias
+  // except $lib which is handled by https://svelte.dev/docs/kit/configuration#files
 }

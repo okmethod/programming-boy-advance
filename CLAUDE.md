@@ -19,9 +19,9 @@
 
 - **リポジトリ**: https://github.com/okmethod/programming-boy-advance
 - **公開**: GitHub Pages https://okmethod.github.io/programming-boy-advance/
-- **技術スタック（現行）**: TypeScript 5.6, Skeleton v2 (Svelte 4 + TailwindCSS v3 + Vite 5), SvelteKit 2, Node 20
-  - **【移行中】** Svelte 5 (Runes) / Skeleton v5 / TailwindCSS v4 / Vite 8 / TS 6 への移行が未完了。
-    移行トラックは `CLAUDE_SETUP_PLAN.md` §4 を参照。**新規コードは Runes 前提で書く**（`.claude/rules/svelte-guide.md`）
+- **技術スタック**: TypeScript 6, Skeleton v5 (Svelte 5 Runes + TailwindCSS v4 + Vite 8), SvelteKit 3, Node 20
+  - 依存・コードの Svelte 5 移行は完了（build / check / lint / test green、dev で全ルート動作）。**新規コードは Runes 前提で書く**（`.claude/rules/svelte-guide.md`）
+  - **残課題**: ゲームボーイ配色の忠実移植（現状は stock テーマ `vintage` で起動）
 
 ## ディレクトリ
 
@@ -39,6 +39,6 @@
 ## 開発ワークフロー
 
 - **ローカル / 1 人作業**: `main` に直接コミットして進めてよい
-- **Svelte 5 移行作業**: 破壊的変更が大きいため、別ブランチ・段階コミットで進める（`CLAUDE_SETUP_PLAN.md` §4）
+- **Svelte 5 移行作業**: `main` で段階コミットしながら進める。見た目破壊は一旦許容し「動く」ことを優先（`CLAUDE_SETUP_PLAN.md` §4）
 - **コミットメッセージ**: gitmoji 規約（例: `:up:` `:gear:` `:memo:`）
 - **設計判断の記録**: git log / コミットメッセージ、およびコード内の inline Why に残す（ADR は作らない）

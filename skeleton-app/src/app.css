@@ -1,7 +1,14 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-@tailwind variants;
+@import "tailwindcss";
+@plugin "@tailwindcss/forms";
+@plugin "@tailwindcss/typography";
+
+@import "@skeletonlabs/skeleton";
+/* 移行中: ゲームボーイ配色の custom テーマは一旦捨て、stock テーマで起動する（CLAUDE_SETUP_PLAN.md §4.4） */
+@import "@skeletonlabs/skeleton/themes/vintage";
+
+@import "@skeletonlabs/skeleton-svelte";
+
+@custom-variant dark (&:where([data-mode="dark"], [data-mode="dark"] *));
 
 @font-face {
   font-family: "PixelMplus10";
@@ -31,19 +38,18 @@
   font-weight: 700;
 }
 
-@layer utilities {
-  .bg-gameboy-green {
-    background-color: #e0ecc5;
-  }
-  .bg-gameboy-dark-green {
-    background-color: #0f380f;
-  }
-  .text-gameboy-green {
-    color: #e0ecc5;
-  }
-  .text-gameboy-dark-green {
-    color: #0f380f;
-  }
+/* Tailwind v4 では variant（hover: 等）を効かせるため @utility で定義する */
+@utility bg-gameboy-green {
+  background-color: #e0ecc5;
+}
+@utility bg-gameboy-dark-green {
+  background-color: #0f380f;
+}
+@utility text-gameboy-green {
+  color: #e0ecc5;
+}
+@utility text-gameboy-dark-green {
+  color: #0f380f;
 }
 
 html,

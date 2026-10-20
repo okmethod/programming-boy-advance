@@ -69,7 +69,7 @@ while (true) {
   <hr class="cBorderLine" />
 
   <div class="p-4">
-    {#each codeSnippets as snippet}
+    {#each codeSnippets as snippet (snippet.title)}
       <h3 class="text-lg font-bold mt-4">{snippet.title}</h3>
       <HighlightCodeEditor code={snippet.code} cLanguage="language-javascript" />
     {/each}

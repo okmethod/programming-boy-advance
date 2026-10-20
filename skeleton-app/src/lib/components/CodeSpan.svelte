@@ -1,6 +1,7 @@
 <script lang="ts">
   type CodeBlockData = [string, string];
-  export let data: CodeBlockData | CodeBlockData[];
+
+  let { data }: { data: CodeBlockData | CodeBlockData[] } = $props();
 
   const cTextColor = (color: string): string => {
     const colorStyleMap: { [key: string]: string } = {
@@ -20,7 +21,7 @@
 
 <span class="px-1 font-mono bg-gray-800 rounded">
   {#if isCodeBlockDataArray(data)}
-    {#each data as [text, color]}
+    {#each data as [text, color], i (i)}
       <span class={cTextColor(color)}>{text}</span>
     {/each}
   {:else}

@@ -2,9 +2,7 @@
   import CursorButton from "$lib/components/CursorButton.svelte";
   import type { ContentButtonProps } from "./+page";
 
-  export let data: {
-    propsArray: Array<ContentButtonProps>;
-  };
+  let { data }: { data: { propsArray: Array<ContentButtonProps> } } = $props();
 </script>
 
 <div class="cRouteBodyStyle">
@@ -14,7 +12,7 @@
 
   <div class="cContentPartStyle">
     <div class="flex flex-col items-start space-y-4">
-      {#each data.propsArray as props}
+      {#each data.propsArray as props (props.title)}
         <CursorButton
           label={props.title}
           cButton="text-lg md:text-2xl"

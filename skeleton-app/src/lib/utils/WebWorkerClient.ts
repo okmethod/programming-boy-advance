@@ -1,6 +1,6 @@
-import { browser } from "$app/environment";
+import { browser } from "$app/env";
 import safeWorkerScript from "$lib/utils/safeWorkerScript.js?raw";
-import type { ToastStatus } from "$lib/utils/toastSettings";
+import type { ToastStatus } from "$lib/utils/toaster";
 
 interface AllowedGlobal {
   func: unknown;

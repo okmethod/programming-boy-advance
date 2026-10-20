@@ -1,23 +1,28 @@
 <script lang="ts">
-  import { getToastStore } from "@skeletonlabs/skeleton";
   import HighlightCodeEditor from "$lib/components/HighlightCodeEditor.svelte";
   import type { CodeExeProps } from "$lib/types/props";
   import type { MazeSetting } from "$lib/types/mazeSetting";
   import { parseMazeMatrix, Direction, directionStringMap } from "$lib/types/mazeSetting";
-  import { simpleToast } from "$lib/utils/toastSettings";
+  import { simpleToast } from "$lib/utils/toaster";
   import type { AllowedGlobals, WorkerResult } from "$lib/utils/WebWorkerClient";
   import WebWorkerClient from "$lib/utils/WebWorkerClient";
 
+  interface LabyrinthExplorerProps {
+    codeExeProps: CodeExeProps;
+    mazeSetting: MazeSetting;
+  }
+
+  let { codeExeProps = $bindable(), mazeSetting }: LabyrinthExplorerProps = $props();
+
   const workerClient = new WebWorkerClient(60);
 
-  export let codeExeProps: CodeExeProps;
-  export let mazeSetting: MazeSetting;
+  // mazeSetting は不変の初期設定。$state の初期値へ直接 prop を渡すと警告が出るため、先にローカルへ取り出す
+  const { mazeMatrix, startPos, initialDirection } = mazeSetting;
+  const parsedMazeMatrix = parseMazeMatrix(mazeMatrix);
+  let currentPos = $state(startPos);
+  let currentDirection = $state(initialDirection);
 
-  const parsedMazeMatrix = parseMazeMatrix(mazeSetting.mazeMatrix);
-  let currentPos = mazeSetting.startPos;
-  let currentDirection = mazeSetting.initialDirection;
-
-  let turnCounter = 0;
+  let turnCounter = $state(0);
 
   const labyrinthGlobals: AllowedGlobals = {
     log: { func: log, wait: 0 },
@@ -28,14 +33,14 @@
     // 必要に応じて追加
   };
 
-  export function log(message: string): void {
+  function log(message: string): void {
     const timestamp = new Date().toLocaleTimeString();
     const log = `[${timestamp}] ${message}`;
     codeExeProps.logs = [...codeExeProps.logs, log];
     scrollToBottom();
   }
 
-  export function stepForward(): void {
+  function stepForward(): void {
     const directions: Record<Direction, { row: number; col: number; wall: "r" | "b"; checkCurrentCell: boolean }> = {
       up: { row: -1, col: 0, wall: "b", checkCurrentCell: false },
       down: { row: 1, col: 0, wall: "b", checkCurrentCell: true },
@@ -65,7 +70,7 @@
   function checkGoal(): void {
     if (currentPos.row === mazeSetting.goalPos.row && currentPos.col === mazeSetting.goalPos.col) {
       log("Reached Goal!");
-      toastStore.trigger(simpleToast("Goal!!", "Succeed"));
+      simpleToast("Goal!!", "Succeed");
       isRunning = false;
       workerClient.terminate();
     }
@@ -94,8 +99,7 @@
     turnCounter++;
   }
 
-  let isRunning = false;
-  const toastStore = getToastStore();
+  let isRunning = $state(false);
   function handleExecute(): void {
     if (isRunning) {
       isRunning = false;
@@ -110,14 +114,14 @@
         },
         (result: WorkerResult) => {
           codeExeProps.resultString = result.resultString;
-          toastStore.trigger(simpleToast(result.message, result.status));
+          simpleToast(result.message, result.status);
           isRunning = false;
         },
       );
     }
   }
 
-  let logContainer: HTMLDivElement;
+  let logContainer = $state<HTMLDivElement>();
   function scrollToBottom() {
     if (logContainer) {
       logContainer.scrollTo({ top: logContainer.scrollHeight, behavior: "smooth" });
@@ -142,9 +146,9 @@
           <strong class="cIndexSpan">Maze</strong>
         </div>
         <div class="bg-gray-400 border border-gray-500 p-4">
-          {#each parsedMazeMatrix as row, rowIndex}
+          {#each parsedMazeMatrix as row, rowIndex (rowIndex)}
             <div class="flex">
-              {#each row as cell, colIndex}
+              {#each row as cell, colIndex (colIndex)}
                 <div
                   class="relative w-10 h-10 bg-gray-200 box-border border border-gray-300"
                   class:border-r-2={cell.r}
@@ -186,13 +190,13 @@
       <div>
         <div class="flex justify-between ml-2">
           <strong class="cIndexSpan">Code Editor</strong>
-          <button type="submit" on:click={clearCode} class="relative z-30"> ✕ </button>
+          <button type="submit" onclick={clearCode} class="relative z-30"> ✕ </button>
         </div>
         <HighlightCodeEditor bind:code={codeExeProps.code} cLanguage="language-javascript" />
       </div>
 
       <div class="pt-2">
-        <button type="submit" on:click={handleExecute} class="cIconButtonStyle relative">
+        <button type="submit" onclick={handleExecute} class="cIconButtonStyle relative">
           <div class="cButtonSpan">
             <span> {isRunning ? "Stop" : "Execute"} </span>
           </div>
@@ -212,13 +216,13 @@
       <div>
         <div class="flex justify-between ml-2">
           <strong class="cIndexSpan">Logs</strong>
-          <button type="submit" on:click={clearLogs} class="relative z-30"> ✕ </button>
+          <button type="submit" onclick={clearLogs} class="relative z-30"> ✕ </button>
         </div>
         <div
           bind:this={logContainer}
           class="w-96 h-40 p-4 border border-gray-500 bg-gray-100 rounded-md space-y-1 overflow-y-auto"
         >
-          {#each codeExeProps.logs as log}
+          {#each codeExeProps.logs as log, i (i)}
             <span class="block border border-gray-200 rounded-sm font-pixel10">{log}</span>
           {/each}
         </div>

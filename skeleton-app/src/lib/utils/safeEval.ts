@@ -1,5 +1,5 @@
 // import ts from "typescript";
-import type { ToastStatus } from "$lib/utils/toastSettings";
+import type { ToastStatus } from "$lib/utils/toaster";
 
 export type AllowedGlobals = Record<string, unknown>;
 
