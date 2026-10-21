@@ -15,7 +15,9 @@
 
 ## プロジェクト概要
 
-コードを書いて迷路を進むプログラミング学習ゲーム
+ブロックを組んで自律キャラを戦わせるプログラミング学習ゲーム
+
+> **コンセプト・スコープ・設計の最新断面は [`docs/`](docs/README.md) を正とする**（`docs/game-rules/`=何を作るか / `docs/design/`=どう作るか）。
 
 - **リポジトリ**: https://github.com/okmethod/programming-boy-advance
 - **公開**: GitHub Pages https://okmethod.github.io/programming-boy-advance/
@@ -33,6 +35,7 @@
   - `src/lib/utils/`: ユーティリティ
   - `src/lib/constants/`: 定数
 - `.claude/rules/`: コーディング規約（言語非依存 + TS/Svelte/テスト固有）
+- `docs/`: 設計ドキュメント（最新断面）。`design/`=アーキテクチャ・実行モデル等、`game-rules/`=ゲームの世界・ユビキタス言語
 
 ---
 
@@ -41,4 +44,4 @@
 - **ローカル / 1 人作業**: `main` に直接コミットして進めてよい
 - **Svelte 5 移行作業**: `main` で段階コミットしながら進める。見た目破壊は一旦許容し「動く」ことを優先（`CLAUDE_SETUP_PLAN.md` §4）
 - **コミットメッセージ**: gitmoji 規約（例: `:up:` `:gear:` `:memo:`）
-- **設計判断の記録**: git log / コミットメッセージ、およびコード内の inline Why に残す（ADR は作らない）
+- **設計判断の記録**: 現在の設計断面は `docs/`（ADR は作らない）、判断の履歴は git log / コミットメッセージ、細部はコード内の inline Why に残す
