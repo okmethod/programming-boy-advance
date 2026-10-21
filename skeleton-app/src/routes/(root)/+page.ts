@@ -14,19 +14,14 @@ export interface ContentButtonProps {
 
 const contents: Content[] = [
   {
+    title: "Battle Arena",
+    action: "navigate",
+    route: "/arena",
+  },
+  {
     title: "PGM Books",
     action: "navigate",
     route: "/books",
-  },
-  {
-    title: "Test Code Executer",
-    action: "navigate",
-    route: "/executer",
-  },
-  {
-    title: "Labyrinth Explorer",
-    action: "navigate",
-    route: "/labyrinth",
   },
   {
     title: "Github Repository",
