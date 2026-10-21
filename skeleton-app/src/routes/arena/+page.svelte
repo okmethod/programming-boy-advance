@@ -1,15 +1,19 @@
 <script lang="ts">
   // 観戦（スペクテイター）PoC。
   // 固定ステージに対し、プレイヤーの ally プログラムを「外部供給」して対戦させ、
-  // 決定的なフレーム列を再生する。ally は F2a ではプリセット選択（Blockly 統合=F1 までの仮入力）。
+  // 決定的なフレーム列を再生する。ally は F1 からブロックUI（Blockly）で組む。
   // 対戦実行はアプリ層ファサード runStage() 経由。設計は docs/design/execution-model.md を参照。
   import { runStage, STAGE_01 } from "$lib/application";
   import type { AutomatonId, BattleState, Direction, Program, Stmt } from "$lib/domain";
+  import BlocklyEditor from "$lib/components/BlocklyEditor.svelte";
 
   const stage = STAGE_01;
 
-  // --- 仮入力：Blockly 統合(F1)までのスタンドイン。ally の Program をプリセットから選ぶ。 ---
-  // F2b でここを Blockly 出力の Program に差し替える（継ぎ目は runStage の引数＝Program で確定済み）。
+  // ally の Program はブロックUI から供給される（継ぎ目は runStage の引数＝Program で確定済み）。
+  let allyProgram = $state<Program>([]);
+
+  // --- お手本プリセット：ブロックで組む前に挙動を確かめるための見本。 ---
+  // 選ぶと allyProgram に直接セットする（Blockly ワークスペースへの復元は後続課題）。
   interface AllyPreset {
     readonly label: string;
     readonly program: Program;
@@ -43,9 +47,6 @@
     },
   };
 
-  let allyKey = $state("counter");
-  const allyProgram = $derived(ALLY_PRESETS[allyKey].program);
-
   const run = $derived(runStage(stage, allyProgram));
   const frames = $derived(run.frames);
   const result = $derived(run.result);
@@ -56,12 +57,11 @@
   const current = $derived(frames[Math.min(frameIndex, frames.length - 1)]);
   const lastIndex = $derived(frames.length - 1);
 
-  // ally プログラムを切り替えたら先頭に戻す。
+  // ally プログラムが変わったら先頭に戻す。
   $effect(() => {
-    if (allyKey) {
-      frameIndex = 0;
-      playing = false;
-    }
+    void allyProgram;
+    frameIndex = 0;
+    playing = false;
   });
 
   // 再生ループ（0.4秒ごとに1フレーム進める）。
@@ -123,7 +123,7 @@
 <div class="mx-auto flex max-w-3xl flex-col gap-4 p-4">
   <h1 class="text-xl font-bold">バトルポッド観戦 (PoC)</h1>
   <p class="text-sm opacity-70">
-    固定ステージに ally プログラムを外部供給して対戦させる最小ビュー。ally はプリセット選択（ブロックUIはまだ無し）。
+    固定ステージに ally プログラムを外部供給して対戦させる最小ビュー。ally はブロックUIで組む（お手本プリセットあり）。
   </p>
 
   <!-- ステージ提示 -->
@@ -133,16 +133,20 @@
     <p class="text-xs opacity-70">敵：{stage.enemyLabel}</p>
   </div>
 
-  <!-- ally プログラム選択（仮入力） -->
+  <!-- ally プログラムをブロックで組む -->
   <div>
-    <h2 class="mb-1 text-sm font-bold">🤖 自キャラのプログラムを選ぶ（仮入力）</h2>
+    <h2 class="mb-1 text-sm font-bold">🤖 自キャラのプログラムをブロックで組む</h2>
+    <BlocklyEditor onProgramChange={(p) => (allyProgram = p)} />
+  </div>
+
+  <!-- お手本プリセット（allyProgram に直接セット） -->
+  <div>
+    <h2 class="mb-1 text-sm font-bold">お手本を読み込む</h2>
     <div class="flex flex-wrap gap-2">
       {#each Object.entries(ALLY_PRESETS) as [key, p] (key)}
         <button
-          class="rounded border px-3 py-1 text-sm {allyKey === key
-            ? 'border-gray-800 bg-gray-800 text-white'
-            : 'border-gray-400 bg-white text-gray-800 hover:bg-gray-100'}"
-          onclick={() => (allyKey = key)}
+          class="rounded border border-gray-400 bg-white px-3 py-1 text-sm text-gray-800 hover:bg-gray-100"
+          onclick={() => (allyProgram = p.program)}
         >
           {p.label}
         </button>
