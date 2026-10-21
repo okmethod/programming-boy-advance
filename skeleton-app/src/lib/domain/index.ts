@@ -23,4 +23,4 @@ export type {
 
 export { runBattle, recordBattle } from "./battle/runBattle";
 export { run } from "./interpreter/run";
-export { applyTick, commandToAction, evalSensor } from "./battle/engine";
+export { applyAction, commandToAction, evalSensor } from "./battle/engine";

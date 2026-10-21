@@ -1,16 +1,23 @@
 /**
- * 対戦ループ：自キャラ（Ally）と敵キャラ（Enemy）のプログラムを共通クロックでロックステップ実行する。
+ * 対戦ループ：自キャラ（Ally）と敵キャラ（Enemy）のプログラムを共通クロックで逐次実行する。
  *
- * 各クロックで両者のインタプリタから1アクションずつ取り出し、
- * 同じ pre 状態に基づいて同時に適用する。
- * これにより対戦は決定的に進み、同入力なら必ず同結果になる。
+ * 各クロックで、行動順（イニシアチブ）に従い1体ずつ「読む→1アクション適用」を解決する。
+ * 後手は先手の行動を反映した最新状態を見て判断するため、同マス同時侵入の矛盾が起きない。
+ * 対戦は決定的に進み、同入力なら必ず同結果になる。
  */
 
-import type { Action, AutomatonId, BattleResult, BattleState, Program } from "../models/types";
-import { applyTick } from "./engine";
+import type { Action, Automaton, AutomatonId, BattleResult, BattleState, Program } from "../models/types";
+import { applyAction } from "./engine";
 import { run } from "../interpreter/run";
 
 const DEFAULT_MAX_CLOCKS = 1000;
+
+// 行動順（イニシアチブ）：priority の高いオートマトンから動く。
+// priority はオートマトンが持つ固定値のため、対戦を通じて不変。
+// 同 priority は定義順（Array.sort の安定性）で決まる。
+function turnOrder(automatons: readonly Automaton[]): readonly AutomatonId[] {
+  return [...automatons].sort((a, b) => b.priority - a.priority).map((e) => e.id);
+}
 
 /** 対戦を最後まで実行し、結果（勝者・クロック数・最終状態）を返す。 */
 export function runBattle(
@@ -38,10 +45,15 @@ export function recordBattle(
   const maxClocks = options?.maxClocks ?? DEFAULT_MAX_CLOCKS;
 
   let state = initial;
-  // インタプリタは最新状態を read() で参照する（ロックステップのため両者とも同じ pre 状態を見る）。
+  // インタプリタは read() で最新状態を参照する。逐次解決なので後手は先手の行動後を見る。
   const read = () => state;
-  const allyGen = run(allyProgram, "ally", read);
-  const enemyGen = run(enemyProgram, "enemy", read);
+  const gens: Record<AutomatonId, Generator<Action, void, unknown>> = {
+    ally: run(allyProgram, "ally", read),
+    enemy: run(enemyProgram, "enemy", read),
+  };
+
+  // priority は固定値なので行動順は対戦を通じて不変。初期状態から一度だけ決める。
+  const order = turnOrder(initial.automatons);
 
   const frames: BattleState[] = [state];
 
@@ -50,11 +62,12 @@ export function recordBattle(
   let stallCount = 0;
 
   while (state.winner === null && state.clock < maxClocks) {
-    const actions = new Map<AutomatonId, Action>([
-      ["ally", nextAction(allyGen)],
-      ["enemy", nextAction(enemyGen)],
-    ]);
-    state = applyTick(state, actions);
+    // 1クロック内を行動順に1体ずつ解決する。先手が決着させたら後手は動かない。
+    for (const id of order) {
+      if (state.winner !== null) break;
+      state = applyAction(state, id, nextAction(gens[id]));
+    }
+    state = { ...state, clock: state.clock + 1 };
     frames.push(state);
 
     const sig = signature(state);

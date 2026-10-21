@@ -24,6 +24,9 @@ export interface Automaton {
   readonly pos: Position;
   readonly dir: Direction;
   readonly hp: number;
+  // スケジューリング優先度。同クロックでは高い方が先に行動する。
+  // PoC では固定値（ally を高くしてプレイヤー先手）。
+  readonly priority: number;
 }
 
 /** 格子状のバトルポッド。壁マスは PoC では少数前提で配列で保持する。 */
@@ -44,7 +47,7 @@ export interface DamageLog {
   readonly targetHpAfter: number;
 }
 
-/** 対戦の瞬間の状態。不変。applyTick が新しい状態を返す。 */
+/** 対戦の瞬間の状態。不変。applyAction が新しい状態を返す。 */
 export interface BattleState {
   readonly grid: Grid;
   readonly automatons: readonly Automaton[];

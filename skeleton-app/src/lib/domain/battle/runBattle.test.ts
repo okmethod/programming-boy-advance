@@ -4,8 +4,15 @@ import type { Automaton, BattleState, Program } from "../index";
 
 // --- テスト用ヘルパー ---
 
-function automaton(id: Automaton["id"], x: number, dir: Automaton["dir"], hp: number): Automaton {
-  return { id, pos: { x, y: 0 }, dir, hp };
+function automaton(
+  id: Automaton["id"],
+  x: number,
+  dir: Automaton["dir"],
+  hp: number,
+  // priority は既定で ally を高くしてプレイヤー先手。テストで上書き可。
+  priority = id === "ally" ? 1 : 0,
+): Automaton {
+  return { id, pos: { x, y: 0 }, dir, hp, priority };
 }
 
 // 幅 width・高さ1 の一本道。自キャラ（Ally）は左端で右向き、敵キャラ（Enemy）は右の方で左向き。
@@ -45,7 +52,7 @@ const COUNTER: Program = [
 // ただ前進し続けるだけの素朴なプログラム。
 const NAIVE: Program = [{ kind: "repeat", count: 100, body: [{ kind: "call", cmd: "stepForward" }] }];
 
-describe("runBattle（ロックステップ実行）", () => {
+describe("runBattle（逐次実行・プレイヤー先手）", () => {
   it("決定的：同じ入力なら必ず同じ結果になる", () => {
     const a = runBattle(corridor(6, 3), COUNTER, CHARGER);
     const b = runBattle(corridor(6, 3), COUNTER, CHARGER);
@@ -61,6 +68,13 @@ describe("runBattle（ロックステップ実行）", () => {
     expect(enemy?.hp).toBeLessThanOrEqual(0);
   });
 
+  it("正面衝突の初期距離が偶数でも勝てる（逐次解決で隣接が成立する）", () => {
+    // 幅7・敵 x=6＝距離6（偶数）。同時適用だと中央マスの奪い合いで膠着→引き分けになっていたケース。
+    // 逐次解決では先手 ally が中央へ進み、後手 enemy は埋まったマスへ進めず隣接が成立して交戦できる。
+    const result = runBattle(corridor(7, 6), COUNTER, CHARGER);
+    expect(result.winner).toBe("ally");
+  });
+
   it("素朴に突進するだけだと勝てない（NAIVE vs CHARGER は膠着で引き分け）", () => {
     const result = runBattle(corridor(6, 3), NAIVE, CHARGER);
     expect(result.winner).toBe("draw");
@@ -71,6 +85,27 @@ describe("runBattle（ロックステップ実行）", () => {
   it("移動チュートリアル：動かない敵に近づいて撃破できる", () => {
     const result = runBattle(corridor(6, 4, 3, 2), COUNTER, DUMMY);
     expect(result.winner).toBe("ally");
+  });
+});
+
+describe("行動順（priority）", () => {
+  const ATTACK: Program = [{ kind: "call", cmd: "attack" }];
+
+  // 隣接・相対・両者 hp1・両者 attack の一騎打ち。先に殴った方が勝つ。
+  function duel(allyPriority: number, enemyPriority: number): BattleState {
+    return {
+      grid: { width: 2, height: 1, walls: [] },
+      automatons: [automaton("ally", 0, "right", 1, allyPriority), automaton("enemy", 1, "left", 1, enemyPriority)],
+      clock: 0,
+      rngSeed: 0,
+      logs: [],
+      winner: null,
+    };
+  }
+
+  it("priority の高い方が先に行動する（同時攻撃は先手が勝つ）", () => {
+    expect(runBattle(duel(1, 0), ATTACK, ATTACK).winner).toBe("ally");
+    expect(runBattle(duel(0, 1), ATTACK, ATTACK).winner).toBe("enemy");
   });
 });
 
