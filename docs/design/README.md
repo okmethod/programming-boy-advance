@@ -10,7 +10,8 @@
 ## 📄 ファイル一覧
 
 - [architecture.md](./architecture.md) — アーキテクチャ全体像（4層クリーンアーキテクチャ・依存方向・データフロー・各層の責務）
-- [execution-model.md](./execution-model.md) — プログラム実行モデル（命令木 ＋ 再開可能インタプリタ ＋ 共通クロック・ターン順適用 ＋ 決定性）。最も後戻りコストの大きい中核決定
+- [execution-model.md](./execution-model.md) — プログラム実行モデル（命令木 ＋ 再開可能インタプリタ ＋ 共通クロック・ターン順適用 ＋ 決定性）。後戻りコストの大きい中核決定
+- [ux-level-design.md](./ux-level-design.md) — 時間軸の学習曲線＝ UX レベルデザイン（UX ループ・UX 要素）。Tier > Chapter > Stage の3層構造と、B面（種明かし）の方針
 
 > ストア機構（Runes / Svelte Store）やコンテンツ定義方式（TS/JSON / YAML+DSL）は後から移行可能なため、実装着手時に確定する。
 

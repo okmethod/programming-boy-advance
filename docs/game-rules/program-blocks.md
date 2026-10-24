@@ -5,7 +5,7 @@
 概念の定義は [overview.md](./overview.md)（コマンド／クエリ／プログラム）を正とし、本ファイルは**具体のブロック**を列挙する。
 
 各ブロックは **A面語（JP 名）を正**とし、**EN 識別子を併記**する（命名規約は overview.md に従う）。  
-アンロック順＝どの段階で解放されるか（学習曲線）は [design/level-design.md](../design/level-design.md) で規定する。
+アンロック順＝どの段階で解放されるか（学習曲線）は [design/ux-level-design.md](../design/ux-level-design.md) で規定する。
 
 ---
 
