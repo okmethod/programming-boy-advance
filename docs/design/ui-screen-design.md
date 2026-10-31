@@ -53,7 +53,7 @@ UI コンポーネントは、主要部品の実装単位。
                           ↑___________________|（次ステージ／再挑戦）
 ```
 
-- ルートは `src/routes/` 直下に対応。専用の小コンポーネントは `_components/` にコロケーション
+- ルートは `src/routes/` 直下に対応。UI コンポーネントは route 構成に引きずられないよう `src/lib/presentation/components/<UI 所掌>/`（`building` / `spectating` / `inspecting` …）に置く
 - レジストリ管理は独立ルートにせず、**プレイ面のプログラミング画面内タブ**として実現する（構築ループ `pull ⇄ 編集 ⇄ build/deploy` と一体のため）
 
 > TODO: ステージ ID のルート形式（`/stage/[id]` か query か）・ストア機構（Runes / Svelte Store）は後から移行可能なため実装時に確定

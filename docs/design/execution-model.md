@@ -54,7 +54,7 @@
 
 センサ（`壁がある?` `敵が近い?` 等）は `BattleState` を読む純粋関数＝決定的。敵プログラムも同じ命令木を流用する。
 
-> 型の定義は [domain/models/types.ts](../../skeleton-app/src/lib/domain/models/types.ts)、公開 API は [domain/index.ts](../../skeleton-app/src/lib/domain/index.ts) が正。本節と食い違う場合はコードを優先する。
+> 型の定義は [domain/models/battle.ts](../../skeleton-app/src/lib/domain/models/battle.ts)（盤面モデル）と [domain/models/program.ts](../../skeleton-app/src/lib/domain/models/program.ts)（命令木の言語）、公開 API は [domain/index.ts](../../skeleton-app/src/lib/domain/index.ts) が正。本節と食い違う場合はコードを優先する。
 
 ---
 

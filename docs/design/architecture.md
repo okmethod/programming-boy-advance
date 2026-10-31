@@ -12,7 +12,7 @@
 | -------------------------------- | ------------------------------------------------------ | -------------------- |
 | **Domain**（ドメイン層）         | 対戦のルールと**プログラムの解釈実行**（純TS・決定的） | 変わりにくい（中心） |
 | **Application**（アプリ層）      | バトル進行・ゲーム状態の更新（今どうなっているか）     | 中間                 |
-| **Infrastructure**（インフラ層） | ステージ/キャラ定義の読み込み、（将来）生JS実行Worker  | 変わりやすい         |
+| **Infrastructure**（インフラ層） | ステージ/キャラ定義の読み込み                          | 変わりやすい         |
 | **Presentation**（プレゼン層）   | バトルポッドの描画、ブロックUI、操作の受付             | 変わりやすい（外縁） |
 
 ```
@@ -56,10 +56,10 @@ graph LR
 
 外側から内側へのアクセスは次の経路に限定する。
 
-| 境界           | アクセスパターン             | 効果                                                                       |
-| -------------- | ---------------------------- | -------------------------------------------------------------------------- |
-| インフラ層から | **Port + Adapter**           | 取得は Port 経由のみ。供給元（ファイル/将来のAPI）をゲームロジックから隠蔽 |
-| プレゼン層から | **Facade**（`BattleFacade`） | UI の操作を単一窓口に集約。ゲームロジックの内部構造を UI から隠蔽          |
+| 境界           | アクセスパターン       | 効果                                                                        |
+| -------------- | ---------------------- | --------------------------------------------------------------------------- |
+| インフラ層から | **Port + Adapter**     | 取得は Port 経由のみ。供給元（ファイル/将来のAPI）をゲームロジックから隠蔽  |
+| プレゼン層から | **Facade**（機能ごと） | 機能/画面ごとに操作を単一窓口へ集約。ゲームロジックの内部構造を UI から隠蔽 |
 
 ---
 
@@ -79,26 +79,30 @@ graph LR
 
 ---
 
-## 各層の構造（初期案）
+## 各層の構造
 
 ```
 domain/
-├── models/        # BattleState, Automaton, Program, Action, Sensor 等（readonly）
-├── interpreter/   # 再開可能インタプリタ（命令木 → アクション列）
-└── battle/        # 共通クロックのバトルループ・勝敗判定
+├── models/       # 各種モデル・インターフェース
+├── battle/       # 共通クロックのバトルループ・勝敗判定・パラメータ
+├── program/      # 命令木の純解析（CP コスト・ノード採番/平坦化）
+├── interpreter/  # 再開可能インタプリタ（命令木 → Step 列）
+└── index.ts      # ドメイン層の公開 API
 
 application/
-├── BattleFacade.ts
-├── stores/        # バトル状態（ストア機構は実装時確定）
-├── ports/         # IStageRepository 等
-└── usecases/      # モード別（チュートリアル / 対戦）
+├── usecases/     # 機能スライス。各機能が自分の facade（その画面/機能の単一窓口）を持つ
+├── ports/        # stageRepository（Stage 型 + StageRepository）
+├── stores/       # TODO
+└── index.ts      # アプリ層の公開 API
 
 infrastructure/
-└── adapters/      # ステージ/キャラ定義ローダ、（将来）生JS Worker
+├── stages/       # ステージ定義データ（TS 定数版の供給元）
+├── adapters/     # staticStageRepository（Port 実装。将来 JSON/DSL/API）
+└── index.ts      # インフラ層の公開 API
 
 presentation/
-├── components/    # 対戦空間描画・ブロックエディタ（Blockly は use: で統合）
-└── stores/        # UI 状態のみ
+├── components/   # UI 所掌ごとに分割（[ui-screen-design.md](./ui-screen-design.md)）
+├── blockly/      # Program ⇄ Workspace 変換（Blockly 統合）
+├── stores/       # TODO
+└── utils/        # 共通ユーティリティ
 ```
-
-> ドメイン層は Pure TypeScript で書き、Svelte / DOM / 外部データを持ち込まない（ロジック単体でテスト可能）。
