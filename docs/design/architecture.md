@@ -72,8 +72,8 @@ graph LR
 3. **プレゼン層** が **アプリ層** の `BattleFacade` を呼ぶ
 4. **アプリ層** が **ドメイン層** のバトルエンジンを呼ぶ
 5. **ドメイン層** が共通クロックでプログラムを解釈実行し、新しい `BattleState` を返す（[execution-model.md](./execution-model.md)）
-6. **アプリ層** がその `BattleState` でストアを上書きする
-7. **プレゼン層** がストアの変更を検知して再描画・観戦する
+6. **アプリ層** が観戦用のフレーム列（`BattleState` の列）と結果を返す
+7. **プレゼン層** がそれを `$derived` で受け、盤面・プログラムを再描画・観戦する
 
 ゲームロジックへの入口は `BattleFacade` のみ、出力は新しい `BattleState` のみ。
 
@@ -101,8 +101,9 @@ infrastructure/
 └── index.ts      # インフラ層の公開 API
 
 presentation/
-├── components/   # UI 所掌ごとに分割（[ui-screen-design.md](./ui-screen-design.md)）
-├── blockly/      # Program ⇄ Workspace 変換（Blockly 統合）
-├── stores/       # TODO
-└── utils/        # 共通ユーティリティ
+├── components/    # UI 所掌ごとに分割（[ui-screen-design.md](./ui-screen-design.md)）
+├── blockly/       # Program ⇄ Workspace 変換（Blockly 統合）
+├── constants/     # 画面定数（ルート名・プリセット等）
+├── utils/         # 共通ユーティリティ
+└── composition.ts # 合成ルート（具体 Adapter → Facade の DI 配線。module singleton）
 ```
