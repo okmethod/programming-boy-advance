@@ -16,17 +16,18 @@
 </script>
 
 <div class="flex items-center gap-2">
-  <span class="shrink-0 text-xs font-bold text-gray-500">CP</span>
-  <!-- HP バーと同じ溝＋等幅セグメント。枠内の消費=黄、超過=赤、未消費=ごく淡い白。 -->
-  <div class="flex h-7 w-44 shrink-0 items-stretch gap-0.5 rounded-sm bg-black/10 p-1">
+  <span class="shrink-0 text-xs font-bold text-surface-500">CP</span>
+  <!-- 等幅セグメント。明るい（surface）背景で読めるよう、溝=surface-300／未消費=surface-50。
+       消費=アンバー・超過=赤は作成予算/超過の意味色として視認性優先で残す。 -->
+  <div class="flex h-7 w-44 shrink-0 items-stretch gap-0.5 rounded-sm bg-surface-300 p-1">
     {#each Array(segments) as _, i (i)}
-      <span class="flex-1 {i >= limit ? 'bg-red-500' : i < used ? 'bg-yellow-400' : 'bg-white/10'}"></span>
+      <span class="flex-1 {i >= limit ? 'bg-red-500' : i < used ? 'bg-amber-300' : 'bg-surface-50'}"></span>
     {/each}
   </div>
-  <span class="inline-flex shrink-0 items-baseline tabular-nums {over ? 'text-red-600' : 'text-gray-900'}">
+  <span class="inline-flex shrink-0 items-baseline tabular-nums {over ? 'text-red-600' : 'text-surface-900'}">
     <span class="text-sm font-bold">{used}</span>
-    <span class="px-0.5 text-xs text-gray-400">/</span>
-    <span class="text-xs text-gray-500">{limit}</span>
+    <span class="px-0.5 text-xs text-surface-400">/</span>
+    <span class="text-xs text-surface-500">{limit}</span>
   </span>
   {#if over}
     <span class="shrink-0 text-xs font-bold text-red-600">上限オーバー</span>
