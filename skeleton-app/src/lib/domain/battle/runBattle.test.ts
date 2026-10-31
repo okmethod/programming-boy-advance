@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
-import { runBattle } from "../index";
-import type { Automaton, BattleState, Program } from "../index";
+import { runBattle, recordBattle } from "$lib/domain";
+import type { Automaton, BattleParams, BattleState, Program } from "$lib/domain";
 
 // --- テスト用ヘルパー ---
 
@@ -12,7 +12,7 @@ function automaton(
   // priority は既定で ally を高くしてプレイヤー先手。テストで上書き可。
   priority = id === "ally" ? 1 : 0,
 ): Automaton {
-  return { id, pos: { x, y: 0 }, dir, hp, priority };
+  return { id, pos: { x, y: 0 }, dir, hp, bp: 0, freezeRemaining: 0, priority };
 }
 
 // 幅 width・高さ1 の一本道。自キャラ（Ally）は左端で右向き、敵キャラ（Enemy）は右の方で左向き。
@@ -41,7 +41,7 @@ const COUNTER: Program = [
     body: [
       {
         kind: "if",
-        cond: "enemyAhead",
+        cond: { kind: "sensor", sensor: "enemyAhead" },
         then: [{ kind: "call", cmd: "attack" }],
         else: [{ kind: "call", cmd: "stepForward" }],
       },
@@ -109,6 +109,47 @@ describe("行動順（priority）", () => {
   });
 });
 
+describe("BP（負荷攻撃・過負荷フリーズ）", () => {
+  // 具体値には結合させず、テスト側で明示的に params を注入する。
+  // 負荷攻撃1発で上限到達＝即フリーズする、検証しやすい設定。
+  const params: BattleParams = {
+    attackDamage: 1,
+    bpMax: 10,
+    loadAttackBp: 10,
+    attackSelfBp: 2,
+    freezeClocks: 2,
+    bpCooldownPerClock: 1,
+  };
+
+  // 隣接した敵に負荷攻撃を撃ち続けるだけのプログラム。
+  const DDOS: Program = [{ kind: "repeat", count: 100, body: [{ kind: "call", cmd: "loadAttack" }] }];
+
+  // ally(x0,右) と enemy(x1,左) が隣接する幅2の盤面。
+  function adjacent(): BattleState {
+    return {
+      grid: { width: 2, height: 1, walls: [] },
+      automatons: [automaton("ally", 0, "right", 3), automaton("enemy", 1, "left", 3)],
+      clock: 0,
+      rngSeed: 0,
+      logs: [],
+      winner: null,
+    };
+  }
+
+  it("負荷攻撃を受けると過負荷フリーズに陥る", () => {
+    const frames = recordBattle(adjacent(), DDOS, DUMMY, { params });
+    const frozen = frames.some((f) => (f.automatons.find((e) => e.id === "enemy")?.freezeRemaining ?? 0) > 0);
+    expect(frozen).toBe(true);
+  });
+
+  it("負荷攻撃は HP を削らない（BP だけでは撃破できず引き分け）", () => {
+    const result = runBattle(adjacent(), DDOS, DUMMY, { params });
+    expect(result.winner).toBe("draw");
+    const enemy = result.finalState.automatons.find((e) => e.id === "enemy");
+    expect(enemy?.hp).toBe(3);
+  });
+});
+
 describe("センサ（wallAhead）", () => {
   it("道がある間は前進し、壁（場外）の手前では前進せず旋回する", () => {
     // 幅3の一本道。ally は x=1 右向き、enemy は x=0（検証に無関係・DUMMY）。
@@ -128,7 +169,7 @@ describe("センサ（wallAhead）", () => {
         body: [
           {
             kind: "if",
-            cond: "wallAhead",
+            cond: { kind: "sensor", sensor: "wallAhead" },
             then: [{ kind: "call", cmd: "turnRight" }],
             else: [{ kind: "call", cmd: "stepForward" }],
           },

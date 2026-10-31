@@ -5,22 +5,21 @@
  */
 
 export type {
-  Action,
   Automaton,
   AutomatonId,
   BattleResult,
   BattleState,
-  CommandName,
   DamageLog,
   Direction,
   Grid,
   Position,
-  Program,
-  SensorName,
-  Stmt,
   Winner,
-} from "./models/types";
+} from "./models/battle";
+export type { Action, CommandName, Expr, NodeId, Program, SensorName, Step, Stmt } from "./models/program";
 
 export { runBattle, recordBattle } from "./battle/runBattle";
 export { run } from "./interpreter/run";
-export { applyAction, commandToAction, evalSensor } from "./battle/engine";
+export { applyAction, advanceClock, commandToAction, evalExpr, evalSensor } from "./battle/engine";
+export { BATTLE_PARAMS, type BattleParams } from "./battle/params";
+export { programCost } from "./program/cost";
+export { flattenProgram, nodeIdMap, type FlatLine } from "./program/nodes";
