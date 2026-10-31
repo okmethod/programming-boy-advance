@@ -7,6 +7,7 @@
   import { tick } from "svelte";
   import Icon from "@iconify/svelte";
   import { battleFacade, stageSelection } from "$lib/presentation/stores/battle.svelte";
+  import type { SandboxTarget } from "$lib/application";
   import { programCost, type Program } from "$lib/domain";
   import BlocklyEditor from "$lib/presentation/components/building/BlocklyEditor.svelte";
   import CapacityGauge from "$lib/presentation/components/building/CapacityGauge.svelte";
@@ -15,6 +16,7 @@
   import AutomatonStatusViewer from "$lib/presentation/components/spectating/AutomatonStatusViewer.svelte";
   import ResultOverlay from "$lib/presentation/components/spectating/ResultOverlay.svelte";
   import ProgramViewer from "$lib/presentation/components/inspecting/ProgramViewer.svelte";
+  import ActionLogViewer from "$lib/presentation/components/inspecting/ActionLogViewer.svelte";
   import { automatonIcon } from "$lib/presentation/utils/labels";
   import { fade } from "svelte/transition";
 
@@ -105,6 +107,24 @@
   // レジストリに機能（ビルド＆push/版管理/deploy/削除）を足しても、この面の中を埋めるだけで済む。
   let mainView = $state<"edit" | "code" | "registry">("edit");
 
+  // 構築ドロワー右レールの切替：参照（ステージの初期配置＋敵の手の内）⇄ 試運転（相手なし／stub の固定盤サンドボックス）。
+  // ドロワーを閉じずに「観る→直す→また観る」を回すための試し運転。本番対戦（勝敗あり）とは別物。
+  let railView = $state<"reference" | "sandbox">("reference");
+  // 試運転の的：none=何もいない（移動・制御フローの確認）／ stub=攻撃できる的（enemyAhead を発火させ攻撃反応まで確認）。
+  // レール内のローカル状態（棚＝ビルド済みイメージだけを共有する方針なので、ここは共有ストアに載せない）。
+  let sandboxTarget = $state<SandboxTarget>("stub");
+  const sandboxRun = $derived(facade.runSandbox(allyProgram, sandboxTarget));
+  const sandboxFrames = $derived(sandboxRun.frames);
+  let sandboxFrameIndex = $state(0);
+  let sandboxPlaying = $state(false);
+  const sandboxCurrent = $derived(sandboxFrames[Math.min(sandboxFrameIndex, sandboxFrames.length - 1)]);
+  const sandboxLastIndex = $derived(sandboxFrames.length - 1);
+
+  // 観戦ビュー下段の表示切替：プログラム（擬似コード）⇄ ログ（行動履歴）。自/敵で独立して切り替える。
+  // トグルはビューワー右上にオーバーレイし、プログラム表示時は ProgramViewer 内蔵の追従トグルの左隣に並ぶ。
+  let allyView = $state<"program" | "log">("program");
+  let enemyView = $state<"program" | "log">("program");
+
   const current = $derived(frames[Math.min(frameIndex, frames.length - 1)]);
   const lastIndex = $derived(frames.length - 1);
 
@@ -138,6 +158,14 @@
     playing = false;
   });
 
+  // 試運転も、プログラム／的が変わったら先頭に戻す（直前の試運転を持ち越さない）。
+  $effect(() => {
+    void allyProgram;
+    void sandboxTarget;
+    sandboxFrameIndex = 0;
+    sandboxPlaying = false;
+  });
+
   // ドロワーを開く／編集面に戻すと Blockly の表示領域が変わる。transform で開くと
   // ResizeObserver が発火しないため、DOM 反映（tick）後に明示的に resize してスクロールバーを正す。
   $effect(() => {
@@ -156,11 +184,45 @@
        中央=盤面を主役に据える（正方形・迷路化を見越し、横長帯を前提にしない）。
        frameIndex=0 の間は初期配置、再生すると対戦経過が同じ盤面に流れる。 -->
   <section class="flex min-h-0 flex-1 gap-4">
-    <!-- 左カラム（幅比1）：Ally のステータス（上）＋プログラム（下・フル高）。
+    <!-- 下段ビュー切替（プログラム ⇄ ログ）。ビューワー右上にオーバーレイし、列ごとに独立。
+         プログラム表示時は ProgramViewer 内蔵の追従トグルの左隣に並ぶ。暗地のオーバーレイ＝アイコンのみ。 -->
+    {#snippet viewToggle(view: "program" | "log", setView: (v: "program" | "log") => void)}
+      <button
+        class="inline-flex items-center justify-center rounded border p-1 {view === 'program'
+          ? 'border-white bg-white text-gray-900'
+          : 'border-gray-600 bg-gray-900/70 text-gray-300 hover:bg-gray-800'}"
+        aria-pressed={view === "program"}
+        aria-label="プログラム表示"
+        title="プログラム"
+        onclick={() => setView("program")}
+      >
+        <Icon icon="mdi:code-braces" class="size-4" />
+      </button>
+      <button
+        class="inline-flex items-center justify-center rounded border p-1 {view === 'log'
+          ? 'border-white bg-white text-gray-900'
+          : 'border-gray-600 bg-gray-900/70 text-gray-300 hover:bg-gray-800'}"
+        aria-pressed={view === "log"}
+        aria-label="ログ表示"
+        title="ログ"
+        onclick={() => setView("log")}
+      >
+        <Icon icon="mdi:table" class="size-4" />
+      </button>
+    {/snippet}
+    <!-- 列ごとの切替を、ビューワーの actions（右上オーバーレイ）に流し込む無引数スニペット。 -->
+    {#snippet allyActions()}{@render viewToggle(allyView, (v) => (allyView = v))}{/snippet}
+    {#snippet enemyActions()}{@render viewToggle(enemyView, (v) => (enemyView = v))}{/snippet}
+
+    <!-- 左カラム（幅比1）：Ally のステータス（上）＋プログラム/ログ（下・フル高。切替はビューワー右上）。
          実行中は current の active でハイライト。識別は小アイコンのみ（名前はステータス側）。 -->
     <div class="flex min-h-0 flex-1 flex-col gap-2">
       <AutomatonStatusViewer {frames} {frameIndex} id="ally" maxHp={maxHpById.ally} />
-      <ProgramViewer program={allyProgram} activeId={current.active?.ally} fill showFollow />
+      {#if allyView === "program"}
+        <ProgramViewer program={allyProgram} activeId={current.active?.ally} fill showFollow actions={allyActions} />
+      {:else}
+        <ActionLogViewer {frames} {frameIndex} program={allyProgram} id="ally" fill actions={allyActions} />
+      {/if}
     </div>
 
     <!-- 中央カラム（幅比2）：盤面（主役）＋再生コントロール。
@@ -176,16 +238,20 @@
       <PlaybackController bind:frameIndex bind:playing {lastIndex} clock={current.clock} />
     </div>
 
-    <!-- 右カラム（幅比1）：Enemy のステータス（上）＋プログラム（下・フル高）。 -->
+    <!-- 右カラム（幅比1）：Enemy のステータス（上）＋プログラム/ログ（下・フル高。切替はビューワー右上）。 -->
     <div class="flex min-h-0 flex-1 flex-col gap-2">
       <AutomatonStatusViewer {frames} {frameIndex} id="enemy" maxHp={maxHpById.enemy} />
-      <ProgramViewer program={stage.enemy} activeId={current.active?.enemy} fill showFollow />
+      {#if enemyView === "program"}
+        <ProgramViewer program={stage.enemy} activeId={current.active?.enemy} fill showFollow actions={enemyActions} />
+      {:else}
+        <ActionLogViewer {frames} {frameIndex} program={stage.enemy} id="enemy" fill actions={enemyActions} />
+      {/if}
     </div>
   </section>
 
   <!-- 下バー：構築ドロワーのトリガー。ドロワーと同じ「下から」に置き、出現場所と一致させる。 -->
   <button
-    class="inline-flex shrink-0 items-center justify-center gap-1.5 rounded-lg bg-blue-600 px-6 py-3 text-base font-bold text-white hover:bg-blue-700"
+    class="inline-flex shrink-0 items-center justify-center gap-1.5 rounded-lg border border-gray-300 bg-gray-100 px-6 py-3 text-base font-bold text-gray-900 hover:bg-gray-200"
     onclick={openDrawer}
   >
     <Icon icon="mdi:hammer-wrench" class="size-5" /> プログラミング
@@ -216,8 +282,8 @@
         {#snippet tab(value: "edit" | "code" | "registry", icon: string, label: string)}
           <button
             class="inline-flex items-center gap-1 rounded border px-3 py-1 text-sm {mainView === value
-              ? 'border-gray-800 bg-gray-800 text-white'
-              : 'border-gray-400 hover:bg-gray-100'}"
+              ? 'border-gray-900 bg-gray-900 text-white'
+              : 'border-gray-300 bg-gray-100 hover:bg-gray-200'}"
             onclick={() => (mainView = value)}
           >
             <Icon {icon} class="size-4" />
@@ -230,12 +296,31 @@
       </div>
       <CapacityGauge used={cpUsed} limit={stage.capacity} />
     </div>
-    <button
-      class="inline-flex items-center gap-1 rounded border border-gray-400 bg-white px-4 py-2 text-sm text-gray-800 hover:bg-gray-100"
-      onclick={() => (drawerOpen = false)}
-    >
-      閉じる <Icon icon="mdi:close" class="size-4" />
-    </button>
+    <!-- 右：参照レールの切替タブ（右レールの上端＝この位置）＋閉じる。
+         メインタブ（ブロック編集…）と同じヘッダー行に並べて高さを揃える。 -->
+    <div class="flex items-center gap-3">
+      <div class="flex items-center gap-1">
+        {#snippet railTab(value: "reference" | "sandbox", icon: string, label: string)}
+          <button
+            class="inline-flex items-center gap-1 rounded border px-3 py-1 text-sm {railView === value
+              ? 'border-gray-900 bg-gray-900 text-white'
+              : 'border-gray-300 bg-gray-100 hover:bg-gray-200'}"
+            onclick={() => (railView = value)}
+          >
+            <Icon {icon} class="size-4" />
+            {label}
+          </button>
+        {/snippet}
+        {@render railTab("reference", "mdi:map-marker-outline", "ステージ情報")}
+        {@render railTab("sandbox", "mdi:flask-outline", "試運転")}
+      </div>
+      <button
+        class="inline-flex items-center gap-1 rounded border border-gray-300 bg-gray-100 px-4 py-2 text-sm text-gray-800 hover:bg-gray-200"
+        onclick={() => (drawerOpen = false)}
+      >
+        閉じる <Icon icon="mdi:close" class="size-4" />
+      </button>
+    </div>
   </div>
 
   <!-- メイン領域（編集 ⇄ レジストリ）＋参照レール（右・固定幅）。 -->
@@ -274,7 +359,7 @@
               <Icon icon="mdi:package-variant" class="size-4" /> オートマトンイメージ
             </h3>
             <button
-              class="inline-flex items-center gap-1 rounded border border-gray-300 px-3 py-1 text-sm text-gray-500 hover:bg-gray-100"
+              class="inline-flex items-center gap-1 rounded border border-gray-300 bg-gray-100 px-3 py-1 text-sm text-gray-700 hover:bg-gray-200"
             >
               <Icon icon="mdi:tray-arrow-up" class="size-4" /> ビルドして保存
             </button>
@@ -291,7 +376,7 @@
                 <div class="flex shrink-0 gap-2">
                   <!-- pull＝Blockly に展開して編集面へ戻る（唯一の実動作）。 -->
                   <button
-                    class="rounded border border-gray-400 bg-white px-3 py-1 text-sm hover:bg-gray-100"
+                    class="rounded border border-gray-300 bg-gray-100 px-3 py-1 text-sm hover:bg-gray-200"
                     onclick={() => {
                       editor?.load(p.program);
                       mainView = "edit";
@@ -312,16 +397,82 @@
       {/if}
     </div>
 
-    <!-- 参照レール（編集・レジストリ両方で常時表示）：作戦の前提＝盤面・敵の手の内。 -->
-    <div class="flex min-h-0 w-[26rem] shrink-0 flex-col gap-3 overflow-auto">
-      <div class="shrink-0 rounded border border-gray-200 bg-gray-50 p-2">
-        <h3 class="mb-1 inline-flex items-center gap-1 text-xs font-bold opacity-70">
-          <Icon icon="mdi:view-grid-outline" class="size-4" /> 初期配置
-        </h3>
-        <BattlePodViewer state={initialFrame} size="sm" />
-      </div>
+    <!-- 参照レール（編集・レジストリ両方で常時表示）。
+         ステージ情報＝作戦の前提（本番の初期配置＋敵の手の内）／試運転＝相手なし・固定盤で ally を単体実行し動作確認。 -->
+    <div class="flex min-h-0 w-[26rem] shrink-0 flex-col">
+      <!-- 切替の内側は、メインの エディタ編集・レジストリ面と同じ枠線（border-gray-300）で囲い、高さも揃える。 -->
+      <div class="flex min-h-0 flex-1 flex-col gap-3 overflow-auto rounded border border-gray-300 bg-white p-3">
+        {#if railView === "reference"}
+          <!-- ヘッダー（固定高 h-7・左寄せ）：サンドボックスの見出し行と高さ・位置を揃え、下の盤面を一致させる。 -->
+          <div class="flex h-7 shrink-0 items-center gap-1 text-xs font-bold opacity-70">
+            <Icon icon="mdi:view-grid-outline" class="size-4" /> 初期配置
+          </div>
+          <!-- 盤面：試運転と同じラッパー（同じ形なら位置が一致する）。 -->
+          <div class="flex shrink-0 justify-center">
+            <BattlePodViewer state={initialFrame} size="sm" />
+          </div>
 
-      <ProgramViewer title="Enemy" titleIcon={automatonIcon("enemy")} program={stage.enemy} activeId={undefined} fill />
+          <ProgramViewer
+            title="Enemy"
+            titleIcon={automatonIcon("enemy")}
+            program={stage.enemy}
+            activeId={undefined}
+            fill
+          />
+        {:else}
+          <!-- ヘッダー（固定高 h-7）：左に「サンドボックス」見出し（初期配置と同位置）、右に stub の有無スイッチ。 -->
+          <div class="flex h-7 shrink-0 items-center justify-between gap-1">
+            <span class="flex items-center gap-1 text-xs font-bold opacity-70">
+              <Icon icon="mdi:flask-outline" class="size-4" /> サンドボックス
+            </span>
+            <!-- stub（攻撃できる的）の有無を切り替えるシンプルなスイッチ。ラベルは stub のみ（OFF＝的なし）。 -->
+            <button
+              type="button"
+              role="switch"
+              aria-checked={sandboxTarget === "stub"}
+              aria-label="stub（的）の有無"
+              class="inline-flex items-center gap-1.5 text-xs"
+              onclick={() => (sandboxTarget = sandboxTarget === "stub" ? "none" : "stub")}
+            >
+              <span class={sandboxTarget === "stub" ? "font-bold text-blue-700" : "text-gray-400"}>stub</span>
+              <span
+                class="relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors {sandboxTarget ===
+                'stub'
+                  ? 'bg-blue-600'
+                  : 'bg-gray-300'}"
+              >
+                <span
+                  class="inline-block size-4 rounded-full bg-white shadow transition-transform {sandboxTarget === 'stub'
+                    ? 'translate-x-[18px]'
+                    : 'translate-x-0.5'}"
+                ></span>
+              </span>
+            </button>
+          </div>
+
+          <!-- 盤面：ステージ情報と同じラッパー。再生は下、残りはログで埋める。 -->
+          <div class="flex shrink-0 justify-center">
+            <BattlePodViewer state={sandboxCurrent} size="sm" stubEnemy={sandboxTarget === "stub"} />
+          </div>
+          <PlaybackController
+            bind:frameIndex={sandboxFrameIndex}
+            bind:playing={sandboxPlaying}
+            lastIndex={sandboxLastIndex}
+            clock={sandboxCurrent.clock}
+          />
+
+          <!-- ログ：先頭〜現在フレームまでの ally の行動を蓄積表示（残り領域を埋める）。再生で末尾へ自動スクロール。 -->
+          <ActionLogViewer
+            title="logs"
+            titleIcon="mdi:console-line"
+            frames={sandboxFrames}
+            frameIndex={sandboxFrameIndex}
+            program={allyProgram}
+            id="ally"
+            fill
+          />
+        {/if}
+      </div>
     </div>
   </div>
 </aside>
