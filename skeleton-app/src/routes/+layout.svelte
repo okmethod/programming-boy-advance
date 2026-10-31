@@ -41,7 +41,7 @@
 <div class="h-screen flex flex-col">
   <!-- Skeleton v5 で AppBar は Svelte コンポーネントではなくなったため、素の要素で代替する。
        左＝ブランド表示（クリックでホームへ）、右＝セクション間ナビ。アクション（組む）は画面側に置く。 -->
-  <header class="shrink-0 border-b border-gray-400">
+  <header class="shrink-0 border-b border-surface-400">
     <div class="relative flex items-center gap-2 p-1 md:p-2">
       <button class="text-sm font-bold hover:opacity-70 md:text-lg" onclick={() => navigateTo("/")}>
         PGM Boy Advance
@@ -58,13 +58,13 @@
       <nav class="ml-auto flex items-center gap-1 text-sm">
         <!-- ステージ選択モーダルを開く。選んだステージは URL（/battle-pod/[stage]）が SSoT。 -->
         <button
-          class="inline-flex items-center gap-1 rounded border border-gray-300 bg-gray-100 px-2 py-1 hover:bg-gray-200"
+          class="inline-flex items-center gap-1 rounded border border-surface-300 bg-surface-100 px-2 py-1 hover:bg-surface-200"
           onclick={() => (stageSelectOpen = true)}
         >
           <Icon icon="mdi:map-marker-path" class="size-4" /> ステージ選択
         </button>
         <button
-          class="inline-flex items-center gap-1 rounded border border-gray-300 bg-gray-100 px-2 py-1 hover:bg-gray-200"
+          class="inline-flex items-center gap-1 rounded border border-surface-300 bg-surface-100 px-2 py-1 hover:bg-surface-200"
         >
           <Icon icon="mdi:book-open-variant" class="size-4" /> B面解説
         </button>

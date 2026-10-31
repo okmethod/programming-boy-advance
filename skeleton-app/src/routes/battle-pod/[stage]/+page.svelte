@@ -90,7 +90,7 @@
 <!-- 一画面（iPad 横向き前提・スクロール無し）：ヘッダーの残り高を埋め、はみ出しは内側で吸収。 -->
 <div class="mx-auto flex h-full max-w-6xl flex-col gap-3 overflow-hidden p-3">
   <!-- ステージ文脈：枠なしの細い1行（名前＋ゴール）。選択はヘッダーの「ステージ選択」に委ねる。 -->
-  <p class="shrink-0 text-sm"><span class="font-bold">{stage.label}</span> — {stage.goal}</p>
+  <p class="shrink-0 text-center text-sm"><span class="font-bold">{stage.label}</span> — {stage.goal}</p>
 
   <!-- 観戦ビュー（常時表示）。横向き一画面を 1:2:1 の3カラムに割る。
        左=Ally／右=Enemy は各陣営の「ステータス＋プログラム」を縦に積む（コードは縦伸びなので縦カラムが噛み合う）。
@@ -102,8 +102,8 @@
     {#snippet viewToggle(view: "program" | "log", setView: (v: "program" | "log") => void)}
       <button
         class="inline-flex items-center justify-center rounded border p-1 {view === 'program'
-          ? 'border-white bg-white text-gray-900'
-          : 'border-gray-600 bg-gray-900/70 text-gray-300 hover:bg-gray-800'}"
+          ? 'border-surface-50 bg-surface-50 text-surface-950'
+          : 'border-surface-600 bg-surface-900/70 text-surface-300 hover:bg-surface-800'}"
         aria-pressed={view === "program"}
         aria-label="プログラム表示"
         title="プログラム"
@@ -113,8 +113,8 @@
       </button>
       <button
         class="inline-flex items-center justify-center rounded border p-1 {view === 'log'
-          ? 'border-white bg-white text-gray-900'
-          : 'border-gray-600 bg-gray-900/70 text-gray-300 hover:bg-gray-800'}"
+          ? 'border-surface-50 bg-surface-50 text-surface-950'
+          : 'border-surface-600 bg-surface-900/70 text-surface-300 hover:bg-surface-800'}"
         aria-pressed={view === "log"}
         aria-label="ログ表示"
         title="ログ"
@@ -164,7 +164,7 @@
 
   <!-- 下バー：構築ドロワーのトリガー。ドロワーと同じ「下から」に置き、出現場所と一致させる。 -->
   <button
-    class="inline-flex shrink-0 items-center justify-center gap-1.5 rounded-lg border border-gray-300 bg-gray-100 px-6 py-3 text-base font-bold text-gray-900 hover:bg-gray-200"
+    class="inline-flex shrink-0 items-center justify-center gap-1.5 rounded-lg border border-primary-700 bg-primary-700 px-6 py-3 text-base font-bold text-primary-contrast-700 hover:bg-primary-800"
     onclick={openDrawer}
   >
     <Icon icon="mdi:hammer-wrench" class="size-5" /> プログラミング
@@ -183,7 +183,7 @@
   ></button>
 {/if}
 <aside
-  class="fixed inset-x-0 bottom-0 z-50 flex h-[92dvh] flex-col rounded-t-xl bg-white p-4 shadow-xl transition-transform duration-300 {drawerOpen
+  class="fixed inset-x-0 bottom-0 z-50 flex h-[92dvh] flex-col rounded-t-xl bg-surface-50 p-4 shadow-xl transition-transform duration-300 {drawerOpen
     ? 'translate-y-0'
     : 'translate-y-full'}"
 >
@@ -207,8 +207,8 @@
           {#snippet railTab(value: "reference" | "sandbox", icon: string, label: string)}
             <button
               class="inline-flex items-center gap-1 rounded border px-3 py-1 text-sm {railView === value
-                ? 'border-gray-900 bg-gray-900 text-white'
-                : 'border-gray-300 bg-gray-100 hover:bg-gray-200'}"
+                ? 'border-primary-700 bg-primary-700 text-primary-contrast-700'
+                : 'border-surface-300 bg-surface-100 hover:bg-surface-200'}"
               onclick={() => (railView = value)}
             >
               <Icon {icon} class="size-4" />
@@ -219,7 +219,7 @@
           {@render railTab("sandbox", "mdi:flask-outline", "試運転")}
         </div>
         <button
-          class="inline-flex items-center gap-1 rounded border border-gray-300 bg-gray-100 px-4 py-2 text-sm text-gray-800 hover:bg-gray-200"
+          class="inline-flex items-center gap-1 rounded border border-surface-300 bg-surface-100 px-4 py-2 text-sm hover:bg-surface-200"
           onclick={() => (drawerOpen = false)}
         >
           閉じる <Icon icon="mdi:close" class="size-4" />
@@ -227,7 +227,7 @@
       </div>
 
       <!-- 本体：参照（ステージの初期配置＋敵の手の内）／試運転（SandboxRail）を同じ枠線で囲う。 -->
-      <div class="flex min-h-0 flex-1 flex-col gap-3 overflow-auto rounded border border-gray-300 bg-white p-3">
+      <div class="flex min-h-0 flex-1 flex-col gap-3 overflow-auto rounded border border-surface-300 bg-surface-50 p-3">
         {#if railView === "reference"}
           <!-- ヘッダー（固定高 h-7・左寄せ）：サンドボックスの見出し行と高さ・位置を揃え、下の盤面を一致させる。 -->
           <div class="flex h-7 shrink-0 items-center gap-1 text-xs font-bold opacity-70">

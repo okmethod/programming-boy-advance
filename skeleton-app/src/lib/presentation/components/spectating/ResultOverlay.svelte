@@ -13,23 +13,26 @@
 
   let { winner, onReplay }: ResultOverlayProps = $props();
 
-  // 勝敗で見出しバッジ・ボタン色を出し分ける。Tailwind スキャナ対策で動的生成はせずリテラルを切替える。
+  // 勝敗で見出しバッジ・ボタン色を出し分ける（勝=緑primary / 負=surface / 分=青緑secondary）。
+  // テーマトークンに寄せて配色をテーマ追従に。Tailwind スキャナ対策で動的生成はせずリテラルを切替える。
   const badgeLabel = $derived(winner === "ally" ? "WIN" : winner === "enemy" ? "LOSE" : "DRAW");
   const badgeClass = $derived(
     winner === "ally"
-      ? "bg-amber-100 text-amber-700"
+      ? "bg-primary-100 text-primary-800"
       : winner === "enemy"
-        ? "bg-gray-200 text-gray-600"
-        : "bg-sky-100 text-sky-700",
+        ? "bg-surface-200 text-surface-700"
+        : "bg-secondary-100 text-secondary-800",
   );
-  const retryClass = $derived(winner === "ally" ? "bg-amber-500 hover:bg-amber-600" : "bg-gray-800 hover:bg-gray-700");
+  const retryClass = $derived(
+    winner === "ally" ? "bg-primary-600 hover:bg-primary-700" : "bg-surface-800 hover:bg-surface-700",
+  );
 </script>
 
 <!-- 親は relative を持つ観戦コンテナ。inset-0 で盤面全体を覆い、中央にカードを浮かせる。 -->
 <div class="absolute inset-0 flex items-center justify-center rounded bg-black/60">
-  <div class="flex min-w-56 flex-col items-center gap-3 rounded-xl bg-white px-8 py-6 shadow-2xl">
+  <div class="flex min-w-56 flex-col items-center gap-3 rounded-xl bg-surface-50 px-8 py-6 shadow-2xl">
     <span class="rounded-full px-3 py-0.5 text-xs font-bold tracking-widest {badgeClass}">{badgeLabel}</span>
-    <p class="text-xl font-bold text-gray-900">{winnerText(winner)}</p>
+    <p class="text-xl font-bold text-surface-900">{winnerText(winner)}</p>
     <!-- TODO: 「次へ」はステージ進行（進行ルート）導入後に追加する。MVP はリトライのみ。 -->
     <button
       class="inline-flex items-center gap-1 rounded-lg px-6 py-2 text-sm font-bold text-white {retryClass}"

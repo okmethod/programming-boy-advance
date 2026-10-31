@@ -11,6 +11,7 @@
     type BlockCategory,
     workspaceToProgram,
     programToWorkspace,
+    RETRO_THEME,
   } from "$lib/presentation/blockly";
 
   interface BlocklyEditorProps {
@@ -25,20 +26,21 @@
   // パレット上部タブで選択中のカテゴリ。選んだカテゴリのブロックだけを固定幅フライアウトに出す。
   let activeCategoryId = $state(BLOCK_CATEGORIES[0].id);
 
-  // タブ配色＝ブロック配色（緑=コマンド / 青=クエリ / 橙=制御）。色でカテゴリを識別させる。
+  // タブ配色＝ブロック配色（緑=コマンド / 青緑=クエリ / 黄土=制御）。色でカテゴリを識別させる。
+  // テーマトークン（primary/secondary/tertiary）に寄せ、配色はテーマ差し替えで一括追従させる。
   // Tailwind スキャナー対策で動的クラスは文字列リテラルで持つ。
   const TAB_STYLE: Record<string, { active: string; idle: string }> = {
     command: {
-      active: "border-emerald-600 bg-emerald-600 text-white",
-      idle: "border-emerald-400 text-emerald-700 hover:bg-emerald-50",
+      active: "border-primary-500 bg-primary-500 text-primary-contrast-500",
+      idle: "border-primary-400 text-primary-700 hover:bg-primary-50",
     },
     query: {
-      active: "border-sky-600 bg-sky-600 text-white",
-      idle: "border-sky-400 text-sky-700 hover:bg-sky-50",
+      active: "border-secondary-500 bg-secondary-500 text-secondary-contrast-500",
+      idle: "border-secondary-400 text-secondary-700 hover:bg-secondary-50",
     },
     control: {
-      active: "border-amber-600 bg-amber-600 text-white",
-      idle: "border-amber-400 text-amber-700 hover:bg-amber-50",
+      active: "border-tertiary-500 bg-tertiary-500 text-tertiary-contrast-500",
+      idle: "border-tertiary-400 text-tertiary-700 hover:bg-tertiary-50",
     },
   };
 
@@ -77,6 +79,7 @@
     // zoom: +/- とリセットのコントロールで拡大縮小（ホイールズームは scroll と競合するので切る）。
     ws = Blockly.inject(node, {
       toolbox: TOOLBOX,
+      theme: RETRO_THEME,
       trashcan: true,
       move: { scrollbars: true, drag: true, wheel: true },
       zoom: { controls: true, wheel: false, startScale: 1, maxScale: 2, minScale: 0.6, scaleSpeed: 1.2 },

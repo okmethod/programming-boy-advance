@@ -21,7 +21,7 @@
 
     <!-- 試運転レール：プレイ面のレールと同じ枠線で囲い、SandboxRail を落とし込む。 -->
     <div class="flex min-h-0 w-[26rem] shrink-0 flex-col">
-      <div class="flex min-h-0 flex-1 flex-col gap-3 overflow-auto rounded border border-gray-300 bg-white p-3">
+      <div class="flex min-h-0 flex-1 flex-col gap-3 overflow-auto rounded border border-surface-300 bg-surface-50 p-3">
         <SandboxRail {program} facade={battleFacade} />
       </div>
     </div>

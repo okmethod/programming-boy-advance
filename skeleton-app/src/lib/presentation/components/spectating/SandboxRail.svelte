@@ -51,14 +51,14 @@
     class="inline-flex items-center gap-1.5 text-xs"
     onclick={() => (sandboxTarget = sandboxTarget === "stub" ? "none" : "stub")}
   >
-    <span class={sandboxTarget === "stub" ? "font-bold text-blue-700" : "text-gray-400"}>stub</span>
+    <span class={sandboxTarget === "stub" ? "font-bold text-secondary-700" : "text-surface-400"}>stub</span>
     <span
       class="relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors {sandboxTarget === 'stub'
-        ? 'bg-blue-600'
-        : 'bg-gray-300'}"
+        ? 'bg-secondary-600'
+        : 'bg-surface-300'}"
     >
       <span
-        class="inline-block size-4 rounded-full bg-white shadow transition-transform {sandboxTarget === 'stub'
+        class="inline-block size-4 rounded-full bg-surface-50 shadow transition-transform {sandboxTarget === 'stub'
           ? 'translate-x-[18px]'
           : 'translate-x-0.5'}"
       ></span>

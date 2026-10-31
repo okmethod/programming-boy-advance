@@ -53,8 +53,8 @@
       {#snippet tab(value: "edit" | "code" | "registry", icon: string, label: string)}
         <button
           class="inline-flex items-center gap-1 rounded border px-3 py-1 text-sm {mainView === value
-            ? 'border-gray-900 bg-gray-900 text-white'
-            : 'border-gray-300 bg-gray-100 hover:bg-gray-200'}"
+            ? 'border-primary-700 bg-primary-700 text-primary-contrast-700'
+            : 'border-surface-300 bg-surface-100 hover:bg-surface-200'}"
           onclick={() => (mainView = value)}
         >
           <Icon {icon} class="size-4" />
@@ -80,7 +80,9 @@
     {#if mainView === "code"}
       <!-- エディタ編集面（フル領域）：ブロックから生成したコードを表示（読み取り専用）。
            ブロック⇄実コードの対応を見せる B面の芽。テキスト編集の配線は未対応（プレースホルダ）。 -->
-      <div class="absolute inset-0 flex flex-col gap-2 overflow-hidden rounded border border-gray-300 bg-white p-3">
+      <div
+        class="absolute inset-0 flex flex-col gap-2 overflow-hidden rounded border border-surface-300 bg-surface-50 p-3"
+      >
         <ProgramViewer title="Ally" titleIcon={automatonIcon("ally")} {program} activeId={undefined} fill />
       </div>
     {/if}
@@ -88,13 +90,15 @@
     {#if mainView === "registry"}
       <!-- レジストリ管理面（フル領域）。今は お手本からの pull だけ動く。
            ビルド＆push・版（v1→v2）・deploy・削除は裏側未実装（何もしないプレースホルダ）。 -->
-      <div class="absolute inset-0 flex flex-col gap-3 overflow-auto rounded border border-gray-300 bg-white p-3">
+      <div
+        class="absolute inset-0 flex flex-col gap-3 overflow-auto rounded border border-surface-300 bg-surface-50 p-3"
+      >
         <div class="flex shrink-0 items-center justify-between">
           <h3 class="inline-flex items-center gap-1 text-sm font-bold">
             <Icon icon="mdi:package-variant" class="size-4" /> オートマトンイメージ
           </h3>
           <button
-            class="inline-flex items-center gap-1 rounded border border-gray-300 bg-gray-100 px-3 py-1 text-sm text-gray-700 hover:bg-gray-200"
+            class="inline-flex items-center gap-1 rounded border border-surface-300 bg-surface-100 px-3 py-1 text-sm hover:bg-surface-200"
           >
             <Icon icon="mdi:tray-arrow-up" class="size-4" /> ビルドして保存
           </button>
@@ -103,7 +107,7 @@
         <!-- 一覧（各行＝オートマトンイメージ）。将来は自ビルド版（name:v1→v2）もここに並ぶ。 -->
         <ul class="flex flex-col gap-2">
           {#each Object.entries(presets) as [key, p] (key)}
-            <li class="flex items-center justify-between gap-3 rounded border border-gray-200 px-3 py-2">
+            <li class="flex items-center justify-between gap-3 rounded border border-surface-200 px-3 py-2">
               <div class="min-w-0">
                 <span class="text-sm">お手本：{p.label}</span>
                 <span class="ml-2 text-xs opacity-50">v1</span>
@@ -111,7 +115,7 @@
               <div class="flex shrink-0 gap-2">
                 <!-- pull＝Blockly に展開して編集面へ戻る（唯一の実動作）。 -->
                 <button
-                  class="rounded border border-gray-300 bg-gray-100 px-3 py-1 text-sm hover:bg-gray-200"
+                  class="rounded border border-surface-300 bg-surface-100 px-3 py-1 text-sm hover:bg-surface-200"
                   onclick={() => {
                     editor?.load(p.program);
                     mainView = "edit";
@@ -121,10 +125,10 @@
                 </button>
                 <!-- deploy は裏側未実装のプレースホルダ。ステージ非依存のページでは出さない。 -->
                 {#if showDeploy}
-                  <button class="rounded border border-gray-300 px-3 py-1 text-sm text-gray-400">deploy</button>
+                  <button class="rounded border border-surface-300 px-3 py-1 text-sm text-surface-400">deploy</button>
                 {/if}
                 <!-- 削除も裏側未実装のプレースホルダ（何もしない）。 -->
-                <button class="rounded border border-gray-300 px-2 py-1 text-sm text-gray-400" aria-label="削除">
+                <button class="rounded border border-surface-300 px-2 py-1 text-sm text-surface-400" aria-label="削除">
                   <Icon icon="mdi:delete-outline" class="size-4" />
                 </button>
               </div>
