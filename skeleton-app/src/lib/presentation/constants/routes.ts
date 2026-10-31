@@ -14,7 +14,7 @@ export interface AppRoute {
 
 export const APP_ROUTES: readonly AppRoute[] = [
   { id: "/stage-select", title: "Stage Select" },
-  { id: "/battle-pod", title: "Automaton BattlePod" },
+  { id: "/battle-pod/[stage]", title: "Automaton BattlePod" },
   { id: "/sandbox", title: "Automaton Sandbox" },
 ];
 

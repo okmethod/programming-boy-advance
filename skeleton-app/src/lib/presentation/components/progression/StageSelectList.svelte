@@ -2,17 +2,18 @@
   // ステージ選択の「中身」。モーダル（今）と進行ページ（将来）で共通利用する。
   // chrome（モーダル枠／ページ枠）は持たず、一覧表示と選択だけに責務を絞る＝器を差し替えられる。
   import Icon from "@iconify/svelte";
-  import { stageList, stageSelection } from "$lib/presentation/stores/battle.svelte";
+  import { stageList } from "$lib/presentation/composition";
 
   interface StageSelectListProps {
     // 選択後に host（モーダル／ページ）が反応するためのフック（モーダルを閉じる・遷移する等）。
     onSelect?: (id: string) => void;
+    // 現在選択中のステージ id（チェック表示用）。文脈が無ければ未指定＝無強調。
+    selectedId?: string;
   }
 
-  let { onSelect }: StageSelectListProps = $props();
+  let { onSelect, selectedId }: StageSelectListProps = $props();
 
   function select(id: string) {
-    stageSelection.id = id;
     onSelect?.(id);
   }
 </script>
@@ -23,13 +24,13 @@
   {#each stageList as s (s.id)}
     <li>
       <button
-        class="flex w-full flex-col gap-1 rounded-lg border p-3 text-left transition-colors {stageSelection.id === s.id
+        class="flex w-full flex-col gap-1 rounded-lg border p-3 text-left transition-colors {selectedId === s.id
           ? 'border-gray-800 bg-gray-50'
           : 'border-gray-300 hover:bg-gray-100'}"
         onclick={() => select(s.id)}
       >
         <div class="flex items-center gap-2">
-          {#if stageSelection.id === s.id}
+          {#if selectedId === s.id}
             <Icon icon="mdi:check-circle" class="size-4 text-gray-800" />
           {:else}
             <Icon icon="mdi:circle-outline" class="size-4 text-gray-400" />

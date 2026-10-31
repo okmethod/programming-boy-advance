@@ -3,7 +3,7 @@
   // プレイ面のような対戦（勝敗）・deploy は無く、構築エリア（左）と試運転レール（右）だけを置く。
   // レジストリ（お手本/手持ちイメージの管理）は構築エリア内のタブ＝このページの一部。
   // 構築エリア・試運転レールはプレイ面の構築ドロワーと同じコンポーネントを共有する。
-  import { battleFacade } from "$lib/presentation/stores/battle.svelte";
+  import { battleFacade } from "$lib/presentation/composition";
   import type { Program } from "$lib/domain";
   import { ALLY_PRESETS, DEFAULT_AUTOMATON_CAPACITY } from "$lib/presentation/constants/allyPresets";
   import BuildingArea from "$lib/presentation/components/building/BuildingArea.svelte";

@@ -8,9 +8,9 @@
 
 <div class="mx-auto flex h-full max-w-3xl flex-col gap-4 p-4">
   <h1 class="inline-flex items-center gap-2 text-xl font-bold">
-    <Icon icon="mdi:map-marker-path" class="size-6" /> ステージ進行
+    <Icon icon="mdi:map-marker-path" class="size-6" /> ステージ選択
   </h1>
   <p class="text-sm opacity-70">挑むステージを選ぼう。選ぶと観戦画面へ進む。</p>
-  <!-- 選択するとプレイ面へ。選択状態は stageSelection ストアに入るので遷移先がそのまま使う。 -->
-  <StageSelectList onSelect={() => navigateTo("/battle-pod")} />
+  <!-- 選択するとプレイ面へ。ステージ id は URL（/battle-pod/[stage]）が SSoT。 -->
+  <StageSelectList onSelect={(id) => navigateTo(`/battle-pod/${id}`)} />
 </div>

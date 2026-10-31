@@ -14,7 +14,7 @@
   // ヘッダー中央に出す現在ページ名。ルート id（base path 非依存）から引く。
   const currentPageTitle = $derived(pageTitle(page.route.id));
 
-  // ステージ進行＝ステージ選択モーダル。単純切替は器としてモーダルを使う（将来はページへ昇格）。
+  // ステージ選択モーダル。単純切替は器としてモーダルを使う（将来はページへ昇格）。
   // 現在ステージ名は画面中央上部に出るため、ここは固定ラベルにとどめる。
   let stageSelectOpen = $state(false);
 </script>
@@ -56,7 +56,7 @@
       {/if}
 
       <nav class="ml-auto flex items-center gap-1 text-sm">
-        <!-- ステージ進行＝ステージ選択モーダルを開く。選択状態は stageSelection ストアでプレイ面と共有する。 -->
+        <!-- ステージ選択モーダルを開く。選んだステージは URL（/battle-pod/[stage]）が SSoT。 -->
         <button
           class="inline-flex items-center gap-1 rounded border border-gray-300 bg-gray-100 px-2 py-1 hover:bg-gray-200"
           onclick={() => (stageSelectOpen = true)}
@@ -80,5 +80,14 @@
   </main>
 </div>
 
-<!-- ステージ選択モーダル（単純切替）。中身 StageSelectList は将来の進行ページと共通。 -->
-<StageSelectModal open={stageSelectOpen} onClose={() => (stageSelectOpen = false)} />
+<!-- ステージ選択モーダル（単純切替）。中身 StageSelectList は将来の進行ページと共通。
+     選ぶと閉じてプレイ面（/battle-pod/[stage]）へ遷移する。ステージ id は URL が SSoT。 -->
+<StageSelectModal
+  open={stageSelectOpen}
+  selectedId={page.params.stage}
+  onClose={() => (stageSelectOpen = false)}
+  onSelect={(id) => {
+    stageSelectOpen = false;
+    navigateTo(`/battle-pod/${id}`);
+  }}
+/>

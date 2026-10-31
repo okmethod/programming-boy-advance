@@ -7,10 +7,15 @@
 
   interface StageSelectModalProps {
     open: boolean;
+    // ×/背景クリックで閉じるときのフック。
     onClose: () => void;
+    // ステージを選んだときのフック。遷移は器の外（呼び出し元ルート）の責務に委ねる。
+    onSelect: (id: string) => void;
+    // 現在開いているステージ id（プレイ面から開いたとき強調するため）。
+    selectedId?: string;
   }
 
-  let { open, onClose }: StageSelectModalProps = $props();
+  let { open, onClose, onSelect, selectedId }: StageSelectModalProps = $props();
 </script>
 
 {#if open}
@@ -24,15 +29,15 @@
     >
       <div class="flex shrink-0 items-center justify-between">
         <h2 class="inline-flex items-center gap-1 text-base font-bold">
-          <Icon icon="mdi:map-marker-path" class="size-5" /> ステージ進行
+          <Icon icon="mdi:map-marker-path" class="size-5" /> ステージ選択
         </h2>
         <button class="rounded p-1 hover:bg-gray-100" aria-label="閉じる" onclick={onClose}>
           <Icon icon="mdi:close" class="size-5" />
         </button>
       </div>
-      <!-- 選ぶと閉じる（単純切替）。中身は共通コンポーネント。 -->
+      <!-- 選択は onSelect で呼び出し元へ通知（閉じる・遷移は呼び出し元が決める）。中身は共通コンポーネント。 -->
       <div class="min-h-0 overflow-auto">
-        <StageSelectList onSelect={onClose} />
+        <StageSelectList {onSelect} {selectedId} />
       </div>
     </div>
   </div>
