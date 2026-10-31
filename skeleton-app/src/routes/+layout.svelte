@@ -45,12 +45,14 @@
       <nav class="ml-auto flex items-center gap-1 text-sm">
         <!-- ステージ進行＝ステージ選択モーダルを開く。選択状態は stageSelection ストアで arena と共有する。 -->
         <button
-          class="inline-flex items-center gap-1 rounded px-2 py-1 hover:bg-gray-100"
+          class="inline-flex items-center gap-1 rounded border border-gray-300 bg-gray-100 px-2 py-1 hover:bg-gray-200"
           onclick={() => (stageSelectOpen = true)}
         >
           <Icon icon="mdi:map-marker-path" class="size-4" /> ステージ選択
         </button>
-        <button class="inline-flex items-center gap-1 rounded px-2 py-1 hover:bg-gray-100">
+        <button
+          class="inline-flex items-center gap-1 rounded border border-gray-300 bg-gray-100 px-2 py-1 hover:bg-gray-200"
+        >
           <Icon icon="mdi:book-open-variant" class="size-4" /> B面解説
         </button>
         <!-- レジストリ管理はグローバルナビに置かない。pull（お手本/手持ちイメージ読み込み）は
