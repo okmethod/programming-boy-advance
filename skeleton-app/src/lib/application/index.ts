@@ -1,10 +1,9 @@
 /**
  * アプリ層の公開 API。
  *
- * プレゼン層からはこの入口を参照する。
+ * プレゼン層からはこの入口を参照する。ステージの供給元は Port（StageRepository）の裏に隠れる。
  */
 
-export { runStage } from "./battleFacade";
-export type { BattleRun } from "./battleFacade";
-export { STAGE_01 } from "./stage";
-export type { Stage } from "./stage";
+export { createBattleFacade } from "./usecases/battle/facade";
+export type { BattleFacade, BattleRun } from "./usecases/battle/facade";
+export type { Stage, StageRepository } from "./ports/stageRepository";
