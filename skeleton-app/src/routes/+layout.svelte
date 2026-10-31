@@ -1,13 +1,18 @@
 <script lang="ts">
   import "../app.css";
   import type { Snippet } from "svelte";
+  import { page } from "$app/state";
   import { Portal, Toast } from "@skeletonlabs/skeleton-svelte";
   import Icon from "@iconify/svelte";
   import { toaster } from "$lib/presentation/utils/toaster";
   import { navigateTo } from "$lib/presentation/utils/navigation";
+  import { pageTitle } from "$lib/presentation/constants/routes";
   import StageSelectModal from "$lib/presentation/components/progression/StageSelectModal.svelte";
 
   let { children }: { children: Snippet } = $props();
+
+  // ヘッダー中央に出す現在ページ名。ルート id（base path 非依存）から引く。
+  const currentPageTitle = $derived(pageTitle(page.route.id));
 
   // ステージ進行＝ステージ選択モーダル。単純切替は器としてモーダルを使う（将来はページへ昇格）。
   // 現在ステージ名は画面中央上部に出るため、ここは固定ラベルにとどめる。
@@ -37,10 +42,18 @@
   <!-- Skeleton v5 で AppBar は Svelte コンポーネントではなくなったため、素の要素で代替する。
        左＝ブランド表示（クリックでホームへ）、右＝セクション間ナビ。アクション（組む）は画面側に置く。 -->
   <header class="shrink-0 border-b border-gray-400">
-    <div class="flex items-center gap-2 p-1 md:p-2">
+    <div class="relative flex items-center gap-2 p-1 md:p-2">
       <button class="text-sm font-bold hover:opacity-70 md:text-lg" onclick={() => navigateTo("/")}>
         PGM Boy Advance
       </button>
+
+      <!-- 現在ページ名：ヘッダー幅の中央に絶対配置（左ブランド・右ナビの幅に依らず中央に揃える）。
+           クリックを吸わないよう pointer-events-none。ホーム等（空文字）では出さない。 -->
+      {#if currentPageTitle}
+        <span class="pointer-events-none absolute left-1/2 -translate-x-1/2 text-sm font-bold md:text-lg">
+          {currentPageTitle}
+        </span>
+      {/if}
 
       <nav class="ml-auto flex items-center gap-1 text-sm">
         <!-- ステージ進行＝ステージ選択モーダルを開く。選択状態は stageSelection ストアで arena と共有する。 -->
