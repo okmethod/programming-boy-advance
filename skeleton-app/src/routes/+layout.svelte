@@ -3,16 +3,15 @@
   import type { Snippet } from "svelte";
   import { Portal, Toast } from "@skeletonlabs/skeleton-svelte";
   import Icon from "@iconify/svelte";
-  import { resolve } from "$app/paths";
   import { toaster } from "$lib/presentation/utils/toaster";
   import { navigateTo } from "$lib/presentation/utils/navigation";
+  import StageSelectModal from "$lib/presentation/components/progression/StageSelectModal.svelte";
 
   let { children }: { children: Snippet } = $props();
 
-  function handleTop(event: MouseEvent): void {
-    event.preventDefault();
-    navigateTo("/");
-  }
+  // ステージ進行＝ステージ選択モーダル。単純切替は器としてモーダルを使う（将来はページへ昇格）。
+  // 現在ステージ名は画面中央上部に出るため、ここは固定ラベルにとどめる。
+  let stageSelectOpen = $state(false);
 </script>
 
 <svelte:head>
@@ -35,16 +34,36 @@
 </Portal>
 
 <div class="h-screen flex flex-col">
-  <div class="border-b border-gray-400">
-    <!-- Skeleton v5 で AppBar は Svelte コンポーネントではなくなったため、素の要素で代替する -->
-    <div class="p-1 md:p-2 flex items-center">
-      <a href={resolve("")} class="flex items-center" onclick={handleTop}>
-        <div class="text-sm md:text-lg hover:underline">TOP</div>
-      </a>
-    </div>
-  </div>
+  <!-- Skeleton v5 で AppBar は Svelte コンポーネントではなくなったため、素の要素で代替する。
+       左＝ブランド表示（クリックでホームへ）、右＝セクション間ナビ。アクション（組む）は画面側に置く。 -->
+  <header class="shrink-0 border-b border-gray-400">
+    <div class="flex items-center gap-2 p-1 md:p-2">
+      <button class="text-sm font-bold hover:opacity-70 md:text-lg" onclick={() => navigateTo("/")}>
+        PGM Boy Advance
+      </button>
 
-  <div class="w-screen mx-auto overflow-y-auto scrollbar-gutter-stable pb-2">
+      <nav class="ml-auto flex items-center gap-1 text-sm">
+        <!-- ステージ進行＝ステージ選択モーダルを開く。選択状態は stageSelection ストアで arena と共有する。 -->
+        <button
+          class="inline-flex items-center gap-1 rounded px-2 py-1 hover:bg-gray-100"
+          onclick={() => (stageSelectOpen = true)}
+        >
+          <Icon icon="mdi:map-marker-path" class="size-4" /> ステージ選択
+        </button>
+        <button class="inline-flex items-center gap-1 rounded px-2 py-1 hover:bg-gray-100">
+          <Icon icon="mdi:book-open-variant" class="size-4" /> B面解説
+        </button>
+        <!-- レジストリ管理はグローバルナビに置かない。pull（お手本/手持ちイメージ読み込み）は
+             構築の流れの中で起きるため、組むドロワー側に居場所を持つ。 -->
+      </nav>
+    </div>
+  </header>
+
+  <!-- 残り高を埋めるコンテンツ領域。arena は h-full で一画面に収め、books 等は内側でスクロール。 -->
+  <main class="w-screen mx-auto min-h-0 flex-1 overflow-y-auto scrollbar-gutter-stable">
     {@render children()}
-  </div>
+  </main>
 </div>
+
+<!-- ステージ選択モーダル（単純切替）。中身 StageSelectList は将来の進行ページと共通。 -->
+<StageSelectModal open={stageSelectOpen} onClose={() => (stageSelectOpen = false)} />

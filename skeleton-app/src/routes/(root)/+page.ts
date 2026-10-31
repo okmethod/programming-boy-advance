@@ -14,6 +14,11 @@ export interface ContentButtonProps {
 
 const contents: Content[] = [
   {
+    title: "Stage Select",
+    action: "navigate",
+    route: "/stage-select",
+  },
+  {
     title: "Battle Arena",
     action: "navigate",
     route: "/arena",
