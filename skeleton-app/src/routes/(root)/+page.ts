@@ -19,11 +19,6 @@ const contents: Content[] = [
     route: "/arena",
   },
   {
-    title: "PGM Books",
-    action: "navigate",
-    route: "/books",
-  },
-  {
     title: "Github Repository",
     action: "redirect",
     route: GITHUB_REPO_URL,
