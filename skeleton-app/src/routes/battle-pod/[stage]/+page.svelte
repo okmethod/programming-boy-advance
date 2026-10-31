@@ -163,10 +163,7 @@
   </section>
 
   <!-- 下バー：構築ドロワーのトリガー。ドロワーと同じ「下から」に置き、出現場所と一致させる。 -->
-  <button
-    class="inline-flex shrink-0 items-center justify-center gap-1.5 rounded-lg border border-primary-700 bg-primary-700 px-6 py-3 text-base font-bold text-primary-contrast-700 hover:bg-primary-800"
-    onclick={openDrawer}
-  >
+  <button class="action-btn-strong shrink-0 rounded-lg px-6 py-3 text-base font-bold" onclick={openDrawer}>
     <Icon icon="mdi:hammer-wrench" class="size-5" /> プログラミング
   </button>
 </div>
@@ -205,12 +202,7 @@
       <div class="flex h-9 shrink-0 items-center justify-between gap-3">
         <div class="flex items-center gap-1">
           {#snippet railTab(value: "reference" | "sandbox", icon: string, label: string)}
-            <button
-              class="inline-flex items-center gap-1 rounded border px-3 py-1 text-sm {railView === value
-                ? 'border-primary-700 bg-primary-700 text-primary-contrast-700'
-                : 'border-surface-300 bg-surface-100 hover:bg-surface-200'}"
-              onclick={() => (railView = value)}
-            >
+            <button class={railView === value ? "action-btn-strong" : "action-btn"} onclick={() => (railView = value)}>
               <Icon {icon} class="size-4" />
               {label}
             </button>
@@ -218,10 +210,7 @@
           {@render railTab("reference", "mdi:map-marker-outline", "ステージ情報")}
           {@render railTab("sandbox", "mdi:flask-outline", "試運転")}
         </div>
-        <button
-          class="inline-flex items-center gap-1 rounded border border-surface-300 bg-surface-100 px-4 py-2 text-sm hover:bg-surface-200"
-          onclick={() => (drawerOpen = false)}
-        >
+        <button class="action-btn" onclick={() => (drawerOpen = false)}>
           閉じる <Icon icon="mdi:close" class="size-4" />
         </button>
       </div>

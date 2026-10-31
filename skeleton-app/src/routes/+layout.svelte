@@ -57,15 +57,10 @@
 
       <nav class="ml-auto flex items-center gap-1 text-sm">
         <!-- ステージ選択モーダルを開く。選んだステージは URL（/battle-pod/[stage]）が SSoT。 -->
-        <button
-          class="inline-flex items-center gap-1 rounded border border-surface-300 bg-surface-100 px-2 py-1 hover:bg-surface-200"
-          onclick={() => (stageSelectOpen = true)}
-        >
+        <button class="action-btn" onclick={() => (stageSelectOpen = true)}>
           <Icon icon="mdi:map-marker-path" class="size-4" /> ステージ選択
         </button>
-        <button
-          class="inline-flex items-center gap-1 rounded border border-surface-300 bg-surface-100 px-2 py-1 hover:bg-surface-200"
-        >
+        <button class="action-btn">
           <Icon icon="mdi:book-open-variant" class="size-4" /> B面解説
         </button>
         <!-- レジストリ管理はグローバルナビに置かない。pull（お手本/手持ちイメージ読み込み）は

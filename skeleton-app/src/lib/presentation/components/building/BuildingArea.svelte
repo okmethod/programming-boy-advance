@@ -51,12 +51,7 @@
   <div class="flex h-9 shrink-0 items-center gap-4">
     <div class="flex items-center gap-1">
       {#snippet tab(value: "edit" | "code" | "registry", icon: string, label: string)}
-        <button
-          class="inline-flex items-center gap-1 rounded border px-3 py-1 text-sm {mainView === value
-            ? 'border-primary-700 bg-primary-700 text-primary-contrast-700'
-            : 'border-surface-300 bg-surface-100 hover:bg-surface-200'}"
-          onclick={() => (mainView = value)}
-        >
+        <button class={mainView === value ? "action-btn-strong" : "action-btn"} onclick={() => (mainView = value)}>
           <Icon {icon} class="size-4" />
           {label}
         </button>
@@ -97,9 +92,7 @@
           <h3 class="inline-flex items-center gap-1 text-sm font-bold">
             <Icon icon="mdi:package-variant" class="size-4" /> オートマトンイメージ
           </h3>
-          <button
-            class="inline-flex items-center gap-1 rounded border border-surface-300 bg-surface-100 px-3 py-1 text-sm hover:bg-surface-200"
-          >
+          <button class="action-btn">
             <Icon icon="mdi:tray-arrow-up" class="size-4" /> ビルドして保存
           </button>
         </div>
@@ -115,7 +108,7 @@
               <div class="flex shrink-0 gap-2">
                 <!-- pull＝Blockly に展開して編集面へ戻る（唯一の実動作）。 -->
                 <button
-                  class="rounded border border-surface-300 bg-surface-100 px-3 py-1 text-sm hover:bg-surface-200"
+                  class="action-btn"
                   onclick={() => {
                     editor?.load(p.program);
                     mainView = "edit";

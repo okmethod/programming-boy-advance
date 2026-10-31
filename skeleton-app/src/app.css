@@ -49,6 +49,22 @@
   background-color: #0f380f;
 }
 
+/* アプリ標準ボタンをレイアウト＋配色ごと1クラスに集約し、全ボタンで共通利用して一貫性を保つ。
+   用途で2バリアント（通常 / 強調）を使い分ける。見た目はタブ（idle / active）に合わせてある。
+   Skeleton の btn は padding/角丸/hover まで強く上書きして見た目を崩すため採らない。
+   preset-* は bg と文字色をまとめて当てて継承色とズレるため、色は素のトークンにする。
+   hover は色非依存の軽い暗転（brightness）で両バリアント共通に効かせる。 */
+@utility action-btn {
+  /* 通常: 淡緑＋枠（タブ idle と同じ） */
+  @apply inline-flex items-center justify-center gap-1 rounded border px-3 py-1 text-sm transition hover:brightness-95;
+  @apply border-surface-300 bg-surface-100 text-surface-900;
+}
+@utility action-btn-strong {
+  /* 強調/選択中: 濃緑塗り（タブ active と同じ） */
+  @apply inline-flex items-center justify-center gap-1 rounded border px-3 py-1 text-sm transition hover:brightness-95;
+  @apply border-primary-700 bg-primary-700 text-primary-contrast-700;
+}
+
 /* 既定の線色（border）＝濃緑。
    Tailwind v4 の既定 border-color は currentColor のため、
    色指定のない border を濃緑に寄せる。
