@@ -23,9 +23,18 @@
     active: boolean;
     // レジストリ一覧の deploy ボタンを出すか（プレイ面=true／レジストリ管理=false）。
     showDeploy?: boolean;
+    // エディタ/レジストリ面パネルの背景クラス。このエリアを置く親の背景に合わせる。
+    panelClass?: string;
   }
 
-  let { program = $bindable(), cpLimit, presets, active, showDeploy = false }: BuildingAreaProps = $props();
+  let {
+    program = $bindable(),
+    cpLimit,
+    presets,
+    active,
+    showDeploy = false,
+    panelClass = "bg-surface-50", // 既定: 薄緑地
+  }: BuildingAreaProps = $props();
 
   // メイン領域の表示切替。ブロック編集 / エディタ編集（生成コード表示）/ レジストリ。
   let mainView = $state<"edit" | "code" | "registry">("edit");
@@ -76,7 +85,7 @@
       <!-- エディタ編集面（フル領域）：ブロックから生成したコードを表示（読み取り専用）。
            ブロック⇄実コードの対応を見せる B面の芽。テキスト編集の配線は未対応（プレースホルダ）。 -->
       <div
-        class="absolute inset-0 flex flex-col gap-2 overflow-hidden rounded border border-surface-300 bg-surface-50 p-3"
+        class="absolute inset-0 flex flex-col gap-2 overflow-hidden rounded border border-surface-300 {panelClass} p-3"
       >
         <ProgramViewer title="Ally" titleIcon={automatonIcon("ally")} {program} activeId={undefined} fill />
       </div>
@@ -86,7 +95,7 @@
       <!-- レジストリ管理面（フル領域）。今は お手本からの pull だけ動く。
            ビルド＆push・版（v1→v2）・deploy・削除は裏側未実装（何もしないプレースホルダ）。 -->
       <div
-        class="absolute inset-0 flex flex-col gap-3 overflow-auto rounded border border-surface-300 bg-surface-50 p-3"
+        class="absolute inset-0 flex flex-col gap-3 overflow-auto rounded border border-surface-300 {panelClass} p-3"
       >
         <div class="flex shrink-0 items-center justify-between">
           <h3 class="inline-flex items-center gap-1 text-sm font-bold">
