@@ -3,6 +3,7 @@
   // IDE のデバッガ風（行番号ガター＋矢印マーカー＋行ハイライト）に示す（表示専用）。
   // 平坦化とノード id の採番はドメイン（flattenProgram）に委譲し、インタプリタの採番と必ず一致させる。
   import { tick } from "svelte";
+  import type { Snippet } from "svelte";
   import Icon from "@iconify/svelte";
   import type { NodeId, Program } from "$lib/domain";
   import { flattenProgram } from "$lib/domain";
@@ -17,23 +18,23 @@
     activeId?: NodeId;
     // true: 親の高さいっぱいに広げ、長ければ内側でスクロール（エディタ面用）。既定は内容ぴったり。
     fill?: boolean;
-    // 実行行への自動スクロール（追従）トグルを出すか。観戦の自/敵ビューだけで使う。
+    // 実行行への自動スクロール（追従）を有効にするか。観戦の自/敵ビューだけで使う（常時 ON）。
     showFollow?: boolean;
+    // ビューワー右上にオーバーレイする追加操作（例：プログラム/ログ切替）。
+    actions?: Snippet;
   }
 
-  let { title, titleIcon, program, activeId, fill = false, showFollow = false }: ProgramViewerProps = $props();
+  let { title, titleIcon, program, activeId, fill = false, showFollow = false, actions }: ProgramViewerProps = $props();
 
   const lines = $derived(flattenProgram(program));
 
-  // 追従（自動スクロール）の ON/OFF。手で遡って読みたい時にユーザーが切れるようにする。
-  let autoFollow = $state(true);
   let scrollEl = $state<HTMLElement>();
 
-  // activeId が変わるたび、追従 ON なら現在行をスクロール範囲内に収める。
+  // activeId が変わるたび、現在行をスクロール範囲内に収める（追従は常時 ON）。
   // 高速再生でも追いつくよう behavior は即時（smooth にしない）。DOM 反映後に動かすため tick を待つ。
   $effect(() => {
     const id = activeId;
-    if (!showFollow || !autoFollow || id == null || !scrollEl) return;
+    if (!showFollow || id == null || !scrollEl) return;
     tick().then(() => {
       const el = scrollEl?.querySelector<HTMLElement>("[data-active]");
       el?.scrollIntoView({ block: "nearest" });
@@ -48,20 +49,10 @@
       {title}
     </h2>
   {/if}
-  <!-- スクロール領域を relative で包み、追従トグルを内側・右上に absolute 固定（スクロールで流れない）。 -->
+  <!-- スクロール領域を relative で包み、追加操作を右上に absolute 固定（スクロールで流れない）。 -->
   <div class="relative {fill ? 'min-h-0 flex-1' : ''}">
-    {#if showFollow}
-      <!-- 追従トグル：ON で実行行を自動追尾、OFF で手スクロール固定。アイコンのみ（状態は色＋照準の入/切で示す）。 -->
-      <button
-        class="absolute right-1.5 top-1.5 z-10 inline-flex items-center justify-center rounded border p-1 {autoFollow
-          ? 'border-amber-400 bg-amber-400 text-gray-900'
-          : 'border-gray-600 bg-gray-900/70 text-gray-300 hover:bg-gray-800'}"
-        aria-pressed={autoFollow}
-        aria-label={autoFollow ? "実行行の追従：オン" : "実行行の追従：オフ"}
-        title={autoFollow ? "実行行を自動で追いかける（オン）" : "実行行の追従はオフ"}
-        onclick={() => (autoFollow = !autoFollow)}
-        ><Icon icon={autoFollow ? "mdi:crosshairs-gps" : "mdi:crosshairs"} class="size-4" /></button
-      >
+    {#if actions}
+      <div class="absolute right-1.5 top-1.5 z-10 flex items-center gap-1">{@render actions()}</div>
     {/if}
     <div
       bind:this={scrollEl}
@@ -70,7 +61,13 @@
         : 'min-h-24'}"
     >
       {#if lines.length === 0}
-        <div class="px-2 opacity-60">(なし)</div>
+        <!-- 空表示：ログビューと見た目を揃える（中央寄せ・淡色・アイコン付き）。 -->
+        <div
+          class="flex h-full min-h-24 flex-col items-center justify-center gap-1.5 p-4 text-center font-sans text-gray-500"
+        >
+          <Icon icon="mdi:code-braces" class="size-6 opacity-40" />
+          <span>プログラムがありません</span>
+        </div>
       {:else}
         {#each lines as line, i (i)}
           {@const active = line.id !== null && line.id === activeId}

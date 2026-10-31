@@ -1,4 +1,22 @@
-import type { AutomatonId, BattleState } from "$lib/domain";
+import type { AutomatonId, BattleState, CommandName } from "$lib/domain";
+
+/** コマンド（命令）の A面表示ラベル（実行ログなどで使う。ブロックの見た目と揃える）。 */
+export function commandLabel(cmd: CommandName): string {
+  switch (cmd) {
+    case "stepForward":
+      return "前に進む";
+    case "turnRight":
+      return "右を向く";
+    case "turnLeft":
+      return "左を向く";
+    case "attack":
+      return "攻撃する";
+    case "loadAttack":
+      return "負荷攻撃する";
+    case "wait":
+      return "待機する";
+  }
+}
 
 /** オートマトンの陣営・状態を表す mdi アイコン名（盤面・ステータスで共有）。HP0 は撃破顔に切替える。 */
 export function automatonIcon(id: AutomatonId, defeated = false): string {

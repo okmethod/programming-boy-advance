@@ -8,9 +8,19 @@
     state: BattleState;
     // lg=観戦（中央カラムの残り領域にコンテナfitする可変盤面）／sm=参照レールの初期配置（小さい固定セル）。
     size?: "lg" | "sm";
+    // 試運転の的：enemy スロットを「カカシ（stub）」として別アイコンで描く（本物の敵と区別する）。
+    stubEnemy?: boolean;
   }
 
-  let { state, size = "lg" }: BattlePodViewerProps = $props();
+  let { state, size = "lg", stubEnemy = false }: BattlePodViewerProps = $props();
+
+  // stub（テストダブル）のアイコン。サンドボックスに生えた芽（sprout）で、本物の敵（怒りロボ）とは見た目で分ける。
+  const STUB_ICON = "mdi:sprout";
+
+  // セルに描くアイコン名。カカシ指定時は enemy を的アイコンにし、それ以外は通常の陣営アイコン（撃破顔含む）。
+  function iconFor(e: BattleState["automatons"][number]): string {
+    return stubEnemy && e.id === "enemy" ? STUB_ICON : automatonIcon(e.id, e.hp <= 0);
+  }
 
   const cols = $derived(state.grid.width);
   const rows = $derived(state.grid.height);
@@ -64,9 +74,11 @@
       {@const e = automatonAt(state, x, y)}
       <div class="relative flex items-center justify-center rounded border border-gray-300 bg-white">
         {#if e}
+          {@const isStub = stubEnemy && e.id === "enemy"}
           <!-- ロボは中央固定。向きシェブロンだけを向いている側の縁に絶対配置（向き＝位置＋形の二重表現）。 -->
-          <!-- ロボの字形は重心がやや下。矢印（縦中央）との見た目のズレを埋めるため気持ち上へ寄せる。 -->
-          <Icon icon={automatonIcon(e.id, e.hp <= 0)} class="-translate-y-[10%] {iconClass}" />
+          <!-- ロボの字形は重心がやや下。矢印（縦中央）との見た目のズレを埋めるため気持ち上へ寄せる。
+               カカシ（的）は重心に偏りがないので、この補正は掛けない。 -->
+          <Icon icon={iconFor(e)} class="{isStub ? '' : '-translate-y-[10%]'} {iconClass}" />
           <Icon icon={dirChevron(e.dir)} class="absolute text-gray-400 {chevronClass} {dirChevronPos(e.dir)}" />
         {/if}
       </div>
