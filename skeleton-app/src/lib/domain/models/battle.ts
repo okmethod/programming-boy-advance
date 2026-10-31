@@ -1,10 +1,12 @@
 /**
- * バトルポッドの中核モデル（PoC）。
+ * バトルポッドの盤面モデル（PoC）。
  *
  * ドメイン層は純 TypeScript・決定的・不変。
  * Svelte / DOM / 外部データを持ち込まない。
  * 設計の最新断面は docs/design/execution-model.md を正とする。
  */
+
+import type { NodeId } from "./program";
 
 export type Direction = "up" | "down" | "left" | "right";
 
@@ -24,6 +26,10 @@ export interface Automaton {
   readonly pos: Position;
   readonly dir: Direction;
   readonly hp: number;
+  // BP（ビジーポイント＝CPU 負荷）。HP と逆に溜まり、上限で過負荷フリーズする。
+  readonly bp: number;
+  // フリーズ残りクロック数。> 0 の間はコマンドが wait に強制上書きされる。0 で通常行動。
+  readonly freezeRemaining: number;
   // スケジューリング優先度。同クロックでは高い方が先に行動する。
   // PoC では固定値（ally を高くしてプレイヤー先手）。
   readonly priority: number;
@@ -56,30 +62,10 @@ export interface BattleState {
   readonly rngSeed: number;
   readonly logs: readonly DamageLog[];
   readonly winner: Winner | null;
+  // このフレームに至るクロックで各オートマトンが実行した命令ノード（実行ハイライト用の観測記録）。
+  // logs と同じく観戦・検証のための記録。初期フレームには無い。
+  readonly active?: Partial<Record<AutomatonId, NodeId>>;
 }
-
-// --- プログラム（命令木） ---
-// ブロックUI はこの命令木を出力する想定。JS 文字列ではない。
-
-export type CommandName = "stepForward" | "turnRight" | "turnLeft" | "attack" | "wait";
-
-export type SensorName = "wallAhead" | "enemyAhead";
-
-export type Stmt =
-  | { readonly kind: "call"; readonly cmd: CommandName }
-  | { readonly kind: "repeat"; readonly count: number; readonly body: readonly Stmt[] }
-  | { readonly kind: "if"; readonly cond: SensorName; readonly then: readonly Stmt[]; readonly else?: readonly Stmt[] }
-  | { readonly kind: "while"; readonly cond: SensorName; readonly body: readonly Stmt[] };
-
-export type Program = readonly Stmt[];
-
-// --- アクション（インタプリタが1クロックに1つ yield する最小の効果単位） ---
-
-export type Action =
-  | { readonly kind: "move" }
-  | { readonly kind: "turn"; readonly rotation: "left" | "right" }
-  | { readonly kind: "attack" }
-  | { readonly kind: "wait" };
 
 /** 対戦の結果。 */
 export interface BattleResult {

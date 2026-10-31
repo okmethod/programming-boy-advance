@@ -1,0 +1,41 @@
+/**
+ * 命令木（プログラム）の言語モデル（PoC）。
+ *
+ * ブロックUI はこの命令木を出力する想定。JS 文字列ではない。
+ * 文（Stmt）と式（Expr）の二層構造。CQS に沿い、コマンドは状態を変え、クエリ（式）は値を返す。
+ * 盤面モデルには依存しない（この層は「何を命じるか」だけを表す）。
+ */
+
+/** 命令木のノード識別子（プログラム表示の実行ハイライト用）。構造上の pre-order 連番。 */
+export type NodeId = number;
+
+export type CommandName = "stepForward" | "turnRight" | "turnLeft" | "attack" | "loadAttack" | "wait";
+
+export type SensorName = "wallAhead" | "enemyAhead";
+
+// 式（クエリ）＝状態への問い合わせ（CQS の query 層）。値を返し状態は変えない。
+// 今はセンサ読み取りのみ。将来 and/or/not 等を足すならこの Expr を広げる（文/式の二層構造）。
+export type Expr = { readonly kind: "sensor"; readonly sensor: SensorName };
+
+export type Stmt =
+  | { readonly kind: "call"; readonly cmd: CommandName }
+  | { readonly kind: "repeat"; readonly count: number; readonly body: readonly Stmt[] }
+  | { readonly kind: "if"; readonly cond: Expr; readonly then: readonly Stmt[]; readonly else?: readonly Stmt[] }
+  | { readonly kind: "while"; readonly cond: Expr; readonly body: readonly Stmt[] };
+
+export type Program = readonly Stmt[];
+
+// --- アクション（インタプリタが1クロックに1つ yield する最小の効果単位） ---
+
+export type Action =
+  | { readonly kind: "move" }
+  | { readonly kind: "turn"; readonly rotation: "left" | "right" }
+  | { readonly kind: "attack" }
+  | { readonly kind: "loadAttack" }
+  | { readonly kind: "wait" };
+
+/** インタプリタが1クロックに1つ yield する単位。アクションと、それを生んだ命令ノードの id。 */
+export interface Step {
+  readonly action: Action;
+  readonly nodeId: NodeId;
+}
