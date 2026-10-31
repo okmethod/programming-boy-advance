@@ -82,7 +82,7 @@
       {#if log.length === 0}
         <!-- 空表示：プログラムビューと見た目を揃える（中央寄せ・淡色・アイコン付き）。 -->
         <div
-          class="flex h-full min-h-24 flex-col items-center justify-center gap-1.5 p-4 text-center font-sans text-gray-500"
+          class="flex h-full min-h-24 flex-col items-center justify-center gap-1.5 p-4 text-center font-pixel text-gray-500"
         >
           <Icon icon="mdi:console-line" class="size-6 opacity-40" />
           <span>ログがありません</span>
