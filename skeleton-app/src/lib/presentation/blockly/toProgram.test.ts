@@ -11,6 +11,12 @@ function attachTo(parent: Block, inputName: string, child: Block): void {
   parent.getInput(inputName)!.connection!.connect(child.previousConnection!);
 }
 
+// 条件スロット（COND）にクエリ値ブロックを接続する。
+function attachCond(parent: Block, queryType: string): void {
+  const query = parent.workspace.newBlock(queryType);
+  parent.getInput("COND")!.connection!.connect(query.outputConnection!);
+}
+
 describe("workspaceToProgram", () => {
   it("空ワークスペースは空配列", () => {
     const ws = new Blockly.Workspace();
@@ -23,8 +29,8 @@ describe("workspaceToProgram", () => {
     const repeat = ws.newBlock("ctrl_repeat");
     repeat.setFieldValue(3, "COUNT");
 
-    const ifBlock = ws.newBlock("ctrl_if");
-    ifBlock.setFieldValue("enemyAhead", "COND");
+    const ifBlock = ws.newBlock("ctrl_if_else");
+    attachCond(ifBlock, "qry_enemyAhead");
     attachTo(ifBlock, "THEN", ws.newBlock("cmd_attack"));
     attachTo(ifBlock, "ELSE", ws.newBlock("cmd_stepForward"));
 
@@ -40,7 +46,7 @@ describe("workspaceToProgram", () => {
         body: [
           {
             kind: "if",
-            cond: "enemyAhead",
+            cond: { kind: "sensor", sensor: "enemyAhead" },
             then: [{ kind: "call", cmd: "attack" }],
             else: [{ kind: "call", cmd: "stepForward" }],
           },
@@ -53,11 +59,11 @@ describe("workspaceToProgram", () => {
   it("if の else が空なら else を省く", () => {
     const ws = new Blockly.Workspace();
     const ifBlock = ws.newBlock("ctrl_if");
-    ifBlock.setFieldValue("wallAhead", "COND");
+    attachCond(ifBlock, "qry_wallAhead");
     attachTo(ifBlock, "THEN", ws.newBlock("cmd_turnLeft"));
 
     expect(workspaceToProgram(ws)).toEqual([
-      { kind: "if", cond: "wallAhead", then: [{ kind: "call", cmd: "turnLeft" }] },
+      { kind: "if", cond: { kind: "sensor", sensor: "wallAhead" }, then: [{ kind: "call", cmd: "turnLeft" }] },
     ]);
   });
 });

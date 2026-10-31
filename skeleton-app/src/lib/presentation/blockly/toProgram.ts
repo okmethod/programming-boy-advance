@@ -6,8 +6,8 @@
  */
 
 import type { Block, Workspace } from "blockly";
-import type { CommandName, Program, SensorName, Stmt } from "$lib/domain";
-import { COMMAND_PREFIX } from "./blocks";
+import type { CommandName, Expr, Program, SensorName, Stmt } from "$lib/domain";
+import { COMMAND_PREFIX, QUERY_PREFIX } from "./blocks";
 
 /** ワークスペースの先頭連鎖を Program に変換する。空なら空配列。 */
 export function workspaceToProgram(ws: Workspace): Program {
@@ -34,6 +34,16 @@ function inputToStmts(block: Block, inputName: string): Stmt[] {
   return child ? blockChainToStmts(child) : [];
 }
 
+// 条件スロット（COND）に繋がるクエリ値ブロックを Expr に変換する。
+// 未選択（＜クエリ＞プレースホルダや未接続）なら既定センサにフォールバックし Program を有効に保つ（PoC）。
+function condToExpr(block: Block): Expr {
+  const cond = block.getInputTargetBlock("COND");
+  const sensor = cond?.type.startsWith(QUERY_PREFIX)
+    ? (cond.type.slice(QUERY_PREFIX.length) as SensorName)
+    : ("enemyAhead" as SensorName);
+  return { kind: "sensor", sensor };
+}
+
 function blockToStmt(block: Block): Stmt | null {
   const type = block.type;
 
@@ -49,11 +59,18 @@ function blockToStmt(block: Block): Stmt | null {
         count: Number(block.getFieldValue("COUNT")),
         body: inputToStmts(block, "BODY"),
       };
-    case "ctrl_if": {
+    case "ctrl_if":
+      // if のみ（else 無しブロック）。
+      return {
+        kind: "if",
+        cond: condToExpr(block),
+        then: inputToStmts(block, "THEN"),
+      };
+    case "ctrl_if_else": {
       const elseBody = inputToStmts(block, "ELSE");
       return {
         kind: "if",
-        cond: block.getFieldValue("COND") as SensorName,
+        cond: condToExpr(block),
         then: inputToStmts(block, "THEN"),
         // else が空なら省く（命令木を素直に保つ）。
         ...(elseBody.length > 0 ? { else: elseBody } : {}),
@@ -62,7 +79,7 @@ function blockToStmt(block: Block): Stmt | null {
     case "ctrl_while":
       return {
         kind: "while",
-        cond: block.getFieldValue("COND") as SensorName,
+        cond: condToExpr(block),
         body: inputToStmts(block, "BODY"),
       };
     default:
