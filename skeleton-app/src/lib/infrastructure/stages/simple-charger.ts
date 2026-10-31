@@ -11,10 +11,11 @@ import type { Program } from "$lib/domain";
 // まっすぐ突進し続けるだけの敵（攻撃しない）。
 const CHARGER: Program = [{ kind: "repeat", count: 100, body: [{ kind: "call", cmd: "stepForward" }] }];
 
-/** 縦スライス検証用の単一ステージ。F2a では 1 枚だけ用意する。 */
-export const STAGE_01: Stage = {
-  id: "stage-01",
-  label: "ステージ1：突進する敵",
+/** 突進する敵のステージ（攻撃しない単純型）。 */
+export const SIMPLE_CHARGER_STAGE: Stage = {
+  // id は順序非依存の不変ハンドル（URL 同一性）。表示番号は並び順から導き id には載せない。
+  id: "simple-charger",
+  label: "突進する敵",
   goal: "まっすぐ突進してくる敵を、近づいたら攻撃して倒そう",
   enemy: CHARGER,
   enemyLabel: "突進",

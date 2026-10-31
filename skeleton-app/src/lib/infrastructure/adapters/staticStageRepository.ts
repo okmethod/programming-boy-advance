@@ -6,14 +6,14 @@
  */
 
 import type { Stage, StageRepository } from "$lib/application";
-import { STAGE_01 } from "$lib/infrastructure/stages/stage01";
-import { STAGE_02 } from "$lib/infrastructure/stages/stage02";
-import { STAGE_03 } from "$lib/infrastructure/stages/stage03";
+import { SIMPLE_CHARGER_STAGE } from "$lib/infrastructure/stages/simple-charger";
+import { REACTIVE_SENTRY_STAGE } from "$lib/infrastructure/stages/reactive-sentry";
+import { LOAD_DISRUPTOR_STAGE } from "$lib/infrastructure/stages/load-disruptor";
 
 const STAGES: Record<string, Stage> = {
-  [STAGE_01.id]: STAGE_01,
-  [STAGE_02.id]: STAGE_02,
-  [STAGE_03.id]: STAGE_03,
+  [SIMPLE_CHARGER_STAGE.id]: SIMPLE_CHARGER_STAGE,
+  [REACTIVE_SENTRY_STAGE.id]: REACTIVE_SENTRY_STAGE,
+  [LOAD_DISRUPTOR_STAGE.id]: LOAD_DISRUPTOR_STAGE,
 };
 
 export const staticStageRepository: StageRepository = {

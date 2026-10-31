@@ -1,5 +1,5 @@
 /**
- * ステージ3 定義（インフラ層・TS 定数版）。
+ * 妨害する敵のステージ定義（インフラ層・TS 定数版）。
  *
  * 盤面を 4x6 の縦長の矩形にし、敵は近づくと負荷攻撃（DDoS）で過負荷フリーズを狙う妨害型にする。
  * BP（ビジーポイント）管理をプレイヤーに意識させる差分。
@@ -25,9 +25,9 @@ const DISRUPTOR: Program = [
 ];
 
 /** 4x6 の縦長の盤面。上下に対面し、負荷攻撃でフリーズを狙う敵との対戦。 */
-export const STAGE_03: Stage = {
-  id: "stage-03",
-  label: "ステージ3：妨害する敵",
+export const LOAD_DISRUPTOR_STAGE: Stage = {
+  id: "load-disruptor",
+  label: "妨害する敵",
   goal: "負荷攻撃でこちらをフリーズさせてくる敵を、過負荷になる前に倒そう",
   enemy: DISRUPTOR,
   enemyLabel: "妨害",
