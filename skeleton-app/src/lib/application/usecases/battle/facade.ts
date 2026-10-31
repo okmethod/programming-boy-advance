@@ -10,6 +10,7 @@
 import { recordBattle } from "$lib/domain";
 import type { BattleResult, BattleState, Program } from "$lib/domain";
 import type { Stage, StageRepository } from "$lib/application/ports/stageRepository";
+import { sandboxInitial, SANDBOX_MAX_CLOCKS, type SandboxTarget } from "./sandbox";
 
 export interface BattleRun {
   // 観戦・リプレイ用の各クロックの状態列（初期状態を含む）。
@@ -25,6 +26,8 @@ export interface BattleFacade {
   listStages(): readonly Stage[];
   /** 指定ステージでプレイヤーの ally プログラムを対戦させ、観戦フレーム列と結果を返す。 */
   runStage(stageId: string, allyProgram: Program): BattleRun;
+  /** 試運転：相手なし／stub 相手でプログラムを単体実行し、観戦フレーム列を返す（勝敗なし）。 */
+  runSandbox(program: Program, target: SandboxTarget): BattleRun;
 }
 
 /** StageRepository を注入してファサードを組み立てる（合成ルートから呼ぶ）。 */
@@ -42,9 +45,21 @@ export function createBattleFacade(stages: StageRepository): BattleFacade {
     return { frames, result };
   }
 
+  function runSandbox(program: Program, target: SandboxTarget): BattleRun {
+    // 勝敗で打ち切らず、固定盤で ally のプログラムだけを走らせる（stub は反撃しない的）。
+    const frames = recordBattle(sandboxInitial(target), program, [], {
+      maxClocks: SANDBOX_MAX_CLOCKS,
+      ignoreWinner: true,
+    });
+    const finalState = frames[frames.length - 1];
+    const result: BattleResult = { winner: finalState.winner ?? "draw", clocks: finalState.clock, finalState };
+    return { frames, result };
+  }
+
   return {
     getStage: (stageId) => stages.get(stageId),
     listStages: () => stages.list(),
     runStage,
+    runSandbox,
   };
 }

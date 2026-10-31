@@ -43,10 +43,13 @@ export function recordBattle(
   initial: BattleState,
   allyProgram: Program,
   enemyProgram: Program,
-  options?: { maxClocks?: number; params?: BattleParams },
+  options?: { maxClocks?: number; params?: BattleParams; ignoreWinner?: boolean },
 ): readonly BattleState[] {
   const maxClocks = options?.maxClocks ?? DEFAULT_MAX_CLOCKS;
   const params = options?.params ?? BATTLE_PARAMS;
+  // 試運転（サンドボックス）用：勝敗で打ち切らず、停止条件を膠着/最大クロックだけに委ねる。
+  // 敵不在だと decideWinner が即「ally 勝利」を返すため、winner を都度 null に戻して走り続けさせる。
+  const ignoreWinner = options?.ignoreWinner ?? false;
 
   let state = initial;
   // インタプリタは read() で最新状態を参照する。逐次解決なので後手は先手の行動後を見る。
@@ -77,6 +80,8 @@ export function recordBattle(
       const action = step.done ? ({ kind: "wait" } as const) : step.value.action;
       if (!step.done) active[id] = step.value.nodeId;
       state = applyAction(state, id, action, params);
+      // 試運転では決着させない：winner が付いたら null に戻し、以降も applyAction が進むようにする。
+      if (ignoreWinner && state.winner !== null) state = { ...state, winner: null };
     }
     // 全アクション解決後に時間経過（フリーズ減算・BP クールダウン・クロック+1）を適用する。
     state = advanceClock(state, params);

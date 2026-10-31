@@ -88,6 +88,31 @@ describe("runBattle（逐次実行・プレイヤー先手）", () => {
   });
 });
 
+describe("試運転（ignoreWinner：勝敗で打ち切らない）", () => {
+  // 試運転の「何もいない」相当：敵不在の盤で ally だけ走らせる。
+  // 通常は decideWinner が敵不在を即「ally 勝利」とみなし1クロックで止まるが、
+  // ignoreWinner では止めず、ally が前進し続けられること。
+  function allyOnly(width: number): BattleState {
+    return {
+      grid: { width, height: 1, walls: [] },
+      automatons: [automaton("ally", 0, "right", 3)],
+      clock: 0,
+      rngSeed: 0,
+      logs: [],
+      winner: null,
+    };
+  }
+
+  it("敵不在でも即決着せず、ally が前進して盤を進む", () => {
+    const frames = recordBattle(allyOnly(5), NAIVE, [], { ignoreWinner: true });
+    // 決着で打ち切られていない（winner はどのフレームでも付かない）。
+    expect(frames.every((f) => f.winner === null)).toBe(true);
+    // 右端(x=4)まで前進できている＝1クロックで止まっていない。
+    const ally = frames[frames.length - 1].automatons.find((e) => e.id === "ally");
+    expect(ally?.pos.x).toBe(4);
+  });
+});
+
 describe("行動順（priority）", () => {
   const ATTACK: Program = [{ kind: "call", cmd: "attack" }];
 

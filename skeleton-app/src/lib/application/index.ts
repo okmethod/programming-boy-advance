@@ -6,4 +6,5 @@
 
 export { createBattleFacade } from "./usecases/battle/facade";
 export type { BattleFacade, BattleRun } from "./usecases/battle/facade";
+export type { SandboxTarget } from "./usecases/battle/sandbox";
 export type { Stage, StageRepository } from "./ports/stageRepository";
