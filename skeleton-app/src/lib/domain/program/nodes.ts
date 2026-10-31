@@ -14,6 +14,8 @@ function exprToText(expr: Expr): string {
   switch (expr.kind) {
     case "sensor":
       return expr.sensor;
+    case "literal":
+      return String(expr.value);
   }
 }
 

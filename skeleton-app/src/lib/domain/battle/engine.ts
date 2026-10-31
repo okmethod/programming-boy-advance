@@ -71,9 +71,11 @@ export function evalExpr(expr: Expr, state: BattleState, selfId: AutomatonId): b
   switch (expr.kind) {
     case "sensor":
       return evalSensor(expr.sensor, state, selfId);
+    case "literal":
+      return expr.value;
     default: {
-      const _exhaustive: never = expr.kind;
-      throw new Error(`Unknown expr: ${String(_exhaustive)}`);
+      const _exhaustive: never = expr;
+      throw new Error(`Unknown expr: ${JSON.stringify(_exhaustive)}`);
     }
   }
 }

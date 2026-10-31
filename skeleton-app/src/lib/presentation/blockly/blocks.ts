@@ -68,17 +68,6 @@ const COMMAND_DEFS = COMMAND_BLOCKS.map(({ type, label }) => ({
 
 const CONTROL_DEFS = [
   {
-    // くりかえし：回数フィールド + 本体。
-    type: "ctrl_repeat",
-    message0: "くりかえし %1 かい",
-    args0: [{ type: "field_number", name: "COUNT", value: 10, min: 0, precision: 1 }],
-    message1: "%1",
-    args1: [{ type: "input_statement", name: "BODY" }],
-    previousStatement: null,
-    nextStatement: null,
-    colour: COLOUR_CONTROL,
-  },
-  {
     // 条件分岐（if のみ）：条件が真なら then を実行。else は持たない。
     type: "ctrl_if",
     message0: "もし %1 なら",
@@ -99,6 +88,28 @@ const CONTROL_DEFS = [
     message2: "そうでなければ",
     message3: "%1",
     args3: [{ type: "input_statement", name: "ELSE" }],
+    previousStatement: null,
+    nextStatement: null,
+    colour: COLOUR_CONTROL,
+  },
+  {
+    // 無限くりかえし：本体を永遠に繰り返す（while(true) の糖衣）。
+    // 終了は戦闘側のクロック上限（runBattle の maxClocks）に委ねる。
+    type: "ctrl_forever",
+    message0: "ずっとくりかえす",
+    message1: "%1",
+    args1: [{ type: "input_statement", name: "BODY" }],
+    previousStatement: null,
+    nextStatement: null,
+    colour: COLOUR_CONTROL,
+  },
+  {
+    // 回数くりかえし：回数フィールド + 本体。
+    type: "ctrl_repeat",
+    message0: "%1 回くりかえす",
+    args0: [{ type: "field_number", name: "COUNT", value: 10, min: 0, precision: 1 }],
+    message1: "%1",
+    args1: [{ type: "input_statement", name: "BODY" }],
     previousStatement: null,
     nextStatement: null,
     colour: COLOUR_CONTROL,
@@ -164,9 +175,10 @@ export const BLOCK_CATEGORIES: BlockCategory[] = [
     id: "control",
     label: "制御",
     contents: [
-      toFlyoutBlocks(["ctrl_repeat"])[0],
       withCondShadow("ctrl_if"),
       withCondShadow("ctrl_if_else"),
+      toFlyoutBlocks(["ctrl_forever"])[0],
+      toFlyoutBlocks(["ctrl_repeat"])[0],
       withCondShadow("ctrl_while"),
     ],
   },

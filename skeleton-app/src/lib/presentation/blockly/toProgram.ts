@@ -76,6 +76,13 @@ function blockToStmt(block: Block): Stmt | null {
         ...(elseBody.length > 0 ? { else: elseBody } : {}),
       };
     }
+    case "ctrl_forever":
+      // 「ずっとくりかえす」= 条件が常に真の while（案A：Stmt 種別を増やさない糖衣）。
+      return {
+        kind: "while",
+        cond: { kind: "literal", value: true },
+        body: inputToStmts(block, "BODY"),
+      };
     case "ctrl_while":
       return {
         kind: "while",

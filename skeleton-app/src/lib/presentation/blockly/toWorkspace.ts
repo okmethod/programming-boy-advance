@@ -56,6 +56,8 @@ function putInput(state: BlockState, inputName: string, body: Program): void {
 
 // 条件スロット（COND）へクエリ値ブロックを載せる（blockToStmt 側の condToExpr の鏡写し）。
 function putCond(state: BlockState, cond: Expr): void {
+  // literal（ずっとくりかえす由来の while(true)）はクエリブロックを持たないので載せない。
+  if (cond.kind !== "sensor") return;
   const block: BlockState = { type: `${QUERY_PREFIX}${cond.sensor}` };
   state.inputs = { ...state.inputs, COND: { block } };
 }
@@ -79,6 +81,12 @@ function stmtToState(stmt: Stmt): BlockState {
       return state;
     }
     case "while": {
+      // 条件が真リテラルなら「ずっとくりかえす」に戻す（ctrl_forever の鏡写し）。
+      if (stmt.cond.kind === "literal") {
+        const state: BlockState = { type: "ctrl_forever" };
+        putInput(state, "BODY", stmt.body);
+        return state;
+      }
       const state: BlockState = { type: "ctrl_while" };
       putCond(state, stmt.cond);
       putInput(state, "BODY", stmt.body);
