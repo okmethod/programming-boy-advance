@@ -4,8 +4,8 @@
   import { Portal, Toast } from "@skeletonlabs/skeleton-svelte";
   import Icon from "@iconify/svelte";
   import { resolve } from "$app/paths";
-  import { toaster } from "$lib/utils/toaster";
-  import { navigateTo } from "$lib/utils/navigation.client";
+  import { toaster } from "$lib/presentation/utils/toaster";
+  import { navigateTo } from "$lib/presentation/utils/navigation";
 
   let { children }: { children: Snippet } = $props();
 
