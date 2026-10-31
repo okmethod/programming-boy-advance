@@ -19,9 +19,9 @@ const contents: Content[] = [
     route: "/stage-select",
   },
   {
-    title: "Battle Arena",
+    title: "Automaton Sandbox",
     action: "navigate",
-    route: "/arena",
+    route: "/sandbox",
   },
   {
     title: "Github Repository",
