@@ -8,3 +8,4 @@ export { registerBlocks, TOOLBOX, BLOCK_CATEGORIES, type BlockCategory } from ".
 export { registerFixedWidthFlyout } from "./fixedWidthFlyout";
 export { workspaceToProgram } from "./toProgram";
 export { programToWorkspace } from "./toWorkspace";
+export { RETRO_THEME } from "./theme";
