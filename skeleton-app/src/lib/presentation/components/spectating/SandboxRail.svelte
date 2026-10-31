@@ -1,6 +1,6 @@
 <script lang="ts">
   // 試運転レール＝作業台の右側（試運転のみ）。相手なし／stub の固定盤で ally を単体実行し、
-  // 「観る→直す→また観る」を本番対戦と切り離して回す。arena のレールとレジストリ管理ページで共有する。
+  // 「観る→直す→また観る」を本番対戦と切り離して回す。プレイ面のレールとレジストリ管理ページで共有する。
   import Icon from "@iconify/svelte";
   import type { BattleFacade, SandboxTarget } from "$lib/application";
   import type { Program } from "$lib/domain";

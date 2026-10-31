@@ -1,7 +1,7 @@
 <script lang="ts">
   // 構築エリア＝作業台の左側。タブ（ブロック編集/エディタ編集/レジストリ）＋CPゲージ＋
   // Blockly（編集の SSoT・常時マウント）＋エディタ編集面＋レジストリ一覧を内包する。
-  // arena の構築ドロワーとレジストリ管理ページで共有し、ステージ依存の差分は props で吸収する。
+  // プレイ面の構築ドロワーとレジストリ管理ページで共有し、ステージ依存の差分は props で吸収する。
   import { tick } from "svelte";
   import Icon from "@iconify/svelte";
   import { programCost, type Program } from "$lib/domain";
@@ -14,14 +14,14 @@
   interface BuildingAreaProps {
     // 編集中の Program。SSoT は内部 Blockly で、ここから読み取り専用の断面が流れ出る（bindable）。
     program: Program;
-    // CP（作成予算）の上限。arena=stage.capacity／レジストリ管理=既定容量。
+    // CP（作成予算）の上限。プレイ面=stage.capacity／レジストリ管理=既定容量。
     cpLimit: number;
     // レジストリ一覧の元になるお手本プリセット。
     presets: Record<string, AllyPreset>;
     // 表示中か。transform で開くドロワーは ResizeObserver が発火しないため、
     // active かつブロック編集面のとき tick 後に Blockly を明示 resize する。
     active: boolean;
-    // レジストリ一覧の deploy ボタンを出すか（arena=true／レジストリ管理=false）。
+    // レジストリ一覧の deploy ボタンを出すか（プレイ面=true／レジストリ管理=false）。
     showDeploy?: boolean;
   }
 

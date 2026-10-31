@@ -56,7 +56,7 @@
       {/if}
 
       <nav class="ml-auto flex items-center gap-1 text-sm">
-        <!-- ステージ進行＝ステージ選択モーダルを開く。選択状態は stageSelection ストアで arena と共有する。 -->
+        <!-- ステージ進行＝ステージ選択モーダルを開く。選択状態は stageSelection ストアでプレイ面と共有する。 -->
         <button
           class="inline-flex items-center gap-1 rounded border border-gray-300 bg-gray-100 px-2 py-1 hover:bg-gray-200"
           onclick={() => (stageSelectOpen = true)}
@@ -74,7 +74,7 @@
     </div>
   </header>
 
-  <!-- 残り高を埋めるコンテンツ領域。arena は h-full で一画面に収め、books 等は内側でスクロール。 -->
+  <!-- 残り高を埋めるコンテンツ領域。プレイ面は h-full で一画面に収め、books 等は内側でスクロール。 -->
   <main class="w-screen mx-auto min-h-0 flex-1 overflow-y-auto scrollbar-gutter-stable">
     {@render children()}
   </main>
