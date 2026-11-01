@@ -3,7 +3,6 @@
   // IDE のデバッガ風（行番号ガター＋矢印マーカー＋行ハイライト）に示す（表示専用）。
   // 平坦化とノード id の採番はドメイン（flattenProgram）に委譲し、インタプリタの採番と必ず一致させる。
   import { tick } from "svelte";
-  import type { Snippet } from "svelte";
   import Icon from "@iconify/svelte";
   import type { NodeId, Program } from "$lib/domain";
   import { flattenProgram } from "$lib/domain";
@@ -20,8 +19,6 @@
     fill?: boolean;
     // 実行行への自動スクロール（追従）を有効にするか。観戦の自/敵ビューだけで使う（常時 ON）。
     showFollow?: boolean;
-    // ビューワー右上にオーバーレイする追加操作（例：プログラム/ログ切替）。
-    actions?: Snippet;
     // コード枠（本体）に足すクラス。上に別オーバーレイが重なる場所で枠だけ下げる高さ調整に使う。
     bodyClass?: string;
   }
@@ -33,7 +30,6 @@
     activeId,
     fill = false,
     showFollow = false,
-    actions,
     bodyClass = "",
   }: ProgramViewerProps = $props();
 
@@ -60,11 +56,7 @@
       {title}
     </h2>
   {/if}
-  <!-- スクロール領域を relative で包み、追加操作を右上に absolute 固定（スクロールで流れない）。 -->
   <div class="relative {fill ? 'min-h-0 flex-1' : ''} {bodyClass}">
-    {#if actions}
-      <div class="absolute right-1.5 top-1.5 z-10 flex items-center gap-1">{@render actions()}</div>
-    {/if}
     <div
       bind:this={scrollEl}
       class="overflow-auto rounded bg-gray-900 py-1 font-mono text-xs leading-relaxed text-green-300 {fill

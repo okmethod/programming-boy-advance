@@ -34,7 +34,8 @@
     // デプロイ（編集文脈の前進）を出すか（プレイ面=true／サンドボックス=false）。
     showDeploy?: boolean;
     // デプロイ押下＝ビルド済みイメージを対戦に反映する。親（プレイ面）が対戦に流す。
-    onDeploy?: (image: Program) => void;
+    // 観戦側のイメージタイルが同じ表示名を出せるよう、イメージと一緒にローカル名も渡す。
+    onDeploy?: (image: Program, name: string) => void;
     // エディタ/レジストリ面パネルの背景クラス。このエリアを置く親の背景に合わせる。
     panelClass?: string;
   }
@@ -207,7 +208,7 @@
              副作用のある命令なのでビルドと同じ強調色（action-btn-strong）で揃える。 -->
         <button
           class="action-btn-strong disabled:opacity-40"
-          onclick={() => builtImage && onDeploy?.(builtImage)}
+          onclick={() => builtImage && onDeploy?.(builtImage, builtName)}
           disabled={notBuilt}
           title={notBuilt ? "先にビルド" : "ビルド済みイメージを対戦に反映"}
         >

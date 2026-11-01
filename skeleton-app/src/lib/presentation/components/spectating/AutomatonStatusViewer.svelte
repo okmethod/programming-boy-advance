@@ -72,8 +72,8 @@
   }
 </script>
 
-<!-- モニターカード：ダーク地で計測器の雰囲気。カラム幅に追従（陣営カラムの上段に積む）。 -->
-<div class="flex w-full flex-col gap-2 rounded-lg border border-gray-700 bg-gray-900 p-3 text-gray-200">
+<!-- 計測器セクション：陣営カラムの黒パネル上段。枠・背景は親パネルが持つのでここは中身だけ（p-3 で余白）。 -->
+<div class="flex w-full flex-col gap-2 p-3">
   <!-- 見出し：陣営アイコン＋名前。フリーズ中は山場としてバッジを出す。 -->
   <div class="flex items-center gap-1.5">
     <Icon icon={automatonIcon(id, defeated)} class="size-5" />

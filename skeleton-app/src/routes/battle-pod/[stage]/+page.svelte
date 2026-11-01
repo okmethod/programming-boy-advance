@@ -17,6 +17,8 @@
   import SegmentedTabs from "$lib/presentation/components/shared/SegmentedTabs.svelte";
   import ProgramViewer from "$lib/presentation/components/inspecting/ProgramViewer.svelte";
   import ActionLogViewer from "$lib/presentation/components/inspecting/ActionLogViewer.svelte";
+  import ImageViewer from "$lib/presentation/components/inspecting/ImageViewer.svelte";
+  import { registry } from "$lib/presentation/stores/registryStore.svelte";
   import { automatonIcon } from "$lib/presentation/utils/labels";
   import { fade } from "svelte/transition";
 
@@ -43,6 +45,25 @@
   // デプロイ済みイメージ＝対戦に出ている実体（未デプロイは null）。生の編集ではなく、
   // build→deploy の儀式を経たイメージが盤面で戦う。
   let deployedImage = $state<Program | null>(null);
+  // デプロイ済みイメージの表示メタ（イメージタイル用）。名前はデプロイ時に構築エリアから受け取り、
+  // 時刻はデプロイ操作の時刻。イメージ本体（deployedImage）とは別に保持する。
+  let deployedName = $state("");
+  let deployedAt = $state<number | null>(null);
+
+  // 観戦側イメージタイルの表示値。ハッシュはイメージ本体から算出し、構築エリアのカレントタイルと同じ指紋を見せる。
+  const deployedHash = $derived(deployedImage === null ? null : registry.hashOf(deployedImage));
+  const deployedAtLabel = $derived(
+    deployedAt === null
+      ? null
+      : new Date(deployedAt).toLocaleTimeString("ja-JP", { hour: "2-digit", minute: "2-digit" }),
+  );
+  // デプロイ済みと編集側の最新ビルドがズレているか＝「要再デプロイ」（dirty と対称）。
+  // 未デプロイ／未ビルドは対象外。JSON 文字列化比較で十分（dirty 判定と同じ前提）。
+  const deployDrift = $derived(
+    deployedImage !== null && builtImage !== null && JSON.stringify(builtImage) !== JSON.stringify(deployedImage),
+  );
+  // 敵イメージの指紋（ステージ固定・不変）。Ally と同体裁のタイルを対称に出すため算出する。
+  const enemyHash = $derived(registry.hashOf(stage.enemy));
 
   // 対戦はデプロイ済みイメージのみ。未デプロイ（null）なら走らせず、観戦は空状態にする。
   const run = $derived(deployedImage ? facade.runStage(stageId, deployedImage) : null);
@@ -67,10 +88,18 @@
     { value: "sandbox", icon: "mdi:flask-outline", label: "試運転" },
   ];
 
-  // 観戦ビュー下段の表示切替：プログラム（擬似コード）⇄ ログ（行動履歴）。自/敵で独立して切り替える。
-  // トグルはビューワー右上にオーバーレイし、プログラム表示時は ProgramViewer 内蔵の追従トグルの左隣に並ぶ。
-  let allyView = $state<"program" | "log">("program");
-  let enemyView = $state<"program" | "log">("program");
+  // 観戦ビュー下段の表示切替：プログラム（擬似コード）／ログ（行動履歴）／イメージ（正体＝ハッシュ-名前-時刻）。
+  // 自/敵で独立して切り替える。トグルはビューワー右上にオーバーレイする。
+  // イメージは両列に出して左右対称を保つ（Ally=デプロイ済み＋ドリフト、Enemy=ステージ固定）。
+  type ColumnView = "program" | "log" | "image";
+  let allyView = $state<ColumnView>("program");
+  let enemyView = $state<ColumnView>("program");
+  // 列ごとのビュー切替タブ（イメージ＝正体 → プログラム → ログ）。ビューワーの見出しに置く。
+  const columnTabs = [
+    { value: "image", icon: "mdi:cube-outline", label: "イメージ" },
+    { value: "program", icon: "mdi:code-braces", label: "プログラム" },
+    { value: "log", icon: "mdi:table", label: "ログ" },
+  ];
 
   const current = $derived(frames.length > 0 ? frames[Math.min(frameIndex, frames.length - 1)] : null);
   const lastIndex = $derived(Math.max(0, frames.length - 1));
@@ -92,8 +121,11 @@
 
   // デプロイ＝ビルド済みイメージを対戦に出す。別のイメージ（新ハッシュ）を出したら必ず初期状態＝
   // 実行前・先頭へ戻す。観戦の途中で中身をすげ替える“ハック”を防ぎ、毎回クリーンに実行させる。
-  function deployImage(image: Program) {
+  // 名前は構築エリアのカレントイメージ名を受け取り、観戦側タイルで同じ表示名を出す。
+  function deployImage(image: Program, name: string) {
     deployedImage = image;
+    deployedName = name;
+    deployedAt = Date.now();
     frameIndex = 0;
     playing = false;
     started = false;
@@ -118,6 +150,8 @@
   $effect(() => {
     void stageId;
     deployedImage = null;
+    deployedName = "";
+    deployedAt = null;
     frameIndex = 0;
     playing = false;
     started = false;
@@ -134,58 +168,34 @@
        中央=盤面を主役に据える（正方形・迷路化を見越し、横長帯を前提にしない）。
        frameIndex=0 の間は初期配置、再生すると対戦経過が同じ盤面に流れる。 -->
   <section class="flex min-h-0 flex-1 gap-4">
-    <!-- 下段ビュー切替（プログラム ⇄ ログ）。ビューワー右上にオーバーレイし、列ごとに独立。
-         プログラム表示時は ProgramViewer 内蔵の追従トグルの左隣に並ぶ。暗地のオーバーレイ＝アイコンのみ。 -->
-    {#snippet viewToggle(view: "program" | "log", setView: (v: "program" | "log") => void)}
-      <button
-        class="inline-flex items-center justify-center rounded border p-1 {view === 'program'
-          ? 'border-surface-50 bg-surface-50 text-surface-950'
-          : 'border-surface-600 bg-surface-900/70 text-surface-300 hover:bg-surface-800'}"
-        aria-pressed={view === "program"}
-        aria-label="プログラム表示"
-        title="プログラム"
-        onclick={() => setView("program")}
-      >
-        <Icon icon="mdi:code-braces" class="size-4" />
-      </button>
-      <button
-        class="inline-flex items-center justify-center rounded border p-1 {view === 'log'
-          ? 'border-surface-50 bg-surface-50 text-surface-950'
-          : 'border-surface-600 bg-surface-900/70 text-surface-300 hover:bg-surface-800'}"
-        aria-pressed={view === "log"}
-        aria-label="ログ表示"
-        title="ログ"
-        onclick={() => setView("log")}
-      >
-        <Icon icon="mdi:table" class="size-4" />
-      </button>
-    {/snippet}
-    <!-- 列ごとの切替を、ビューワーの actions（右上オーバーレイ）に流し込む無引数スニペット。 -->
-    {#snippet allyActions()}{@render viewToggle(allyView, (v) => (allyView = v))}{/snippet}
-    {#snippet enemyActions()}{@render viewToggle(enemyView, (v) => (enemyView = v))}{/snippet}
-
-    <!-- 左カラム（幅比1）：Ally のステータス（上）＋プログラム/ログ（下・フル高。切替はビューワー右上）。
+    <!-- 左カラム（幅比1）：Ally。ステータス／ビュー切替タブ／本体を1枚の黒パネルに統合する。
          観戦が映すのはデプロイ済みイメージ＝「出撃した実体」。未デプロイなら ally プログラムは空。 -->
-    <div class="flex min-h-0 flex-1 flex-col gap-2">
+    <div
+      class="flex min-h-0 flex-1 flex-col overflow-hidden rounded-lg border border-gray-700 bg-gray-900 text-gray-200"
+    >
       <AutomatonStatusViewer frames={displayFrames} {frameIndex} id="ally" maxHp={maxHpById.ally} />
-      {#if allyView === "program"}
-        <ProgramViewer
-          program={deployedImage ?? []}
-          activeId={current?.active?.ally}
-          fill
-          showFollow
-          actions={allyActions}
-        />
-      {:else}
-        <ActionLogViewer
-          frames={displayFrames}
-          {frameIndex}
-          program={deployedImage ?? []}
-          id="ally"
-          fill
-          actions={allyActions}
-        />
-      {/if}
+      <!-- ビュー切替タブ（ダーク）＝パネル内の区切り兼見出し。イメージ/プログラム/ログ。 -->
+      <div class="flex shrink-0 justify-center border-t border-gray-800 p-2">
+        <SegmentedTabs value={allyView} items={columnTabs} onChange={(v) => (allyView = v as ColumnView)} dense dark />
+      </div>
+      <!-- ビュー本体（パネル下段・フル高。各ビューワーの黒地が親パネルと一体に見える）。 -->
+      <div class="flex min-h-0 flex-1 flex-col p-3 pt-0">
+        {#if allyView === "program"}
+          <ProgramViewer program={deployedImage ?? []} activeId={current?.active?.ally} fill showFollow />
+        {:else if allyView === "log"}
+          <ActionLogViewer frames={displayFrames} {frameIndex} program={deployedImage ?? []} id="ally" fill />
+        {:else}
+          <!-- イメージ＝デプロイ済みの正体。未デプロイは空表示、編集側の最新ビルドとズレたら「要再デプロイ」。 -->
+          <ImageViewer
+            hash={deployedHash}
+            name={deployedName}
+            timeLabel={deployedAtLabel}
+            drift={deployDrift}
+            emptyLabel="未デプロイ"
+            fill
+          />
+        {/if}
+      </div>
     </div>
 
     <!-- 中央カラム（幅比2）：盤面（主役）＋再生コントロール。未デプロイでも初期盤面は出し、
@@ -214,21 +224,30 @@
       {/if}
     </div>
 
-    <!-- 右カラム（幅比1）：Enemy のステータス（上）＋プログラム/ログ（下・フル高。切替はビューワー右上）。 -->
-    <div class="flex min-h-0 flex-1 flex-col gap-2">
+    <!-- 右カラム（幅比1）：Enemy。Ally と同じ黒パネル構成（ステータス／タブ／本体）で左右対称に。 -->
+    <div
+      class="flex min-h-0 flex-1 flex-col overflow-hidden rounded-lg border border-gray-700 bg-gray-900 text-gray-200"
+    >
       <AutomatonStatusViewer frames={displayFrames} {frameIndex} id="enemy" maxHp={maxHpById.enemy} />
-      {#if enemyView === "program"}
-        <ProgramViewer program={stage.enemy} activeId={current?.active?.enemy} fill showFollow actions={enemyActions} />
-      {:else}
-        <ActionLogViewer
-          frames={displayFrames}
-          {frameIndex}
-          program={stage.enemy}
-          id="enemy"
-          fill
-          actions={enemyActions}
+      <div class="flex shrink-0 justify-center border-t border-gray-800 p-2">
+        <SegmentedTabs
+          value={enemyView}
+          items={columnTabs}
+          onChange={(v) => (enemyView = v as ColumnView)}
+          dense
+          dark
         />
-      {/if}
+      </div>
+      <div class="flex min-h-0 flex-1 flex-col p-3 pt-0">
+        {#if enemyView === "program"}
+          <ProgramViewer program={stage.enemy} activeId={current?.active?.enemy} fill showFollow />
+        {:else if enemyView === "log"}
+          <ActionLogViewer frames={displayFrames} {frameIndex} program={stage.enemy} id="enemy" fill />
+        {:else}
+          <!-- イメージ＝ステージ固定の敵の正体（Ally と同体裁で左右対称に）。時刻・ドリフトは持たない。 -->
+          <ImageViewer hash={enemyHash} name={stage.enemyLabel} fill />
+        {/if}
+      </div>
     </div>
   </section>
 

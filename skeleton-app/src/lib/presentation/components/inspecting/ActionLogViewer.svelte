@@ -3,7 +3,6 @@
   // 1ターン1行の表（clock | command | code）で蓄積表示し、再生で末尾へ自動スクロールする。
   // ノード id の採番はドメイン（nodeIdMap）に委譲し、インタプリタ／ProgramViewer と必ず一致させる。
   import { tick } from "svelte";
-  import type { Snippet } from "svelte";
   import Icon from "@iconify/svelte";
   import type { AutomatonId, BattleState, CommandName, Program } from "$lib/domain";
   import { nodeIdMap } from "$lib/domain";
@@ -21,11 +20,9 @@
     id: AutomatonId;
     // true: 親の高さいっぱいに広げ内側でスクロール。既定は内容ぴったり。
     fill?: boolean;
-    // ビューワー右上にオーバーレイする追加操作（例：プログラム/ログ切替）。ProgramViewer と位置を揃える。
-    actions?: Snippet;
   }
 
-  let { title, titleIcon, frames, frameIndex, program, id, fill = false, actions }: ActionLogViewerProps = $props();
+  let { title, titleIcon, frames, frameIndex, program, id, fill = false }: ActionLogViewerProps = $props();
 
   // ノード id → コマンド名の索引（配列）。active は常に call ノードを指す（インタプリタは call でのみ yield）。
   // Map はコンポーネント内で禁止（svelte/prefer-svelte-reactivity）のため、id を添字にした配列で持つ。
@@ -70,11 +67,7 @@
       {title}
     </h2>
   {/if}
-  <!-- スクロール領域を relative で包み、追加操作を右上に absolute 固定（ProgramViewer と同じ位置）。 -->
-  <div class="relative {fill ? 'min-h-0 flex-1' : ''}">
-    {#if actions}
-      <div class="absolute right-1.5 top-1.5 z-10 flex items-center gap-1">{@render actions()}</div>
-    {/if}
+  <div class={fill ? "min-h-0 flex-1" : ""}>
     <div
       bind:this={logEl}
       class="overflow-auto rounded bg-gray-900 text-xs text-gray-200 {fill ? 'h-full' : 'min-h-24'}"
