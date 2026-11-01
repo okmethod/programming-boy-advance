@@ -1,6 +1,8 @@
 <script lang="ts">
-  // 構築エリア＝作業台の左側。タブ（ブロック編集/エディタ編集/レジストリ）＋CPゲージ＋
-  // Blockly（編集の SSoT・常時マウント）＋エディタ編集面＋レジストリ一覧を内包する。
+  // 構築エリア＝作業台の左側。
+  // タブ（ブロック編集/エディタ編集/レジストリ）＋Blockly（編集の SSoT・常時マウント）＋エディタ編集面＋レジストリ一覧を内包する。
+  // CP ゲージは編集時のプログラムに紐づくので枠内ヘッダー帯の中央あたりにオーバーレイする
+  // （ブロック編集/エディタ編集で同位置・レジストリでは隠す）。
   // プレイ面の構築ドロワーとレジストリ管理ページで共有し、ステージ依存の差分は props で吸収する。
   import { tick } from "svelte";
   import Icon from "@iconify/svelte";
@@ -9,6 +11,7 @@
   import { automatonIcon } from "$lib/presentation/utils/labels";
   import BlocklyEditor from "./BlocklyEditor.svelte";
   import CapacityGauge from "./CapacityGauge.svelte";
+  import SegmentedTabs from "$lib/presentation/components/shared/SegmentedTabs.svelte";
   import ProgramViewer from "$lib/presentation/components/inspecting/ProgramViewer.svelte";
 
   interface BuildingAreaProps {
@@ -41,7 +44,13 @@
   }: BuildingAreaProps = $props();
 
   // メイン領域の表示切替。ブロック編集 / エディタ編集（生成コード表示）/ レジストリ。
-  let mainView = $state<"edit" | "code" | "registry">("edit");
+  type MainView = "edit" | "code" | "registry";
+  let mainView = $state<MainView>("edit");
+  const mainTabs = [
+    { value: "edit", icon: "mdi:puzzle-outline", label: "ブロック編集" },
+    { value: "code", icon: "mdi:code-braces", label: "エディタ編集" },
+    { value: "registry", icon: "mdi:package-variant", label: "レジストリ" },
+  ];
 
   // BlocklyEditor への参照。お手本 pull は program を直接書き換えず、この load() を通して
   // Blockly に流し込む（Blockly → Program の順方向で program が更新される）。
@@ -126,20 +135,10 @@
 
 <!-- 構築エリア全体：ヘッダー（タブ＋ゲージ）＋メイン領域を縦に積む。 -->
 <div class="flex min-h-0 flex-1 flex-col gap-3">
-  <!-- ヘッダー行（固定高 h-9＝右レールのヘッダーと高さを揃える）。 -->
-  <div class="flex h-9 shrink-0 items-center gap-4">
-    <div class="flex items-center gap-1">
-      {#snippet tab(value: "edit" | "code" | "registry", icon: string, label: string)}
-        <button class={mainView === value ? "action-btn-strong" : "action-btn"} onclick={() => (mainView = value)}>
-          <Icon {icon} class="size-4" />
-          {label}
-        </button>
-      {/snippet}
-      {@render tab("edit", "mdi:puzzle-outline", "ブロック編集")}
-      {@render tab("code", "mdi:code-braces", "エディタ編集")}
-      {@render tab("registry", "mdi:package-variant", "レジストリ")}
-    </div>
-    <CapacityGauge used={cpUsed} limit={cpLimit} />
+  <!-- ヘッダー行（固定高 h-9＝右レールのヘッダーと高さを揃える）。
+       ビュー切替は副作用のないナビゲーションなので、命令ボタンと質を分けてセグメントタブで表す。 -->
+  <div class="flex h-9 shrink-0 items-center">
+    <SegmentedTabs value={mainView} items={mainTabs} onChange={(v) => (mainView = v as MainView)} />
   </div>
 
   <!-- メイン領域：Blockly は常時マウント＆サイズ確定のまま裏に残し（切替で組みかけが消えない）、
@@ -151,9 +150,20 @@
       <BlocklyEditor bind:this={editor} onProgramChange={(p) => (program = p)} />
     </div>
 
+    <!-- CP ゲージ＝編集中プログラムの作成予算。
+         枠内ヘッダー帯（カテゴリ行の高さ）に合わせ、中央あたりにオーバーレイする。
+         ブロック編集・エディタ編集で同じ位置に出し、レジストリでは隠す。
+         エディタ編集面のコードは暗地（gray-900）なので、淡色チップに載せてどちらの面でも読めるようにする。 -->
+    {#if mainView !== "registry"}
+      <div
+        class="absolute left-1/2 top-2 z-20 -translate-x-1/2 rounded border border-surface-300 bg-surface-50/95 px-2 py-0.5 shadow-sm"
+      >
+        <CapacityGauge used={cpUsed} limit={cpLimit} />
+      </div>
+    {/if}
+
     <!-- ビルド操作：メイン領域の右上にオーバーラップ（全タブ共通）。
          枠は付けずボタンだけを重ね、左のタブ系ボタンと高さを揃える。
-         各タブの中身はそのまま置く（ブロック編集で Blockly に重ねるのと同じ）。
          状態表示は3状態とも「アイコン＋時刻」で骨格を揃える（無=⚙--:--／新鮮=✓時刻／陳腐=↺時刻に戻す）。
          アクションは「ビルド（全タブ共通アンカー）＋ 文脈の前進」。前進は編集=デプロイ／レジストリ=プッシュ。 -->
     <div class="absolute right-2 top-2 z-20 flex items-center gap-2">
@@ -236,7 +246,7 @@
       <div
         class="absolute inset-0 flex flex-col gap-3 overflow-auto rounded border border-surface-300 {panelClass} p-3"
       >
-        <!-- 見出しのみ。プッシュはビルドオーバーレイ側（右上）に集約。右上はその定位置なので空ける。 -->
+        <!-- 見出しのみ。プッシュは枠内ヘッダー側に集約（全タブ共通の定位置）なので、ここには出さない。 -->
         <div class="flex shrink-0 items-center gap-3">
           <h3 class="inline-flex items-center gap-1 text-sm font-bold">
             <Icon icon="mdi:package-variant" class="size-4" /> オートマトンイメージ

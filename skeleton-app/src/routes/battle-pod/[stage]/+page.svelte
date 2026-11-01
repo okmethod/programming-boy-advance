@@ -14,6 +14,7 @@
   import AutomatonStatusViewer from "$lib/presentation/components/spectating/AutomatonStatusViewer.svelte";
   import ResultOverlay from "$lib/presentation/components/spectating/ResultOverlay.svelte";
   import SandboxRail from "$lib/presentation/components/spectating/SandboxRail.svelte";
+  import SegmentedTabs from "$lib/presentation/components/shared/SegmentedTabs.svelte";
   import ProgramViewer from "$lib/presentation/components/inspecting/ProgramViewer.svelte";
   import ActionLogViewer from "$lib/presentation/components/inspecting/ActionLogViewer.svelte";
   import { automatonIcon } from "$lib/presentation/utils/labels";
@@ -59,7 +60,12 @@
 
   // 構築ドロワー右レールの切替：参照（ステージの初期配置＋敵の手の内）⇄ 試運転（相手なし／stub の固定盤サンドボックス）。
   // 試運転は SandboxRail に切り出し済み（レジストリ管理ページと共有）。参照はステージ固有なので inline に残す。
-  let railView = $state<"reference" | "sandbox">("reference");
+  type RailView = "reference" | "sandbox";
+  let railView = $state<RailView>("reference");
+  const railTabs = [
+    { value: "reference", icon: "mdi:map-marker-outline", label: "ステージ情報" },
+    { value: "sandbox", icon: "mdi:flask-outline", label: "試運転" },
+  ];
 
   // 観戦ビュー下段の表示切替：プログラム（擬似コード）⇄ ログ（行動履歴）。自/敵で独立して切り替える。
   // トグルはビューワー右上にオーバーレイし、プログラム表示時は ProgramViewer 内蔵の追従トグルの左隣に並ぶ。
@@ -266,16 +272,7 @@
     <div class="flex min-h-0 w-[26rem] shrink-0 flex-col gap-3">
       <!-- ヘッダー行（固定高 h-9＝構築エリアのヘッダーと高さを揃える）。 -->
       <div class="flex h-9 shrink-0 items-center justify-between gap-3">
-        <div class="flex items-center gap-1">
-          {#snippet railTab(value: "reference" | "sandbox", icon: string, label: string)}
-            <button class={railView === value ? "action-btn-strong" : "action-btn"} onclick={() => (railView = value)}>
-              <Icon {icon} class="size-4" />
-              {label}
-            </button>
-          {/snippet}
-          {@render railTab("reference", "mdi:map-marker-outline", "ステージ情報")}
-          {@render railTab("sandbox", "mdi:flask-outline", "試運転")}
-        </div>
+        <SegmentedTabs value={railView} items={railTabs} onChange={(v) => (railView = v as RailView)} />
         <button class="action-btn" onclick={() => (drawerOpen = false)}>
           閉じる <Icon icon="mdi:close" class="size-4" />
         </button>
