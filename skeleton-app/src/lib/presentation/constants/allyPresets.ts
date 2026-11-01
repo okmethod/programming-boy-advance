@@ -13,14 +13,19 @@ export interface AllyPreset {
   readonly program: Program;
 }
 
-/** 選ぶと Blockly に復元され、そこから allyProgram が再生成される見本一覧。 */
+/** 選ぶと Blockly に復元され、そこから allyProgram が再生成される見本一覧。
+ *  ループは「ずっとくりかえす」（while(true) の糖衣）で表す。対戦は共通クロックの上限で止まる。 */
 export const ALLY_PRESETS: Record<string, AllyPreset> = {
-  counter: {
-    label: "対抗（近づいたら攻撃）",
+  forward: {
+    label: "前進する",
+    program: [{ kind: "while", cond: { kind: "literal", value: true }, body: [{ kind: "call", cmd: "stepForward" }] }],
+  },
+  forwardAttack: {
+    label: "前進し、攻撃する",
     program: [
       {
-        kind: "repeat",
-        count: 100,
+        kind: "while",
+        cond: { kind: "literal", value: true },
         body: [
           {
             kind: "if",
@@ -31,31 +36,6 @@ export const ALLY_PRESETS: Record<string, AllyPreset> = {
         ],
       },
     ],
-  },
-  loadAttack: {
-    label: "負荷攻撃（近づいたら DDoS）",
-    program: [
-      {
-        kind: "repeat",
-        count: 100,
-        body: [
-          {
-            kind: "if",
-            cond: { kind: "sensor", sensor: "enemyAhead" },
-            then: [{ kind: "call", cmd: "loadAttack" }],
-            else: [{ kind: "call", cmd: "stepForward" }],
-          },
-        ],
-      },
-    ],
-  },
-  naive: {
-    label: "素朴（前進するだけ）",
-    program: [{ kind: "repeat", count: 100, body: [{ kind: "call", cmd: "stepForward" }] }],
-  },
-  idle: {
-    label: "待機（動かない）",
-    program: [],
   },
 };
 

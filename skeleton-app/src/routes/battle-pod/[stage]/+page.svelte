@@ -8,7 +8,6 @@
   import { battleFacade } from "$lib/presentation/composition";
   import type { PageData } from "./$types";
   import type { Program } from "$lib/domain";
-  import { ALLY_PRESETS } from "$lib/presentation/constants/allyPresets";
   import BuildingArea from "$lib/presentation/components/building/BuildingArea.svelte";
   import BattlePodViewer from "$lib/presentation/components/spectating/BattlePodViewer.svelte";
   import PlaybackController from "$lib/presentation/components/spectating/PlaybackController.svelte";
@@ -192,14 +191,7 @@
   <div class="flex min-h-0 flex-1 gap-4">
     <!-- 構築エリア：タブ（ブロック編集/エディタ編集/レジストリ）＋CPゲージ＋Blockly 等を内包。
          ドロワーは transform で開くため active にドロワー開閉を渡して開いた後に resize させる。 -->
-    <BuildingArea
-      bind:program={allyProgram}
-      bind:builtImage
-      cpLimit={stage.capacity}
-      presets={ALLY_PRESETS}
-      active={drawerOpen}
-      showDeploy
-    />
+    <BuildingArea bind:program={allyProgram} bind:builtImage cpLimit={stage.capacity} active={drawerOpen} showDeploy />
 
     <!-- 参照レール列：ヘッダー（参照⇄試運転タブ＋閉じる）＋本体（参照は inline／試運転は SandboxRail）。 -->
     <div class="flex min-h-0 w-[26rem] shrink-0 flex-col gap-3">
