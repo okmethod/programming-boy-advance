@@ -22,8 +22,10 @@
     // 表示中か。transform で開くドロワーは ResizeObserver が発火しないため、
     // active かつブロック編集面のとき tick 後に Blockly を明示 resize する。
     active: boolean;
-    // レジストリ一覧の deploy ボタンを出すか（プレイ面=true／レジストリ管理=false）。
+    // デプロイ（編集文脈の前進）を出すか（プレイ面=true／サンドボックス=false）。
     showDeploy?: boolean;
+    // デプロイ押下＝ビルド済みイメージを対戦に反映する。親（プレイ面）が対戦に流す。
+    onDeploy?: (image: Program) => void;
     // エディタ/レジストリ面パネルの背景クラス。このエリアを置く親の背景に合わせる。
     panelClass?: string;
   }
@@ -34,6 +36,7 @@
     cpLimit,
     active,
     showDeploy = false,
+    onDeploy,
     panelClass = "bg-surface-50", // 既定: 薄緑地
   }: BuildingAreaProps = $props();
 
@@ -196,8 +199,13 @@
           <Icon icon="mdi:tray-arrow-up" class="size-4" /> プッシュ
         </button>
       {:else if showDeploy}
-        <!-- 編集文脈の前進＝デプロイ（対戦に反映）。配線は Slice 3（今は無効プレースホルダ）。 -->
-        <button class="action-btn disabled:opacity-40" disabled title="デプロイ（対戦に反映）は準備中">
+        <!-- 編集文脈の前進＝デプロイ（ビルド済みイメージを対戦に反映）。未ビルドは押せない。 -->
+        <button
+          class="action-btn disabled:opacity-40"
+          onclick={() => builtImage && onDeploy?.(builtImage)}
+          disabled={notBuilt}
+          title={notBuilt ? "先にビルド" : "ビルド済みイメージを対戦に反映"}
+        >
           <Icon icon="mdi:rocket-launch-outline" class="size-4" /> デプロイ
         </button>
       {/if}

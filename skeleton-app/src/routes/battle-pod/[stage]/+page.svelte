@@ -37,15 +37,21 @@
   let allyProgram = $state<Program>([]);
 
   // ビルド済みイメージ（試運転の対象・未ビルドは null）。試運転レールが食う。
-  // 対戦（runStage）はまだ生の allyProgram 直結＝デプロイ配線は Slice 3 で差し替える。
   let builtImage = $state<Program | null>(null);
 
-  const run = $derived(facade.runStage(stageId, allyProgram));
-  const frames = $derived(run.frames);
-  const result = $derived(run.result);
+  // デプロイ済みイメージ＝対戦に出ている実体（未デプロイは null）。生の編集ではなく、
+  // build→deploy の儀式を経たイメージが盤面で戦う。
+  let deployedImage = $state<Program | null>(null);
+
+  // 対戦はデプロイ済みイメージのみ。未デプロイ（null）なら走らせず、観戦は空状態にする。
+  const run = $derived(deployedImage ? facade.runStage(stageId, deployedImage) : null);
+  const frames = $derived(run?.frames ?? []);
+  const result = $derived(run?.result ?? null);
 
   let frameIndex = $state(0);
   let playing = $state(false);
+  // デプロイ後に一度でも実行したか。開始前は「実行」ボタン、実行後は再生コントロールを出す。
+  let started = $state(false);
 
   // 盤面・自他プログラムは観戦ビューに常時表示し、構築（構築エリア＋試運転）だけをドロワーに畳む。
   // `観る → 直す → また観る` の文脈を切らさないため（docs/design/ui-screen-design.md）。
@@ -60,19 +66,39 @@
   let allyView = $state<"program" | "log">("program");
   let enemyView = $state<"program" | "log">("program");
 
-  const current = $derived(frames[Math.min(frameIndex, frames.length - 1)]);
-  const lastIndex = $derived(frames.length - 1);
+  const current = $derived(frames.length > 0 ? frames[Math.min(frameIndex, frames.length - 1)] : null);
+  const lastIndex = $derived(Math.max(0, frames.length - 1));
 
-  // 構築ドロワーの参照レールに出す初期盤面（実行前の配置）。地形と初期位置を見て作戦を組むため。
-  const initialFrame = $derived(frames[0]);
+  // 盤面・ステータスは未デプロイでも初期配置を見せる（計画フェーズ＝敵と地形を読む）。
+  // デプロイ前は stage.initial の1フレーム、デプロイ後は実行フレーム列を使う。
+  // 差し替えるのは再生コントローラだけ（盤面・敵プログラムは隠さない）。
+  const displayFrames = $derived(frames.length > 0 ? frames : [stage.initial]);
+  const displayFrame = $derived(displayFrames[Math.min(frameIndex, displayFrames.length - 1)]);
 
   // 決着の表示は「観戦が決着フレームに到達したとき」に出す（結果を先にネタバレしない）。
-  const decided = $derived(current.winner !== null);
+  const decided = $derived(current?.winner != null);
 
   // 構築ドロワーを開く＝直す。編集中は再生を止める（表示する面は構築エリアに委ねる）。
   function openDrawer() {
     drawerOpen = true;
     playing = false;
+  }
+
+  // デプロイ＝ビルド済みイメージを対戦に出す。別のイメージ（新ハッシュ）を出したら必ず初期状態＝
+  // 実行前・先頭へ戻す。観戦の途中で中身をすげ替える“ハック”を防ぎ、毎回クリーンに実行させる。
+  function deployImage(image: Program) {
+    deployedImage = image;
+    frameIndex = 0;
+    playing = false;
+    started = false;
+    drawerOpen = false;
+  }
+
+  // 実行＝対戦の再生を開始する（開始前の大きな一押し）。先頭から再生し、以後は再生コントロールに差し替わる。
+  function startPlayback() {
+    frameIndex = 0;
+    started = true;
+    playing = true;
   }
 
   // 結果オーバーレイの「もう一度」：先頭へ戻して停止状態にする（再生はユーザーが押す。編集は「組む」に委ねる）。
@@ -81,12 +107,14 @@
     playing = false;
   }
 
-  // ally プログラム／ステージが変わったら先頭に戻す（直前の観戦を持ち越さない）。
+  // ステージが変わったら前ステージのデプロイは無効（別ステージの対戦は成立しない）＝初期状態へ戻す。
+  // デプロイ時のリセットは deployImage() が担う（この effect はステージ切替の分だけ）。
   $effect(() => {
-    void allyProgram;
     void stageId;
+    deployedImage = null;
     frameIndex = 0;
     playing = false;
+    started = false;
   });
 </script>
 
@@ -131,36 +159,69 @@
     {#snippet enemyActions()}{@render viewToggle(enemyView, (v) => (enemyView = v))}{/snippet}
 
     <!-- 左カラム（幅比1）：Ally のステータス（上）＋プログラム/ログ（下・フル高。切替はビューワー右上）。
-         実行中は current の active でハイライト。識別は小アイコンのみ（名前はステータス側）。 -->
+         観戦が映すのはデプロイ済みイメージ＝「出撃した実体」。未デプロイなら ally プログラムは空。 -->
     <div class="flex min-h-0 flex-1 flex-col gap-2">
-      <AutomatonStatusViewer {frames} {frameIndex} id="ally" maxHp={maxHpById.ally} />
+      <AutomatonStatusViewer frames={displayFrames} {frameIndex} id="ally" maxHp={maxHpById.ally} />
       {#if allyView === "program"}
-        <ProgramViewer program={allyProgram} activeId={current.active?.ally} fill showFollow actions={allyActions} />
+        <ProgramViewer
+          program={deployedImage ?? []}
+          activeId={current?.active?.ally}
+          fill
+          showFollow
+          actions={allyActions}
+        />
       {:else}
-        <ActionLogViewer {frames} {frameIndex} program={allyProgram} id="ally" fill actions={allyActions} />
+        <ActionLogViewer
+          frames={displayFrames}
+          {frameIndex}
+          program={deployedImage ?? []}
+          id="ally"
+          fill
+          actions={allyActions}
+        />
       {/if}
     </div>
 
-    <!-- 中央カラム（幅比2）：盤面（主役）＋再生コントロール。
-         盤面は残り領域いっぱいの箱に入れ、その中でコンテナfitさせる（8×8・迷路化でもはみ出さない）。 -->
+    <!-- 中央カラム（幅比2）：盤面（主役）＋再生コントロール。未デプロイでも初期盤面は出し、
+         再生コントローラだけをデプロイ促しに差し替える（盤面・敵は隠さない）。 -->
     <div class="flex min-h-0 flex-[2] flex-col items-center gap-2">
       <!-- 盤面エリア（残り高を埋める。決着時は結果オーバーレイを重ねる） -->
       <div class="relative min-h-0 w-full flex-1">
-        <BattlePodViewer state={current} />
-        {#if decided}
+        <!-- 非活性はデプロイ前のみ（まだ自機が出ていない）。デプロイ後は実行前でも活性で描く。 -->
+        <BattlePodViewer state={displayFrame} allyInactive={deployedImage === null} />
+        {#if decided && result}
           <ResultOverlay winner={result.winner} onReplay={replay} />
         {/if}
       </div>
-      <PlaybackController bind:frameIndex bind:playing {lastIndex} clock={current.clock} />
+      {#if !deployedImage}
+        <!-- 未デプロイ：再生する対戦がまだ無いので、コントローラの位置にデプロイ促しを置く。 -->
+        <div class="flex h-9 items-center justify-center gap-1.5 text-xs text-surface-500">
+          <Icon icon="mdi:rocket-launch-outline" class="size-4" /> オートマトンをデプロイして対戦
+        </div>
+      {:else if started}
+        <PlaybackController bind:frameIndex bind:playing {lastIndex} clock={displayFrame.clock} />
+      {:else}
+        <!-- デプロイ済み・開始前：再生コントロールの代わりに「実行」の一押しを出す。 -->
+        <button class="action-btn-strong px-6" onclick={startPlayback}>
+          <Icon icon="mdi:play" class="size-4" /> 実行
+        </button>
+      {/if}
     </div>
 
     <!-- 右カラム（幅比1）：Enemy のステータス（上）＋プログラム/ログ（下・フル高。切替はビューワー右上）。 -->
     <div class="flex min-h-0 flex-1 flex-col gap-2">
-      <AutomatonStatusViewer {frames} {frameIndex} id="enemy" maxHp={maxHpById.enemy} />
+      <AutomatonStatusViewer frames={displayFrames} {frameIndex} id="enemy" maxHp={maxHpById.enemy} />
       {#if enemyView === "program"}
-        <ProgramViewer program={stage.enemy} activeId={current.active?.enemy} fill showFollow actions={enemyActions} />
+        <ProgramViewer program={stage.enemy} activeId={current?.active?.enemy} fill showFollow actions={enemyActions} />
       {:else}
-        <ActionLogViewer {frames} {frameIndex} program={stage.enemy} id="enemy" fill actions={enemyActions} />
+        <ActionLogViewer
+          frames={displayFrames}
+          {frameIndex}
+          program={stage.enemy}
+          id="enemy"
+          fill
+          actions={enemyActions}
+        />
       {/if}
     </div>
   </section>
@@ -191,7 +252,14 @@
   <div class="flex min-h-0 flex-1 gap-4">
     <!-- 構築エリア：タブ（ブロック編集/エディタ編集/レジストリ）＋CPゲージ＋Blockly 等を内包。
          ドロワーは transform で開くため active にドロワー開閉を渡して開いた後に resize させる。 -->
-    <BuildingArea bind:program={allyProgram} bind:builtImage cpLimit={stage.capacity} active={drawerOpen} showDeploy />
+    <BuildingArea
+      bind:program={allyProgram}
+      bind:builtImage
+      cpLimit={stage.capacity}
+      active={drawerOpen}
+      showDeploy
+      onDeploy={deployImage}
+    />
 
     <!-- 参照レール列：ヘッダー（参照⇄試運転タブ＋閉じる）＋本体（参照は inline／試運転は SandboxRail）。 -->
     <div class="flex min-h-0 w-[26rem] shrink-0 flex-col gap-3">
@@ -219,9 +287,10 @@
           <div class="flex h-7 shrink-0 items-center gap-1 text-xs font-bold opacity-70">
             <Icon icon="mdi:view-grid-outline" class="size-4" /> 初期配置
           </div>
-          <!-- 盤面：試運転と同じラッパー（同じ形なら位置が一致する）。 -->
+          <!-- 盤面：試運転と同じラッパー（同じ形なら位置が一致する）。デプロイ前でも見られるよう
+               実行結果ではなくステージ定義の初期状態（stage.initial）を直接描く。 -->
           <div class="flex shrink-0 justify-center">
-            <BattlePodViewer state={initialFrame} size="sm" />
+            <BattlePodViewer state={stage.initial} size="sm" />
           </div>
 
           <ProgramViewer
