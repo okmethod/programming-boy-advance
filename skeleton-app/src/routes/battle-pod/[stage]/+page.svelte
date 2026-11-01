@@ -37,6 +37,10 @@
   // 構築エリア内の Blockly を編集の SSoT とし、allyProgram はそこから流れてくる読み取り専用の断面。
   let allyProgram = $state<Program>([]);
 
+  // ビルド済みイメージ（試運転の対象・未ビルドは null）。試運転レールが食う。
+  // 対戦（runStage）はまだ生の allyProgram 直結＝デプロイ配線は Slice 3 で差し替える。
+  let builtImage = $state<Program | null>(null);
+
   const run = $derived(facade.runStage(stageId, allyProgram));
   const frames = $derived(run.frames);
   const result = $derived(run.result);
@@ -190,6 +194,7 @@
          ドロワーは transform で開くため active にドロワー開閉を渡して開いた後に resize させる。 -->
     <BuildingArea
       bind:program={allyProgram}
+      bind:builtImage
       cpLimit={stage.capacity}
       presets={ALLY_PRESETS}
       active={drawerOpen}
@@ -235,7 +240,7 @@
             fill
           />
         {:else}
-          <SandboxRail program={allyProgram} {facade} />
+          <SandboxRail image={builtImage} {facade} />
         {/if}
       </div>
     </div>

@@ -22,9 +22,20 @@
     showFollow?: boolean;
     // ビューワー右上にオーバーレイする追加操作（例：プログラム/ログ切替）。
     actions?: Snippet;
+    // コード枠（本体）に足すクラス。上に別オーバーレイが重なる場所で枠だけ下げる高さ調整に使う。
+    bodyClass?: string;
   }
 
-  let { title, titleIcon, program, activeId, fill = false, showFollow = false, actions }: ProgramViewerProps = $props();
+  let {
+    title,
+    titleIcon,
+    program,
+    activeId,
+    fill = false,
+    showFollow = false,
+    actions,
+    bodyClass = "",
+  }: ProgramViewerProps = $props();
 
   const lines = $derived(flattenProgram(program));
 
@@ -50,7 +61,7 @@
     </h2>
   {/if}
   <!-- スクロール領域を relative で包み、追加操作を右上に absolute 固定（スクロールで流れない）。 -->
-  <div class="relative {fill ? 'min-h-0 flex-1' : ''}">
+  <div class="relative {fill ? 'min-h-0 flex-1' : ''} {bodyClass}">
     {#if actions}
       <div class="absolute right-1.5 top-1.5 z-10 flex items-center gap-1">{@render actions()}</div>
     {/if}

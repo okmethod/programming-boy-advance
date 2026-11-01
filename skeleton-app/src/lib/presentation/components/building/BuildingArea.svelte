@@ -14,6 +14,9 @@
   interface BuildingAreaProps {
     // 編集中の Program。SSoT は内部 Blockly で、ここから読み取り専用の断面が流れ出る（bindable）。
     program: Program;
+    // ビルド済みイメージ（編集を凍結したスナップショット・不変）。試運転／デプロイの対象。
+    // 未ビルドは null。生の編集とは別物で、ビルドして初めて確定する（bindable）。
+    builtImage: Program | null;
     // CP（作成予算）の上限。プレイ面=stage.capacity／レジストリ管理=既定容量。
     cpLimit: number;
     // レジストリ一覧の元になるお手本プリセット。
@@ -29,6 +32,7 @@
 
   let {
     program = $bindable(),
+    builtImage = $bindable(null),
     cpLimit,
     presets,
     active,
@@ -45,6 +49,31 @@
 
   // CP（作成予算）の消費量。組んだブロック数から算出する（戦闘状態とは独立）。
   const cpUsed = $derived(programCost(program));
+
+  // ビルド状態：未ビルド（null）か、ビルド後に編集が乖離したか（要ビルド）。
+  // 命令木は素直な JSON 構造なので文字列化比較で十分（YAGNI）。
+  const notBuilt = $derived(builtImage === null);
+  const dirty = $derived(builtImage !== null && JSON.stringify(program) !== JSON.stringify(builtImage));
+
+  // 最終ビルド時刻。ビルドが「いつの断面か」を示し、ビルドの実在を体感させる（復元点の目印）。
+  let builtAt = $state<number | null>(null);
+  const builtAtLabel = $derived(
+    builtAt === null ? null : new Date(builtAt).toLocaleTimeString("ja-JP", { hour: "2-digit", minute: "2-digit" }),
+  );
+
+  // ビルド＝現在の編集を凍結してイメージ化（試運転・デプロイの前提）。
+  // $state.snapshot で生編集から切り離した不変スナップショットにする。
+  function build() {
+    builtImage = $state.snapshot(program) as Program;
+    builtAt = Date.now();
+  }
+
+  // 最新ビルドに戻す＝編集中の変更を破棄してビルド断面へ復帰（ビルドを復元点として使う）。
+  // Blockly が編集の SSoT なので load() で流し込み、program が順方向で戻る。
+  function revertToBuilt() {
+    if (builtImage === null) return;
+    editor?.load(builtImage);
+  }
 
   // 表示開始／編集面復帰で Blockly の表示領域が変わる。transform で開くと ResizeObserver が
   // 発火しないため、DOM 反映（tick）後に明示 resize してスクロールバーを正す。
@@ -66,7 +95,7 @@
         </button>
       {/snippet}
       {@render tab("edit", "mdi:puzzle-outline", "ブロック編集")}
-      {@render tab("code", "mdi:keyboard-outline", "エディタ編集")}
+      {@render tab("code", "mdi:code-braces", "エディタ編集")}
       {@render tab("registry", "mdi:package-variant", "レジストリ")}
     </div>
     <CapacityGauge used={cpUsed} limit={cpLimit} />
@@ -81,13 +110,55 @@
       <BlocklyEditor bind:this={editor} onProgramChange={(p) => (program = p)} />
     </div>
 
+    <!-- ビルド操作：メイン領域の右上にオーバーラップ（全タブ共通）。
+         枠は付けずボタンだけを重ね、左のタブ系ボタンと高さを揃える。
+         各タブの中身はそのまま置く（ブロック編集で Blockly に重ねるのと同じ）。
+         状態表示は3状態とも「アイコン＋時刻」で骨格を揃える（無=⚙--:--／新鮮=✓時刻／陳腐=↺時刻に戻す）。 -->
+    <div class="absolute right-2 top-2 z-20 flex items-center gap-2">
+      {#if notBuilt}
+        <!-- 無：まだ焼けていない。時刻はプレースホルダ --:-- で骨格を揃える。 -->
+        <span class="inline-flex items-center gap-1 text-xs text-warning-700">
+          <Icon icon="mdi:progress-wrench" class="size-4" aria-label="未ビルド" />
+          --:--
+        </span>
+      {:else if dirty}
+        <!-- 陳腐：↺＋戻れる時刻＝最新ビルドに戻すボタン。出ている時点で要ビルドが伝わる。 -->
+        <button
+          class="inline-flex items-center gap-1 text-xs text-warning-700 hover:underline"
+          onclick={revertToBuilt}
+          title="最新ビルドに戻す"
+        >
+          <Icon icon="mdi:history" class="size-4" />
+          {builtAtLabel} に戻す
+        </button>
+      {:else}
+        <!-- 新鮮：ビルド済み・最新。ビルド時刻を静的に示す。 -->
+        <span class="inline-flex items-center gap-1 text-xs text-success-700">
+          <Icon icon="mdi:check-circle" class="size-4" aria-label="ビルド済み" />
+          {builtAtLabel}
+        </span>
+      {/if}
+      <button class="action-btn-strong" onclick={build}>
+        <Icon icon="mdi:wrench" class="size-4" /> ビルド
+      </button>
+    </div>
+
     {#if mainView === "code"}
       <!-- エディタ編集面（フル領域）：ブロックから生成したコードを表示（読み取り専用）。
            ブロック⇄実コードの対応を見せる B面の芽。テキスト編集の配線は未対応（プレースホルダ）。 -->
       <div
         class="absolute inset-0 flex flex-col gap-2 overflow-hidden rounded border border-surface-300 {panelClass} p-3"
       >
-        <ProgramViewer title="Ally" titleIcon={automatonIcon("ally")} {program} activeId={undefined} fill />
+        <!-- bodyClass の mt でコード枠だけ下げ、ブロック編集のキャンバス高さに合わせる（Ally 見出しは上のまま）。
+             ブロック編集はパレット行の分だけキャンバスが下がるので、ここの mt を増減して揃える。 -->
+        <ProgramViewer
+          title="Ally"
+          titleIcon={automatonIcon("ally")}
+          {program}
+          activeId={undefined}
+          fill
+          bodyClass="mt-3"
+        />
       </div>
     {/if}
 
@@ -97,7 +168,8 @@
       <div
         class="absolute inset-0 flex flex-col gap-3 overflow-auto rounded border border-surface-300 {panelClass} p-3"
       >
-        <div class="flex shrink-0 items-center justify-between">
+        <!-- ヘッダーは左寄せ：右上はビルドオーバーレイの定位置なので空ける。 -->
+        <div class="flex shrink-0 items-center gap-3">
           <h3 class="inline-flex items-center gap-1 text-sm font-bold">
             <Icon icon="mdi:package-variant" class="size-4" /> オートマトンイメージ
           </h3>

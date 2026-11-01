@@ -11,6 +11,9 @@
 
   // 編集中の Program。SSoT は BuildingArea 内部の Blockly で、ここへ断面が流れてくる。
   let program = $state<Program>([]);
+
+  // ビルド済みイメージ（試運転の対象・未ビルドは null）。ビルドで編集が凍結される。
+  let builtImage = $state<Program | null>(null);
 </script>
 
 <!-- 一画面（iPad 横向き前提・スクロール無し）：ヘッダーの残り高を埋め、はみ出しは内側で吸収。 -->
@@ -19,6 +22,7 @@
   <div class="flex min-h-0 flex-1 gap-4">
     <BuildingArea
       bind:program
+      bind:builtImage
       cpLimit={DEFAULT_AUTOMATON_CAPACITY}
       presets={ALLY_PRESETS}
       active
@@ -28,7 +32,7 @@
     <!-- 試運転レール：プレイ面のレールと同じ枠線で囲う。独立ページなので白地に馴染む bg-white にする。 -->
     <div class="flex min-h-0 w-[26rem] shrink-0 flex-col">
       <div class="flex min-h-0 flex-1 flex-col gap-3 overflow-auto rounded border border-surface-300 bg-white p-3">
-        <SandboxRail {program} facade={battleFacade} />
+        <SandboxRail image={builtImage} facade={battleFacade} />
       </div>
     </div>
   </div>

@@ -9,13 +9,13 @@
   import ActionLogViewer from "$lib/presentation/components/inspecting/ActionLogViewer.svelte";
 
   interface SandboxRailProps {
-    // 試運転対象のプログラム。
-    program: Program;
+    // 試運転対象のビルド済みイメージ（未ビルドは null）。生の編集ではなくビルド断面を食う。
+    image: Program | null;
     // ゲームロジックの単一窓口（runSandbox を呼ぶ）。
     facade: BattleFacade;
   }
 
-  let { program, facade }: SandboxRailProps = $props();
+  let { image, facade }: SandboxRailProps = $props();
 
   // 試運転の的：none=何もいない（移動・制御フローの確認）／stub=攻撃できる的（enemyAhead を
   // 発火させ攻撃反応まで確認）。棚＝ビルド済みイメージだけを共有する方針なので共有ストアに載せない。
@@ -23,14 +23,15 @@
   let frameIndex = $state(0);
   let playing = $state(false);
 
-  const run = $derived(facade.runSandbox(program, sandboxTarget));
-  const frames = $derived(run.frames);
-  const current = $derived(frames[Math.min(frameIndex, frames.length - 1)]);
-  const lastIndex = $derived(frames.length - 1);
+  // 未ビルド（image=null）のときは実行しない。ビルドして初めて試運転できる。
+  const run = $derived(image ? facade.runSandbox(image, sandboxTarget) : null);
+  const frames = $derived(run?.frames ?? []);
+  const current = $derived(frames.length > 0 ? frames[Math.min(frameIndex, frames.length - 1)] : null);
+  const lastIndex = $derived(Math.max(0, frames.length - 1));
 
-  // プログラム／的が変わったら先頭に戻す（直前の試運転を持ち越さない）。
+  // イメージ／的が変わったら先頭に戻す（直前の試運転を持ち越さない）。
   $effect(() => {
-    void program;
+    void image;
     void sandboxTarget;
     frameIndex = 0;
     playing = false;
@@ -66,11 +67,19 @@
   </button>
 </div>
 
-<!-- 盤面：再生は下、残りはログで埋める。 -->
-<div class="flex shrink-0 justify-center">
-  <BattlePodViewer state={current} size="sm" stubEnemy={sandboxTarget === "stub"} />
-</div>
-<PlaybackController bind:frameIndex bind:playing {lastIndex} clock={current.clock} />
+{#if image && current}
+  <!-- 盤面：再生は下、残りはログで埋める。 -->
+  <div class="flex shrink-0 justify-center">
+    <BattlePodViewer state={current} size="sm" stubEnemy={sandboxTarget === "stub"} />
+  </div>
+  <PlaybackController bind:frameIndex bind:playing {lastIndex} clock={current.clock} />
 
-<!-- ログ：先頭〜現在フレームまでの ally の行動を蓄積表示（残り領域を埋める）。再生で末尾へ自動スクロール。 -->
-<ActionLogViewer title="logs" titleIcon="mdi:console-line" {frames} {frameIndex} {program} id="ally" fill />
+  <!-- ログ：先頭〜現在フレームまでの ally の行動を蓄積表示（残り領域を埋める）。再生で末尾へ自動スクロール。 -->
+  <ActionLogViewer title="logs" titleIcon="mdi:console-line" {frames} {frameIndex} program={image} id="ally" fill />
+{:else}
+  <!-- 未ビルド：生の編集は食わない方針なので、ビルドを促して試運転は出さない。 -->
+  <div class="flex flex-1 flex-col items-center justify-center gap-2 text-center text-surface-500">
+    <Icon icon="mdi:cog-outline" class="size-8 opacity-60" />
+    <p class="text-sm">ビルドすると試運転できます</p>
+  </div>
+{/if}
