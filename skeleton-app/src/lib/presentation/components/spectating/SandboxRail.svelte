@@ -38,33 +38,36 @@
   });
 </script>
 
-<!-- ヘッダー（固定高 h-7）：左に「サンドボックス」見出し、右に stub の有無スイッチ。 -->
+<!-- ヘッダー（固定高 h-7）：左に「サンドボックス」見出し、右にサンドバッグの有無スイッチ。 -->
 <div class="flex h-7 shrink-0 items-center justify-between gap-1">
   <span class="flex items-center gap-1 text-xs font-bold opacity-70">
     <Icon icon="mdi:flask-outline" class="size-4" /> サンドボックス
   </span>
-  <!-- stub（攻撃できる的）の有無を切り替えるシンプルなスイッチ。ラベルは stub のみ（OFF＝的なし）。 -->
-  <button
-    type="button"
-    role="switch"
-    aria-checked={sandboxTarget === "stub"}
-    aria-label="stub（的）の有無"
-    class="inline-flex items-center gap-1.5 text-xs"
-    onclick={() => (sandboxTarget = sandboxTarget === "stub" ? "none" : "stub")}
-  >
-    <span class={sandboxTarget === "stub" ? "font-bold text-secondary-700" : "text-surface-400"}>stub</span>
-    <span
-      class="relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors {sandboxTarget === 'stub'
-        ? 'bg-secondary-600'
-        : 'bg-surface-300'}"
+  <!-- サンドバッグ（攻撃できる的）の有無を切り替えるスイッチ。ビルド前は試運転自体が出ないので隠す。 -->
+  {#if image}
+    <button
+      type="button"
+      role="switch"
+      aria-checked={sandboxTarget === "stub"}
+      aria-label="サンドバッグ（的）の有無"
+      class="inline-flex items-center gap-1.5 text-xs"
+      onclick={() => (sandboxTarget = sandboxTarget === "stub" ? "none" : "stub")}
     >
+      <span class={sandboxTarget === "stub" ? "font-bold text-secondary-700" : "text-surface-400"}>サンドバッグ</span>
       <span
-        class="inline-block size-4 rounded-full bg-surface-50 shadow transition-transform {sandboxTarget === 'stub'
-          ? 'translate-x-[18px]'
-          : 'translate-x-0.5'}"
-      ></span>
-    </span>
-  </button>
+        class="relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors {sandboxTarget ===
+        'stub'
+          ? 'bg-secondary-600'
+          : 'bg-surface-300'}"
+      >
+        <span
+          class="inline-block size-4 rounded-full bg-surface-50 shadow transition-transform {sandboxTarget === 'stub'
+            ? 'translate-x-[18px]'
+            : 'translate-x-0.5'}"
+        ></span>
+      </span>
+    </button>
+  {/if}
 </div>
 
 {#if image && current}
@@ -75,7 +78,7 @@
   <PlaybackController bind:frameIndex bind:playing {lastIndex} clock={current.clock} />
 
   <!-- ログ：先頭〜現在フレームまでの ally の行動を蓄積表示（残り領域を埋める）。再生で末尾へ自動スクロール。 -->
-  <ActionLogViewer title="logs" titleIcon="mdi:console-line" {frames} {frameIndex} program={image} id="ally" fill />
+  <ActionLogViewer title="ログ" titleIcon="mdi:console-line" {frames} {frameIndex} program={image} id="ally" fill />
 {:else}
   <!-- 未ビルド：生の編集は食わない方針なので、ビルドを促して試運転は出さない。 -->
   <div class="flex flex-1 flex-col items-center justify-center gap-2 text-center text-surface-500">

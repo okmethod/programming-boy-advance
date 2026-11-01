@@ -220,7 +220,7 @@
         <!-- bodyClass の mt でコード枠だけ下げ、ブロック編集のキャンバス高さに合わせる（Ally 見出しは上のまま）。
              ブロック編集はパレット行の分だけキャンバスが下がるので、ここの mt を増減して揃える。 -->
         <ProgramViewer
-          title="Ally"
+          title="プログラム"
           titleIcon={automatonIcon("ally")}
           {program}
           activeId={undefined}

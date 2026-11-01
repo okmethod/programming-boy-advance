@@ -259,6 +259,7 @@
       active={drawerOpen}
       showDeploy
       onDeploy={deployImage}
+      panelClass="bg-white"
     />
 
     <!-- 参照レール列：ヘッダー（参照⇄試運転タブ＋閉じる）＋本体（参照は inline／試運転は SandboxRail）。 -->
@@ -281,7 +282,7 @@
       </div>
 
       <!-- 本体：参照（ステージの初期配置＋敵の手の内）／試運転（SandboxRail）を同じ枠線で囲う。 -->
-      <div class="flex min-h-0 flex-1 flex-col gap-3 overflow-auto rounded border border-surface-300 bg-surface-50 p-3">
+      <div class="flex min-h-0 flex-1 flex-col gap-3 overflow-auto rounded border border-surface-300 bg-white p-3">
         {#if railView === "reference"}
           <!-- ヘッダー（固定高 h-7・左寄せ）：サンドボックスの見出し行と高さ・位置を揃え、下の盤面を一致させる。 -->
           <div class="flex h-7 shrink-0 items-center gap-1 text-xs font-bold opacity-70">
@@ -294,7 +295,7 @@
           </div>
 
           <ProgramViewer
-            title="Enemy"
+            title="敵プログラム"
             titleIcon={automatonIcon("enemy")}
             program={stage.enemy}
             activeId={undefined}

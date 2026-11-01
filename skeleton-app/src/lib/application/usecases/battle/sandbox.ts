@@ -19,7 +19,7 @@ const SANDBOX_GRID = { width: 7, height: 3, walls: [] } as const;
 
 /** 試運転の初期盤面を組む。stub は反撃しない的（enemy スロットを空プログラムで稼働させる）。 */
 export function sandboxInitial(target: SandboxTarget): BattleState {
-  // 左右対称に配置：ally は左から2番目(x=1)、カカシは右から2番目(x=5)。幅7の中央(x=3)を挟んで向かい合う。
+  // 左右対称に配置：ally は左から2番目(x=1)、サンドバッグは右から2番目(x=5)。幅7の中央(x=3)を挟んで向かい合う。
   const ally: Automaton = {
     id: "ally",
     pos: { x: 1, y: 1 },
