@@ -183,7 +183,7 @@
         {#if allyView === "program"}
           <ProgramViewer program={deployedImage ?? []} activeId={current?.active?.ally} fill showFollow />
         {:else if allyView === "log"}
-          <ActionLogViewer frames={displayFrames} {frameIndex} program={deployedImage ?? []} id="ally" fill />
+          <ActionLogViewer frames={displayFrames} {frameIndex} program={deployedImage ?? []} id="ally" fill compact />
         {:else}
           <!-- イメージ＝デプロイ済みの正体。未デプロイは空表示、編集側の最新ビルドとズレたら「要再デプロイ」。 -->
           <ImageViewer
@@ -242,7 +242,7 @@
         {#if enemyView === "program"}
           <ProgramViewer program={stage.enemy} activeId={current?.active?.enemy} fill showFollow />
         {:else if enemyView === "log"}
-          <ActionLogViewer frames={displayFrames} {frameIndex} program={stage.enemy} id="enemy" fill />
+          <ActionLogViewer frames={displayFrames} {frameIndex} program={stage.enemy} id="enemy" fill compact />
         {:else}
           <!-- イメージ＝ステージ固定の敵の正体（Ally と同体裁で左右対称に）。時刻・ドリフトは持たない。 -->
           <ImageViewer hash={enemyHash} name={stage.enemyLabel} fill />

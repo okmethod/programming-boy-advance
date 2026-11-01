@@ -20,9 +20,20 @@
     id: AutomatonId;
     // true: 親の高さいっぱいに広げ内側でスクロール。既定は内容ぴったり。
     fill?: boolean;
+    // true: 幅の狭い観戦列向け。clock を詰め、code 列を落として clock | command の2列にする。
+    compact?: boolean;
   }
 
-  let { title, titleIcon, frames, frameIndex, program, id, fill = false }: ActionLogViewerProps = $props();
+  let {
+    title,
+    titleIcon,
+    frames,
+    frameIndex,
+    program,
+    id,
+    fill = false,
+    compact = false,
+  }: ActionLogViewerProps = $props();
 
   // ノード id → コマンド名の索引（配列）。active は常に call ノードを指す（インタプリタは call でのみ yield）。
   // Map はコンポーネント内で禁止（svelte/prefer-svelte-reactivity）のため、id を添字にした配列で持つ。
@@ -84,17 +95,17 @@
         <table class="w-full border-collapse text-left">
           <thead class="sticky top-0 bg-gray-900 text-gray-500">
             <tr>
-              <th class="px-3 py-1 font-normal">clock</th>
+              <th class="{compact ? 'w-8 px-2' : 'px-3'} py-1 font-normal">clock</th>
               <th class="px-3 py-1 font-normal">command</th>
-              <th class="px-3 py-1 font-normal">code</th>
+              {#if !compact}<th class="px-3 py-1 font-normal">code</th>{/if}
             </tr>
           </thead>
           <tbody>
             {#each log as line, i (i)}
               <tr class="border-t border-gray-800">
-                <td class="px-3 py-1 tabular-nums text-gray-400">{line.clock}</td>
+                <td class="{compact ? 'px-2' : 'px-3'} py-1 tabular-nums text-gray-400">{line.clock}</td>
                 <td class="px-3 py-1">{line.label}</td>
-                <td class="px-3 py-1 font-mono text-green-300">{line.code}</td>
+                {#if !compact}<td class="px-3 py-1 font-mono text-green-300">{line.code}</td>{/if}
               </tr>
             {/each}
           </tbody>
