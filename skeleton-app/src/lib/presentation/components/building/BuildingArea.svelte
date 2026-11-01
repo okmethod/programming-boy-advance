@@ -1,13 +1,19 @@
 <script lang="ts">
   // 構築エリア＝作業台の左側。
   // タブ（ブロック編集/エディタ編集/レジストリ）＋Blockly（編集の SSoT・常時マウント）＋エディタ編集面＋レジストリ一覧を内包する。
-  // CP ゲージは編集時のプログラムに紐づくので枠内ヘッダー帯の中央あたりにオーバーレイする
-  // （ブロック編集/エディタ編集で同位置・レジストリでは隠す）。
-  // プレイ面の構築ドロワーとレジストリ管理ページで共有し、ステージ依存の差分は props で吸収する。
+  // アクションは「紐づく先」に置く（ライフサイクル 編集→[ビルド]→イメージ→[デプロイ/プッシュ]→ 対戦/保管）:
+  //   - ビルド＋同期状態＋ロールバック＝編集内容に紐づく → 枠内右上オーバーレイ（ブロック/エディタ編集タブの時だけ。レジストリタブは非表示）
+  //     （同期状態は「前回ビルド時に戻す」の有無で示す＝出ている＝ダーティー／無い＝✓ビルド済み）
+  //   - カレントイメージタイル＝現在のビルド断面（ハッシュ-名前-時刻／レジストリ行と同体裁・ダーティーに依らず一定・表示専用）→ ヘッダー行の右（ビュー切替タブとレール側タブの間の空きに右寄せ）
+  //   - デプロイ＝イメージを対戦へ → イメージタイルの直右（プレイ面のみ＝showDeploy）
+  //   - プッシュ/リネーム/削除＝カレントイメージの保管・改名・破棄 → レジストリタブのカレント行（破線の下・保管済み行と対称）
+  //   - CP ゲージ＝編集予算 → 枠内ヘッダー帯の中央オーバーレイ（ブロック/エディタ編集で同位置・レジストリでは隠す）
+  // プレイ面の構築ドロワーとサンドボックスで共有し、ステージ依存・画面依存の差分は props（cpLimit/showDeploy 等）で吸収する。
+  // 2画面の見た目差は「イメージタイル直右のデプロイ1個」だけ＝サンドボックスは showDeploy=false で消える。
   import { tick } from "svelte";
   import Icon from "@iconify/svelte";
   import { programCost, type Program } from "$lib/domain";
-  import { registry } from "$lib/presentation/stores/registryStore.svelte";
+  import { registry, type RegistryImage } from "$lib/presentation/stores/registryStore.svelte";
   import { automatonIcon } from "$lib/presentation/utils/labels";
   import BlocklyEditor from "./BlocklyEditor.svelte";
   import CapacityGauge from "./CapacityGauge.svelte";
@@ -84,20 +90,39 @@
     editor?.load(builtImage);
   }
 
+  // カレントイメージを破棄＝未ビルドに戻す（編集中の Blockly はそのまま・凍結した断面だけ捨てる）。
+  function clearBuiltImage() {
+    builtImage = null;
+    builtAt = null;
+    imageName = "";
+  }
+
   // ビルド済みイメージと同一内容の既存イメージ（あれば＝プッシュ不要）。未ビルドは対象外。
   const duplicate = $derived(builtImage !== null ? registry.duplicateOf(builtImage) : undefined);
   const alreadyPushed = $derived(duplicate !== undefined);
 
-  // プッシュ＝ビルド済みイメージをレジストリに保存。生の編集ではなくビルド断面を積む。
+  // カレントイメージのローカル名。push 前から付けられ、push 時にこの名前で保管する。
+  // 改良（再ビルド）では保持し、別イメージを pull したらその名前へ乗り換える（＝自分のオートマトンに名を付けて育てる）。
+  let imageName = $state("");
+  // タイルに出す表示名。ローカル名 > 同一内容の既存イメージのラベル > プレースホルダ の順で解決する。
+  const builtName = $derived(imageName || duplicate?.label || "未保存イメージ");
+  // カレントイメージの内容ハッシュ（レジストリ行と同じ指紋）。未ビルドは無し。
+  const builtHash = $derived(builtImage === null ? null : registry.hashOf(builtImage));
+
+  // プッシュ＝ビルド済みイメージをレジストリに保存（ローカル名で保管）。生の編集ではなくビルド断面を積む。
   function pushImage() {
     if (builtImage === null) return;
-    registry.push(builtImage);
+    registry.push(builtImage, imageName);
   }
 
-  // プル＝レジストリのイメージを Blockly に展開し編集面へ戻る（改良の起点）。
-  function pullImage(program: Program) {
-    editor?.load(program);
-    mainView = "edit";
+  // プル＝レジストリのイメージをカレント（ビルド断面）に取り込む。改良の起点。
+  // 編集内容（Blockly）も同じ断面に合わせてダーティーを出さず、タブは切り替えない（カレントが更新されるだけ）。
+  // 時刻はイメージの保存時刻（お手本は保存時刻を持たないので現在時刻）。
+  function pullImage(image: RegistryImage) {
+    editor?.load(image.program);
+    builtImage = image.program;
+    builtAt = image.pushedAt ?? Date.now();
+    imageName = image.label;
   }
 
   // リネーム（インライン編集）。編集中の行 id と入力値を持ち、Enter/blur で確定・Escape で取消。
@@ -120,6 +145,22 @@
     node.select();
   }
 
+  // カレントイメージ名のインライン改名（タイル）。ローカル名を編集し、同一内容が push 済み手持ちなら
+  // その登録名も合わせて更新する（一覧と齟齬が出ないように）。入力値は一覧の改名と共有（同時編集はしない）。
+  let tileRenaming = $state(false);
+  function startTileRename() {
+    renameValue = imageName || duplicate?.label || "";
+    tileRenaming = true;
+  }
+  function commitTileRename() {
+    const name = renameValue.trim();
+    if (name.length > 0) {
+      imageName = name;
+      if (duplicate?.source === "user") registry.rename(duplicate.id, name);
+    }
+    tileRenaming = false;
+  }
+
   // プッシュ済みイメージの保存時刻ラベル（版メタデータ）。ビルド時刻と同じ HH:MM 表記。
   function pushedAtLabel(pushedAt: number): string {
     return new Date(pushedAt).toLocaleTimeString("ja-JP", { hour: "2-digit", minute: "2-digit" });
@@ -136,9 +177,44 @@
 <!-- 構築エリア全体：ヘッダー（タブ＋ゲージ）＋メイン領域を縦に積む。 -->
 <div class="flex min-h-0 flex-1 flex-col gap-3">
   <!-- ヘッダー行（固定高 h-9＝右レールのヘッダーと高さを揃える）。
-       ビュー切替は副作用のないナビゲーションなので、命令ボタンと質を分けてセグメントタブで表す。 -->
-  <div class="flex h-9 shrink-0 items-center">
+       左＝ビュー切替タブ（副作用なしのナビ＝セグメントタブ）／右＝カレントイメージタイル＋デプロイ。
+       タイルはビュー切替タブとレール側タブの間の空きに ml-auto で右寄せし、ビルドの鮮度を畳み込む。 -->
+  <div class="flex h-9 shrink-0 items-center gap-3">
     <SegmentedTabs value={mainView} items={mainTabs} onChange={(v) => (mainView = v as MainView)} />
+    <div class="ml-auto flex items-center gap-2">
+      <!-- カレントイメージタイル＝現在のビルド断面の表示（ハッシュ-名前-ビルド時刻／レジストリ行と同体裁・表示専用）。
+           ダーティーに依らず一定。改名・プッシュ・削除はレジストリタブのカレント行に集約する。 -->
+      {#if notBuilt}
+        <span
+          class="inline-flex items-center gap-1.5 rounded border border-dashed border-surface-300 px-2 py-1 text-xs text-surface-400"
+        >
+          <Icon icon="mdi:cube-outline" class="size-4" aria-label="未ビルド" />
+          未ビルド
+        </span>
+      {:else}
+        <span
+          class="inline-flex items-center gap-1.5 rounded border border-surface-300 bg-surface-50 px-2 py-1 text-xs text-surface-700"
+        >
+          <Icon icon="mdi:cube" class="size-4" aria-label="カレントイメージ" />
+          <span class="font-mono opacity-60">{builtHash}</span>
+          <!-- 名前は表示専用。改名はレジストリタブのカレント行に一本化する。 -->
+          <span class="max-w-[8rem] truncate font-medium">{builtName}</span>
+          <span class="opacity-70">{builtAtLabel}</span>
+        </span>
+      {/if}
+      {#if showDeploy}
+        <!-- デプロイ＝ビルド済みイメージを対戦に反映（タイルの直右＝操作対象の真横）。未ビルドは押せない。
+             副作用のある命令なのでビルドと同じ強調色（action-btn-strong）で揃える。 -->
+        <button
+          class="action-btn-strong disabled:opacity-40"
+          onclick={() => builtImage && onDeploy?.(builtImage)}
+          disabled={notBuilt}
+          title={notBuilt ? "先にビルド" : "ビルド済みイメージを対戦に反映"}
+        >
+          <Icon icon="mdi:rocket-launch-outline" class="size-4" /> デプロイ
+        </button>
+      {/if}
+    </div>
   </div>
 
   <!-- メイン領域：Blockly は常時マウント＆サイズ確定のまま裏に残し（切替で組みかけが消えない）、
@@ -151,75 +227,39 @@
     </div>
 
     <!-- CP ゲージ＝編集中プログラムの作成予算。
-         枠内ヘッダー帯（カテゴリ行の高さ）に合わせ、中央あたりにオーバーレイする。
+         枠内のコード/キャンバス領域に収まるよう、ビルドボタンのやや下・右揃え（同じ right）でオーバーレイする。
          ブロック編集・エディタ編集で同じ位置に出し、レジストリでは隠す。
          エディタ編集面のコードは暗地（gray-900）なので、淡色チップに載せてどちらの面でも読めるようにする。 -->
     {#if mainView !== "registry"}
       <div
-        class="absolute left-1/2 top-2 z-20 -translate-x-1/2 rounded border border-surface-300 bg-surface-50/95 px-2 py-0.5 shadow-sm"
+        class="absolute right-5 top-15 z-20 rounded border border-surface-300 bg-surface-50/95 px-2 py-0.5 shadow-sm"
       >
         <CapacityGauge used={cpUsed} limit={cpLimit} />
       </div>
     {/if}
 
-    <!-- ビルド操作：メイン領域の右上にオーバーラップ（全タブ共通）。
-         枠は付けずボタンだけを重ね、左のタブ系ボタンと高さを揃える。
-         状態表示は3状態とも「アイコン＋時刻」で骨格を揃える（無=⚙--:--／新鮮=✓時刻／陳腐=↺時刻に戻す）。
-         アクションは「ビルド（全タブ共通アンカー）＋ 文脈の前進」。前進は編集=デプロイ／レジストリ=プッシュ。 -->
-    <div class="absolute right-2 top-2 z-20 flex items-center gap-2">
-      {#if notBuilt}
-        <!-- 無：まだ焼けていない。時刻はプレースホルダ --:-- で骨格を揃える。 -->
-        <span class="inline-flex items-center gap-1 text-xs text-warning-700">
-          <Icon icon="mdi:progress-wrench" class="size-4" aria-label="未ビルド" />
-          --:--
-        </span>
-      {:else if dirty}
-        <!-- 陳腐：↺＋戻れる時刻＝最新ビルドに戻すボタン。出ている時点で要ビルドが伝わる。 -->
-        <button
-          class="inline-flex items-center gap-1 text-xs text-warning-700 hover:underline"
-          onclick={revertToBuilt}
-          title="最新ビルドに戻す"
-        >
-          <Icon icon="mdi:history" class="size-4" />
-          {builtAtLabel} に戻す
+    <!-- ビルド＋同期操作：メイン領域の右上にオーバーラップ（編集内容に紐づくので枠内）。編集文脈＝ブロック/エディタ編集タブの時だけ出す。
+         レジストリタブは保管の文脈なのでビルド含め非表示（改名/削除/プッシュはカレント行に集約）。
+         ダーティー表示は専用ラベルを持たず、「前回ビルド時に戻す」が出ている事自体がダーティーの合図＝
+         戻すが無い（＝編集とビルド断面が一致）＝「ビルド済み（最新）」を✓で示す。 -->
+    {#if mainView !== "registry"}
+      <div class="absolute right-5 top-2 z-20 flex items-center gap-2">
+        {#if dirty}
+          <!-- ロールバック＝編集を捨てて前回ビルド時へ戻す。この表示自体がダーティーの合図。破壊寄りなので淡色。 -->
+          <button class="action-btn" onclick={revertToBuilt} title="編集を捨てて前回ビルド時に戻す">
+            <Icon icon="mdi:history" class="size-4" /> 前回ビルドに戻す
+          </button>
+        {:else if !notBuilt}
+          <!-- 戻すが無い＝編集とビルド断面が一致＝ビルド済み（最新）。 -->
+          <span class="inline-flex items-center gap-1 text-xs text-success-700">
+            <Icon icon="mdi:check-circle" class="size-4" /> ビルド済み
+          </span>
+        {/if}
+        <button class="action-btn-strong" onclick={build}>
+          <Icon icon="mdi:wrench" class="size-4" /> ビルド
         </button>
-      {:else}
-        <!-- 新鮮：ビルド済み・最新。ビルド時刻を静的に示す。 -->
-        <span class="inline-flex items-center gap-1 text-xs text-success-700">
-          <Icon icon="mdi:check-circle" class="size-4" aria-label="ビルド済み" />
-          {builtAtLabel}
-        </span>
-      {/if}
-      <button class="action-btn-strong" onclick={build}>
-        <Icon icon="mdi:wrench" class="size-4" /> ビルド
-      </button>
-      {#if mainView === "registry"}
-        <!-- レジストリ文脈の前進＝プッシュ（ビルド済みイメージを保管庫へ）。
-             未ビルドは押せない。同一内容が登録済みなら重複を積まないよう無効化する。 -->
-        <button
-          class="action-btn disabled:opacity-40"
-          onclick={pushImage}
-          disabled={notBuilt || alreadyPushed}
-          title={notBuilt
-            ? "先にビルド"
-            : alreadyPushed
-              ? `「${duplicate?.label}」と重複`
-              : "ビルド済みイメージをレジストリに保存"}
-        >
-          <Icon icon="mdi:tray-arrow-up" class="size-4" /> プッシュ
-        </button>
-      {:else if showDeploy}
-        <!-- 編集文脈の前進＝デプロイ（ビルド済みイメージを対戦に反映）。未ビルドは押せない。 -->
-        <button
-          class="action-btn disabled:opacity-40"
-          onclick={() => builtImage && onDeploy?.(builtImage)}
-          disabled={notBuilt}
-          title={notBuilt ? "先にビルド" : "ビルド済みイメージを対戦に反映"}
-        >
-          <Icon icon="mdi:rocket-launch-outline" class="size-4" /> デプロイ
-        </button>
-      {/if}
-    </div>
+      </div>
+    {/if}
 
     {#if mainView === "code"}
       <!-- エディタ編集面（フル領域）：ブロックから生成したコードを表示（読み取り専用）。
@@ -241,70 +281,136 @@
     {/if}
 
     {#if mainView === "registry"}
-      <!-- レジストリ管理面（フル領域）。共有ストア（in-memory）の手持ちを並べ、push/pull/削除を実配線。
-           deploy は Slice 3 まで未配線（プレースホルダ）。永続化・版管理は未着手（store 側に集約）。 -->
+      <!-- レジストリ管理面（フル領域）。上＝保管済み一覧（pull/リネーム/削除）／破線／下＝カレント行（push）。
+           下→上 push・上→下 pull で矢印の向きと空間が一致。永続化・版管理は未着手（store 側に集約）。 -->
       <div
-        class="absolute inset-0 flex flex-col gap-3 overflow-auto rounded border border-surface-300 {panelClass} p-3"
+        class="absolute inset-0 flex flex-col gap-3 overflow-hidden rounded border border-surface-300 {panelClass} p-3"
       >
-        <!-- 見出しのみ。プッシュは枠内ヘッダー側に集約（全タブ共通の定位置）なので、ここには出さない。 -->
+        <!-- 見出し（プッシュは下のカレント行へ移設）。 -->
         <div class="flex shrink-0 items-center gap-3">
           <h3 class="inline-flex items-center gap-1 text-sm font-bold">
             <Icon icon="mdi:package-variant" class="size-4" /> オートマトンイメージ
           </h3>
         </div>
 
-        <!-- 一覧（各行＝オートマトンイメージ）。お手本＝初期シード／手持ち＝プッシュ分（保存時刻つき）。 -->
-        <ul class="flex flex-col gap-2">
-          {#each registry.images as image (image.id)}
-            <li class="flex items-center justify-between gap-3 rounded border border-surface-200 px-3 py-2">
-              <!-- 並び＝ハッシュ（中身の指紋）／名前（タグ）／時刻 or sample。 -->
+        <!-- レジストリ領域（保管済み）：小見出し＋一覧。残り高を占め、一覧だけ内側スクロール。下のカレント行は常に見える。 -->
+        <div class="flex min-h-0 flex-1 flex-col gap-1">
+          <span class="shrink-0 text-xs font-bold text-surface-500">レジストリ</span>
+          <!-- 一覧（各行＝オートマトンイメージ）。お手本＝初期シード／手持ち＝プッシュ分（保存時刻つき）。 -->
+          <ul class="flex min-h-0 flex-1 flex-col gap-2 overflow-auto">
+            {#each registry.images as image (image.id)}
+              <li class="flex h-12 items-center justify-between gap-3 rounded border border-surface-200 px-3">
+                <!-- 並び＝ハッシュ（中身の指紋）／名前（タグ）／時刻 or sample。 -->
+                <div class="flex min-w-0 items-center gap-2">
+                  <span class="font-mono text-xs opacity-60">{image.hash}</span>
+                  {#if renamingId === image.id}
+                    <!-- インライン編集：Enter/blur で確定、Escape で取消。 -->
+                    <input
+                      use:autofocus
+                      bind:value={renameValue}
+                      onblur={commitRename}
+                      onkeydown={(e) => {
+                        if (e.key === "Enter") commitRename();
+                        else if (e.key === "Escape") renamingId = null;
+                      }}
+                      class="w-32 rounded border border-surface-300 px-1 text-sm"
+                    />
+                  {:else}
+                    <span class="truncate text-sm">{image.label}</span>
+                  {/if}
+                  <span class="shrink-0 text-xs opacity-50">
+                    {image.source === "preset" ? "sample" : pushedAtLabel(image.pushedAt ?? 0)}
+                  </span>
+                </div>
+                <div class="flex shrink-0 gap-2">
+                  <!-- プル＝Blockly に展開して編集面へ戻る（改良の起点）。
+                     デプロイは行から出さず、プル→編集→オーバーレイのデプロイに一本化する。 -->
+                  <button class="action-btn-strong" onclick={() => pullImage(image)}>
+                    <Icon icon="mdi:tray-arrow-down" class="size-4" /> プル
+                  </button>
+                  <!-- リネーム＝名前（タグ）の付け替え。中身は不変。sample は読み取り専用なので無効。 -->
+                  <button
+                    class="action-btn disabled:opacity-40"
+                    disabled={image.source === "preset"}
+                    onclick={() => startRename(image.id, image.label)}
+                  >
+                    <Icon icon="mdi:pencil-outline" class="size-4" /> リネーム
+                  </button>
+                  <!-- 削除は手持ちのみ有効。sample（初期シード）は構造的に消せないので無効表示で列を揃える。 -->
+                  <button
+                    class="action-btn disabled:opacity-40"
+                    disabled={image.source === "preset"}
+                    onclick={() => registry.remove(image.id)}
+                  >
+                    <Icon icon="mdi:delete-outline" class="size-4" /> 削除
+                  </button>
+                </div>
+              </li>
+            {/each}
+          </ul>
+        </div>
+
+        <!-- 破線区切り：上＝レジストリ（保管済み）／下＝カレント（これから push する対象）。
+             下→上へプッシュ（⬆）・上→下へプル（⬇）＝矢印の向きと空間配置が一致する。 -->
+        <div class="shrink-0 border-t border-dashed border-surface-300"></div>
+
+        <!-- カレント領域：小見出し＋カレント行。 -->
+        <div class="flex shrink-0 flex-col gap-1">
+          <span class="shrink-0 text-xs font-bold text-surface-500">カレント</span>
+          <!-- 固定高 h-12＝状態（未ビルド／ビルド済み／改名入力中）で縦幅が変わらないよう揃える。
+               中身は items-center で中央寄せ（ボタンや入力の高さに引っ張られない）。 -->
+          <div
+            class="flex h-12 shrink-0 items-center justify-between gap-3 rounded border border-surface-300 bg-surface-50 px-3"
+          >
+            {#if notBuilt}
+              <span class="inline-flex items-center gap-2 text-sm text-surface-400">
+                <Icon icon="mdi:cube-outline" class="size-4" /> 未ビルド
+              </span>
+            {:else}
+              <!-- カレント＝現在のビルド断面。保管済み行と同じ体裁（ハッシュ-名前-時刻）＋対称の操作列。 -->
               <div class="flex min-w-0 items-center gap-2">
-                <span class="font-mono text-xs opacity-60">{image.hash}</span>
-                {#if renamingId === image.id}
-                  <!-- インライン編集：Enter/blur で確定、Escape で取消。 -->
+                <Icon icon="mdi:cube" class="size-4 opacity-70" aria-label="カレント" />
+                <span class="font-mono text-xs opacity-60">{builtHash}</span>
+                {#if tileRenaming}
+                  <!-- インライン改名：Enter/blur で確定・Escape で取消。 -->
                   <input
                     use:autofocus
                     bind:value={renameValue}
-                    onblur={commitRename}
+                    onblur={commitTileRename}
                     onkeydown={(e) => {
-                      if (e.key === "Enter") commitRename();
-                      else if (e.key === "Escape") renamingId = null;
+                      if (e.key === "Enter") commitTileRename();
+                      else if (e.key === "Escape") tileRenaming = false;
                     }}
                     class="w-32 rounded border border-surface-300 px-1 text-sm"
                   />
                 {:else}
-                  <span class="truncate text-sm">{image.label}</span>
+                  <span class="truncate text-sm">{builtName}</span>
                 {/if}
-                <span class="shrink-0 text-xs opacity-50">
-                  {image.source === "preset" ? "sample" : pushedAtLabel(image.pushedAt ?? 0)}
-                </span>
+                <span class="shrink-0 text-xs opacity-50">{builtAtLabel}</span>
               </div>
+              <!-- 操作列：保管済み行（プル/リネーム/削除）と対称に プッシュ/リネーム/削除。 -->
               <div class="flex shrink-0 gap-2">
-                <!-- プル＝Blockly に展開して編集面へ戻る（改良の起点）。
-                     デプロイは行から出さず、プル→編集→オーバーレイのデプロイに一本化する。 -->
-                <button class="action-btn" onclick={() => pullImage(image.program)}>
-                  <Icon icon="mdi:tray-arrow-down" class="size-4" /> プル
-                </button>
-                <!-- リネーム＝名前（タグ）の付け替え。中身は不変。sample は読み取り専用なので無効。 -->
+                <!-- プッシュ＝カレントをレジストリ（上）へ保管。同一内容が登録済みなら重複を積まない。 -->
                 <button
-                  class="action-btn disabled:opacity-40"
-                  disabled={image.source === "preset"}
-                  onclick={() => startRename(image.id, image.label)}
+                  class="action-btn-strong disabled:opacity-40"
+                  onclick={pushImage}
+                  disabled={alreadyPushed}
+                  title={alreadyPushed ? `「${duplicate?.label}」と重複` : "ビルド済みイメージをレジストリに保存"}
                 >
+                  <Icon icon="mdi:tray-arrow-up" class="size-4" /> プッシュ
+                </button>
+                <!-- リネーム＝カレントイメージ名の付け替え（ローカル名。push 済みならレジストリ label も同期）。 -->
+                <button class="action-btn" onclick={startTileRename}>
                   <Icon icon="mdi:pencil-outline" class="size-4" /> リネーム
                 </button>
-                <!-- 削除は手持ちのみ有効。sample（初期シード）は構造的に消せないので無効表示で列を揃える。 -->
-                <button
-                  class="action-btn disabled:opacity-40"
-                  disabled={image.source === "preset"}
-                  onclick={() => registry.remove(image.id)}
-                >
+                <!-- 削除＝カレントイメージを破棄して未ビルドに戻す（編集中の Blockly はそのまま）。 -->
+                <button class="action-btn" onclick={clearBuiltImage} title="カレントイメージを破棄（未ビルドに戻す）">
                   <Icon icon="mdi:delete-outline" class="size-4" /> 削除
                 </button>
               </div>
-            </li>
-          {/each}
-        </ul>
+            {/if}
+          </div>
+        </div>
       </div>
     {/if}
   </div>

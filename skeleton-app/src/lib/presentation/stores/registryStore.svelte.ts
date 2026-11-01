@@ -76,14 +76,22 @@ function createRegistryStore() {
       return findByContent(program);
     },
 
-    /** プッシュ＝ビルド済みイメージをレジストリに保存（手持ちに積む・自動名）。
+    /** 命令木の内容ハッシュ（content fingerprint）。カレントイメージ表示などレジストリ外でも
+     *  同じ指紋を見せるため公開する（レジストリ行の hash と同じ算出）。 */
+    hashOf(program: Program): string {
+      return hashProgram(program);
+    },
+
+    /** プッシュ＝ビルド済みイメージをレジストリに保存（手持ちに積む）。
+     *  label 指定があればその名前で、無ければ自動名（イメージ N）で積む。
      *  同一内容が既にあれば no-op（content-addressable＝同じ中身は二重に積まない）。 */
-    push(program: Program): void {
+    push(program: Program, label?: string): void {
       if (findByContent(program)) return;
       seq += 1;
+      const name = label?.trim() ? label.trim() : `イメージ ${seq}`;
       images.push({
         id: `user:${seq}`,
-        label: `イメージ ${seq}`,
+        label: name,
         program,
         hash: hashProgram(program),
         source: "user",
