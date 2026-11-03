@@ -15,8 +15,7 @@
 - [overview.md](./overview.md) — 世界の全体像（命名規約・実行環境の4層・ユビキタス言語）
 - [auto-battle.md](./auto-battle.md) — オートバトル（戦闘ルール）。勝利条件・HP・BP・撃破・攻撃
 - [program-blocks.md](./program-blocks.md) — プログラムブロック一覧（コマンド・クエリ・制御）。各ブロックの JP↔EN 対応・意味の正
-
-> 以降、詳細仕様などが固まり次第、個別ファイルに分割する。
+- [base-images.md](./base-images.md) — 素質一覧（BaseImage）。系統・バージョン（マイナー/メジャー）の正
 
 ---
 
