@@ -4,14 +4,17 @@
   //   Ally  = デプロイ済みイメージ（デプロイ時刻＋編集側の最新ビルドとズレたら「要再デプロイ」）
   //   Enemy = ステージ固定イメージ（時刻・ドリフト無し）
   // 両列で同じ体裁にして観戦ビューの左右対称を保つ。
-  // 将来ベースイメージ等の情報が増える受け皿（content-addressable の B面の芽）。
+  // ベースイメージ（素質）の情報もここに載せる（content-addressable の B面の芽＝何から作ったか）。
   import Icon from "@iconify/svelte";
+  import { baseImageTag, type BaseImage } from "$lib/domain";
 
   interface ImageViewerProps {
     // 内容ハッシュ（content fingerprint）。null＝イメージ未確定（未デプロイ等）で空表示にする。
     hash: string | null;
     // 表示名（タグ）。
     name: string;
+    // 土台にした素質（系統×版）。持たない対象では省略。
+    baseImage?: BaseImage | null;
     // 確定時刻のラベル（デプロイ時刻）。持たない対象（ステージ固定の敵）は省略。
     timeLabel?: string | null;
     // 編集側の最新ビルドとズレているか＝「要再デプロイ」。Ally のみ。
@@ -26,6 +29,7 @@
   let {
     hash,
     name,
+    baseImage = null,
     timeLabel = null,
     drift = false,
     emptyLabel = "未デプロイ",
@@ -62,6 +66,13 @@
           </div>
           <div class="flex items-center gap-3 text-xs text-gray-400">
             <span class="font-mono">{hash}</span>
+            {#if baseImage}
+              <!-- 素質＝何から作ったか（FROM）。アイコン＋版タグで系統を示す。 -->
+              <span class="inline-flex items-center gap-1" title="ベースイメージ（素質）">
+                <Icon icon={baseImage.icon} class="size-3.5 text-emerald-400" />
+                <span class="font-mono">{baseImageTag(baseImage)}</span>
+              </span>
+            {/if}
             {#if timeLabel}
               <span class="inline-flex items-center gap-1">
                 <Icon icon="mdi:clock-outline" class="size-3.5" />{timeLabel}

@@ -12,7 +12,8 @@
  * 当面はプッシュ＝自動名でフラットに積むだけ（docs/design/ui-screen-design.md）。
  */
 
-import type { Program } from "$lib/domain";
+import type { BaseImage, Program } from "$lib/domain";
+import { DEFAULT_BASE_IMAGE } from "$lib/domain";
 import { ALLY_PRESETS } from "$lib/presentation/constants/allyPresets";
 
 /** レジストリに並ぶオートマトンイメージ（ビルド済みの保管単位）。 */
@@ -22,6 +23,9 @@ export interface RegistryImage {
   readonly program: Program;
   // 中身の指紋（A面に名前と並べて見せる短いハッシュ）。name＝タグ、hash＝中身の識別。
   readonly hash: string;
+  // 土台にした素質（系統×版）。素質選択が未実装の間は既定（turtlogo）で固定。
+  // 将来の素質選択ではここに選んだ素質が記録される（[[sotai-baseimage-plan]] Phase 3）。
+  readonly baseImage: BaseImage;
   // お手本（初期シード・読み取り専用）か、ユーザがプッシュした手持ちか。
   readonly source: "preset" | "user";
   // プッシュ日時（手持ちのみ）。お手本は null。版メタデータとして一覧に出す。
@@ -48,6 +52,7 @@ function seedImages(): RegistryImage[] {
     label: preset.label,
     program: preset.program,
     hash: hashProgram(preset.program),
+    baseImage: DEFAULT_BASE_IMAGE,
     source: "preset",
     pushedAt: null,
   }));
@@ -84,8 +89,9 @@ function createRegistryStore() {
 
     /** プッシュ＝ビルド済みイメージをレジストリに保存（手持ちに積む）。
      *  label 指定があればその名前で、無ければ自動名（イメージ N）で積む。
+     *  baseImage はビルドに使った素質（既定はフル機能の v2.0）。
      *  同一内容が既にあれば no-op（content-addressable＝同じ中身は二重に積まない）。 */
-    push(program: Program, label?: string): void {
+    push(program: Program, label?: string, baseImage: BaseImage = DEFAULT_BASE_IMAGE): void {
       if (findByContent(program)) return;
       seq += 1;
       const name = label?.trim() ? label.trim() : `イメージ ${seq}`;
@@ -94,6 +100,7 @@ function createRegistryStore() {
         label: name,
         program,
         hash: hashProgram(program),
+        baseImage,
         source: "user",
         pushedAt: Date.now(),
       });

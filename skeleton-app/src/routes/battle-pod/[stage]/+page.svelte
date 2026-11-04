@@ -8,6 +8,7 @@
   import { battleFacade } from "$lib/presentation/composition";
   import type { PageData } from "./$types";
   import type { Program } from "$lib/domain";
+  import { DEFAULT_BASE_IMAGE } from "$lib/domain";
   import BuildingArea from "$lib/presentation/components/building/BuildingArea.svelte";
   import BattlePodViewer from "$lib/presentation/components/spectating/BattlePodViewer.svelte";
   import PlaybackController from "$lib/presentation/components/spectating/PlaybackController.svelte";
@@ -189,6 +190,7 @@
           <ImageViewer
             hash={deployedHash}
             name={deployedName}
+            baseImage={DEFAULT_BASE_IMAGE}
             timeLabel={deployedAtLabel}
             drift={deployDrift}
             emptyLabel="未デプロイ"
@@ -245,7 +247,7 @@
           <ActionLogViewer frames={displayFrames} {frameIndex} program={stage.enemy} id="enemy" fill compact />
         {:else}
           <!-- イメージ＝ステージ固定の敵の正体（Ally と同体裁で左右対称に）。時刻・ドリフトは持たない。 -->
-          <ImageViewer hash={enemyHash} name={stage.enemyLabel} fill />
+          <ImageViewer hash={enemyHash} name={stage.enemyLabel} baseImage={DEFAULT_BASE_IMAGE} fill />
         {/if}
       </div>
     </div>
