@@ -9,6 +9,7 @@
  */
 
 import * as Blockly from "blockly";
+import type { BaseImage, ControlName } from "$lib/domain";
 
 // 配色（Blockly の HSV 色相）。コマンド=緑系 / クエリ=青系 / 制御=橙系。
 const COLOUR_COMMAND = 160;
@@ -162,30 +163,35 @@ export interface BlockCategory {
   readonly contents: FlyoutBlock[];
 }
 
+// 素質の付与する制御構文（Stmt.kind 粒度）から、対応するパレットブロック群への写像。
+// 1つの制御種が複数のパレットブロックに展開される（if=もし/もし〜でなければ、repeat=ずっと/N回、while=〜の間）。
+// if/while は条件スロットにクエリを差す穴（＜クエリ＞shadow）付きで出す。
+const CONTROL_BLOCKS: Record<ControlName, FlyoutBlock[]> = {
+  if: [withCondShadow("ctrl_if"), withCondShadow("ctrl_if_else")],
+  repeat: [...toFlyoutBlocks(["ctrl_forever", "ctrl_repeat"])],
+  while: [withCondShadow("ctrl_while")],
+};
+
 /**
- * ブロックパレットのカテゴリ定義（コマンド / クエリ / 制御の3ファミリー＝CQS）。
+ * 素質（BaseImage）の付与命令セットからパレットのカテゴリを生成する（コマンド/クエリ/制御の3ファミリー＝CQS）。
+ *
+ * 固定定義をやめ、ここを「コマンド解放の seam」にする＝素質・版を替えれば出せるブロックが変わる。
+ * block.type は接頭辞（cmd_/qry_）で命令名に対応。1つも付与しない族は空カテゴリ＝タブごと落とす。
  *
  * カテゴリ式ツールボックス（クリックでポップアップ）は開閉で横幅が変わり盤面と重なるため使わない。
  * 代わりに上部タブで選んだ1カテゴリのみを常時表示の固定幅フライアウトに出す（横幅は不変）。
  */
-export const BLOCK_CATEGORIES: BlockCategory[] = [
-  { id: "command", label: "コマンド", contents: toFlyoutBlocks(COMMAND_BLOCKS.map(({ type }) => type)) },
-  { id: "query", label: "クエリ", contents: toFlyoutBlocks(QUERY_BLOCKS.map(({ type }) => type)) },
-  {
-    id: "control",
-    label: "制御",
-    contents: [
-      withCondShadow("ctrl_if"),
-      withCondShadow("ctrl_if_else"),
-      toFlyoutBlocks(["ctrl_forever"])[0],
-      toFlyoutBlocks(["ctrl_repeat"])[0],
-      withCondShadow("ctrl_while"),
-    ],
-  },
-];
+export function categoriesForBaseImage(base: BaseImage): BlockCategory[] {
+  const categories: BlockCategory[] = [
+    { id: "command", label: "コマンド", contents: toFlyoutBlocks(base.commands.map((cmd) => COMMAND_PREFIX + cmd)) },
+    { id: "query", label: "クエリ", contents: toFlyoutBlocks(base.queries.map((sensor) => QUERY_PREFIX + sensor)) },
+    { id: "control", label: "制御", contents: base.controls.flatMap((control) => CONTROL_BLOCKS[control]) },
+  ];
+  return categories.filter((category) => category.contents.length > 0);
+}
 
 /** inject 用の初期ツールボックス（最初のカテゴリを出す固定幅フライアウト）。 */
-export const TOOLBOX = {
-  kind: "flyoutToolbox",
-  contents: BLOCK_CATEGORIES[0].contents,
-};
+export function toolboxForBaseImage(base: BaseImage) {
+  const categories = categoriesForBaseImage(base);
+  return { kind: "flyoutToolbox", contents: categories[0]?.contents ?? [] };
+}

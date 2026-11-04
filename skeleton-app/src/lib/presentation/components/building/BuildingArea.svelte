@@ -12,7 +12,14 @@
   // 2画面の見た目差は「イメージタイル直右のデプロイ1個」だけ＝サンドボックスは showDeploy=false で消える。
   import { tick } from "svelte";
   import Icon from "@iconify/svelte";
-  import { programCost, type Program } from "$lib/domain";
+  import {
+    programCost,
+    baseImageTag,
+    BASE_IMAGES,
+    DEFAULT_BASE_IMAGE,
+    type BaseImage,
+    type Program,
+  } from "$lib/domain";
   import { registry, type RegistryImage } from "$lib/presentation/stores/registryStore.svelte";
   import { automatonIcon } from "$lib/presentation/utils/labels";
   import BlocklyEditor from "./BlocklyEditor.svelte";
@@ -62,6 +69,15 @@
   // BlocklyEditor への参照。お手本 pull は program を直接書き換えず、この load() を通して
   // Blockly に流し込む（Blockly → Program の順方向で program が更新される）。
   let editor = $state<BlocklyEditor>();
+
+  // 編集中に土台とする素質（系統×版）。付与命令セットがパレットに出せるブロックを決める。
+  // 版を上げると命令が広がる（v1=基本行動のみ → v2=クエリ＋制御）。既定はフル機能の v2.0。
+  let selectedBaseImage = $state<BaseImage>(DEFAULT_BASE_IMAGE);
+  let baseMenuOpen = $state(false);
+  function selectBaseImage(base: BaseImage) {
+    selectedBaseImage = base;
+    baseMenuOpen = false;
+  }
 
   // CP（作成予算）の消費量。組んだブロック数から算出する（戦闘状態とは独立）。
   const cpUsed = $derived(programCost(program));
@@ -113,17 +129,19 @@
   // プッシュ＝ビルド済みイメージをレジストリに保存（ローカル名で保管）。生の編集ではなくビルド断面を積む。
   function pushImage() {
     if (builtImage === null) return;
-    registry.push(builtImage, imageName);
+    registry.push(builtImage, imageName, selectedBaseImage);
   }
 
   // プル＝レジストリのイメージをカレント（ビルド断面）に取り込む。改良の起点。
   // 編集内容（Blockly）も同じ断面に合わせてダーティーを出さず、タブは切り替えない（カレントが更新されるだけ）。
   // 時刻はイメージの保存時刻（お手本は保存時刻を持たないので現在時刻）。
+  // 素質もそのイメージが土台にした版へ乗り換える（パレットの出せるブロックも追従する）。
   function pullImage(image: RegistryImage) {
     editor?.load(image.program);
     builtImage = image.program;
     builtAt = image.pushedAt ?? Date.now();
     imageName = image.label;
+    selectedBaseImage = image.baseImage;
   }
 
   // リネーム（インライン編集）。編集中の行 id と入力値を持ち、Enter/blur で確定・Escape で取消。
@@ -175,6 +193,14 @@
   });
 </script>
 
+<!-- 素質チップ＝イメージの土台（系統×版）をアイコン＋タグで示す。レジストリ各行で使い回す。 -->
+{#snippet baseImageChip(base: BaseImage)}
+  <span class="inline-flex shrink-0 items-center gap-1 text-xs text-surface-500" title="ベースイメージ（素質）">
+    <Icon icon={base.icon} class="size-3.5 text-success-700" />
+    <span class="font-mono opacity-70">{baseImageTag(base)}</span>
+  </span>
+{/snippet}
+
 <!-- 構築エリア全体：ヘッダー（タブ＋ゲージ）＋メイン領域を縦に積む。 -->
 <div class="flex min-h-0 flex-1 flex-col gap-3">
   <!-- ヘッダー行（固定高 h-9＝右レールのヘッダーと高さを揃える）。
@@ -224,7 +250,8 @@
     <!-- 編集面：ブロック編集以外では invisible で隠す＝ツールボックスが前面に透けるのを防ぐ。
          visibility:hidden なのでサイズは保持され、切替で再描画が壊れない（unmount しない）。 -->
     <div class="h-full {mainView !== 'edit' ? 'invisible' : ''}">
-      <BlocklyEditor bind:this={editor} onProgramChange={(p) => (program = p)} />
+      <!-- 選んだ素質がパレットに出せるブロックを決める（上部のベースイメージ選択と連動）。 -->
+      <BlocklyEditor bind:this={editor} baseImage={selectedBaseImage} onProgramChange={(p) => (program = p)} />
     </div>
 
     <!-- CP ゲージ＝編集中プログラムの作成予算。
@@ -233,9 +260,21 @@
          エディタ編集面のコードは暗地（gray-900）なので、淡色チップに載せてどちらの面でも読めるようにする。 -->
     {#if mainView !== "registry"}
       <div
-        class="absolute right-5 top-15 z-20 rounded border border-surface-300 bg-surface-50/95 px-2 py-0.5 shadow-sm"
+        class="absolute right-5 top-15 z-20 flex items-center gap-1.5 rounded border border-surface-300 bg-surface-50/95 px-2 py-0.5 shadow-sm"
       >
         <CapacityGauge used={cpUsed} limit={cpLimit} />
+        <!-- メモリ割り振り（HP↔CP）＝ビルド時の新ギミック其の二。配分が将来この CP ゲージの上限を決める
+             （BP は CPU＝ステージ固定なので対象外＝3 分割ではない）。CP の予算そのものに紐づくのでゲージの真横に置く。
+             配分の実挙動は未実装のため非活性プレースホルダ。
+             TODO: HP↔CP スライダのポップオーバーと cpLimit への反映（[[sotai-baseimage-plan]] Phase 3）。 -->
+        <button
+          type="button"
+          disabled
+          class="inline-flex items-center rounded p-0.5 text-surface-500 disabled:opacity-50"
+          title="メモリ割り振り（HP↔CP）は未実装"
+        >
+          <Icon icon="mdi:cog-outline" class="size-4" aria-label="メモリ割り振り" />
+        </button>
       </div>
     {/if}
 
@@ -243,6 +282,54 @@
          レジストリタブは保管の文脈なのでビルド含め非表示（改名/削除/プッシュはカレント行に集約）。
          ダーティー表示は専用ラベルを持たず、「前回ビルド時に戻す」が出ている事自体がダーティーの合図＝
          戻すが無い（＝編集とビルド断面が一致）＝「ビルド済み（最新）」を✓で示す。 -->
+    <!-- ベースイメージ選択（素質＝系統×版）＝ビルド時の新ギミック其の一。コマンド解放の土台を選ぶ口。
+         編集文脈（ブロック/エディタ編集）でだけ出す＝ビルド/CP ゲージと同条件。レジストリ（保管）では隠す。
+         ビルドの入力＝「何から作るか」なので、エディタ領域の上部中央（ビルドボタンの左）に置く。
+         選んだ素質が BlocklyEditor のパレット（出せるブロック）を実際に切り替える＝コマンド解放の seam。 -->
+    {#if mainView !== "registry"}
+      <div class="absolute left-1/2 top-2 z-20 -translate-x-1/2">
+        <button
+          type="button"
+          onclick={() => (baseMenuOpen = !baseMenuOpen)}
+          class="inline-flex items-center gap-1.5 rounded border border-surface-300 bg-surface-50/95 px-2 py-1 text-xs text-surface-700 shadow-sm hover:bg-surface-100"
+          title="ベースイメージ（素質）を選ぶ"
+        >
+          <Icon icon={selectedBaseImage.icon} class="size-4 text-success-700" aria-label="素質" />
+          <span class="font-mono opacity-70">{baseImageTag(selectedBaseImage)}</span>
+          <Icon icon="mdi:chevron-down" class="size-4 opacity-50" />
+        </button>
+        {#if baseMenuOpen}
+          <!-- 外側クリックで閉じる透明バックドロップ（メニューより下・他操作より上）。 -->
+          <button
+            type="button"
+            class="fixed inset-0 z-10 cursor-default"
+            aria-label="メニューを閉じる"
+            onclick={() => (baseMenuOpen = false)}
+          ></button>
+          <ul
+            class="absolute left-1/2 top-full z-20 mt-1 w-52 -translate-x-1/2 overflow-hidden rounded border border-surface-300 bg-surface-50 shadow-lg"
+          >
+            {#each BASE_IMAGES as base (baseImageTag(base))}
+              <li>
+                <button
+                  type="button"
+                  onclick={() => selectBaseImage(base)}
+                  class="flex w-full items-center gap-2 px-2 py-1.5 text-left text-xs hover:bg-surface-100 {base ===
+                  selectedBaseImage
+                    ? 'bg-surface-100 font-bold'
+                    : ''}"
+                >
+                  <Icon icon={base.icon} class="size-4 text-success-700" />
+                  <span>{base.family}</span>
+                  <span class="ml-auto font-mono opacity-60">{baseImageTag(base)}</span>
+                </button>
+              </li>
+            {/each}
+          </ul>
+        {/if}
+      </div>
+    {/if}
+
     {#if mainView !== "registry"}
       <div class="absolute right-5 top-2 z-20 flex items-center gap-2">
         {#if dirty}
@@ -322,6 +409,7 @@
                   <span class="shrink-0 text-xs opacity-50">
                     {image.source === "preset" ? "sample" : pushedAtLabel(image.pushedAt ?? 0)}
                   </span>
+                  {@render baseImageChip(image.baseImage)}
                 </div>
                 <div class="flex shrink-0 gap-2">
                   <!-- プル＝Blockly に展開して編集面へ戻る（改良の起点）。
@@ -388,6 +476,8 @@
                   <span class="truncate text-sm">{builtName}</span>
                 {/if}
                 <span class="shrink-0 text-xs opacity-50">{builtAtLabel}</span>
+                <!-- カレントは編集中のビルド断面＝選択中の素質を土台にビルドしたもの。 -->
+                {@render baseImageChip(selectedBaseImage)}
               </div>
               <!-- 操作列：保管済み行（プル/リネーム/削除）と対称に プッシュ/リネーム/削除。 -->
               <div class="flex shrink-0 gap-2">

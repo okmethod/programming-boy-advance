@@ -1,13 +1,14 @@
 <script lang="ts">
   // ブロックUI（Blockly）エディタ。組んだワークスペースをドメインの Program（命令木）に変換して通知する。
   // Blockly は DOM 必須のため use: アクション内で inject する（アクションはクライアントでのみ走る）。
+  import { untrack } from "svelte";
   import * as Blockly from "blockly";
-  import type { Program } from "$lib/domain";
+  import type { BaseImage, Program } from "$lib/domain";
   import {
     registerBlocks,
     registerFixedWidthFlyout,
-    TOOLBOX,
-    BLOCK_CATEGORIES,
+    categoriesForBaseImage,
+    toolboxForBaseImage,
     type BlockCategory,
     workspaceToProgram,
     programToWorkspace,
@@ -15,16 +16,23 @@
   } from "$lib/presentation/blockly";
 
   interface BlocklyEditorProps {
+    // 土台にする素質（系統×版）。付与命令セットがパレットに出せるブロックを決める（コマンド解放の seam）。
+    baseImage: BaseImage;
     // ワークスペース変更のたびに最新の Program を通知する。
     onProgramChange: (program: Program) => void;
   }
 
-  let { onProgramChange }: BlocklyEditorProps = $props();
+  let { baseImage, onProgramChange }: BlocklyEditorProps = $props();
 
   let ws: Blockly.WorkspaceSvg | undefined;
 
+  // 素質から導くパレットのカテゴリ（タブ＋フライアウトの素）。素質を切り替えると自動で追従する。
+  const blockCategories = $derived(categoriesForBaseImage(baseImage));
+
   // パレット上部タブで選択中のカテゴリ。選んだカテゴリのブロックだけを固定幅フライアウトに出す。
-  let activeCategoryId = $state(BLOCK_CATEGORIES[0].id);
+  // 明示選択（クリック）前は undefined で、先頭カテゴリにフォールバックする（素質が変わっても先頭に追従）。
+  let selectedCategoryId = $state<string | undefined>(undefined);
+  const activeCategoryId = $derived(selectedCategoryId ?? blockCategories[0].id);
 
   // タブ配色＝ブロック配色（緑=コマンド / 青緑=クエリ / 黄土=制御）。色でカテゴリを識別させる。
   // テーマトークン（primary/secondary/tertiary）に寄せ、配色はテーマ差し替えで一括追従させる。
@@ -46,7 +54,7 @@
 
   // タブを選ぶ＝そのカテゴリのブロックだけをフライアウトに差し替える（横幅は不変・ポップアップ無し）。
   function selectCategory(category: BlockCategory) {
-    activeCategoryId = category.id;
+    selectedCategoryId = category.id;
     ws?.getFlyout()?.show(category.contents);
   }
 
@@ -70,6 +78,27 @@
     if (ws) Blockly.svgResize(ws);
   }
 
+  // 素質（baseImage）の切替でパレットを作り直す＝コマンド解放の seam を実機で効かせる。
+  // マウント時は blockly() が初期化済みなので初回は skip。フライアウト操作と選択タブの更新は
+  // 副作用（＝追加の購読を作らない）なので untrack で包む（購読するのは blockCategories だけ）。
+  let paletteInitialized = false;
+  $effect(() => {
+    const categories = blockCategories;
+    if (!paletteInitialized) {
+      paletteInitialized = true;
+      return;
+    }
+    const flyout = ws?.getFlyout();
+    if (!flyout) return;
+    untrack(() => {
+      // 幅を温め直し、選択中タブ（版downで消えていたら先頭）のブロックを表示する。
+      for (const category of categories) flyout.show(category.contents);
+      const active = categories.find((category) => category.id === selectedCategoryId) ?? categories[0];
+      selectedCategoryId = active.id;
+      flyout.show(active.contents);
+    });
+  });
+
   function blockly(node: HTMLElement) {
     registerBlocks();
     // フライアウトを固定下限幅版に差し替えてからinject（タブ切替でパレット幅を一定に保つ）。
@@ -78,7 +107,7 @@
     // move: スクロールバー＋トラックパッド/ホイールスクロール＋ドラッグでパン（上下幅の不足を吸収）。
     // zoom: +/- とリセットのコントロールで拡大縮小（ホイールズームは scroll と競合するので切る）。
     ws = Blockly.inject(node, {
-      toolbox: TOOLBOX,
+      toolbox: toolboxForBaseImage(baseImage),
       theme: RETRO_THEME,
       trashcan: true,
       move: { scrollbars: true, drag: true, wheel: true },
@@ -88,8 +117,8 @@
     // 全カテゴリを一度 show してフライアウト幅を全体最大に温める（sticky max を確定）。
     // これで最初のタブから幅が最大に固定され、タブ切替で原点がずれず配置済みブロックも動かない。
     const flyout = ws.getFlyout();
-    for (const category of BLOCK_CATEGORIES) flyout?.show(category.contents);
-    selectCategory(BLOCK_CATEGORIES[0]);
+    for (const category of blockCategories) flyout?.show(category.contents);
+    selectCategory(blockCategories[0]);
 
     // ブロックの追加・移動・値変更のたびに命令木を作り直して通知する。
     ws.addChangeListener(() => {
@@ -116,7 +145,7 @@
      高さは配置先に委ねる（ドロワーでは余白いっぱいに広がる）。 -->
 <div class="flex h-full min-h-96 w-full flex-col overflow-hidden rounded border border-gray-300">
   <div class="flex shrink-0 gap-1 border-b border-gray-200 bg-gray-50 p-2">
-    {#each BLOCK_CATEGORIES as category (category.id)}
+    {#each blockCategories as category (category.id)}
       {@const style = TAB_STYLE[category.id]}
       <button
         class="rounded border px-3 py-1 text-sm {activeCategoryId === category.id ? style.active : style.idle}"
