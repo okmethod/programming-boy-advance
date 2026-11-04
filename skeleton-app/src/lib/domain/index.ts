@@ -16,7 +16,9 @@ export type {
   Winner,
 } from "./models/battle";
 export type { Action, CommandName, Expr, NodeId, Program, SensorName, Step, Stmt } from "./models/program";
+export type { BaseImage, ControlName } from "./baseimage/baseImage";
 
+export { TURTLOGO_V1, TURTLOGO_V2, BASE_IMAGES, DEFAULT_BASE_IMAGE, baseImageTag } from "./baseimage/baseImage";
 export { runBattle, recordBattle } from "./battle/runBattle";
 export { run } from "./interpreter/run";
 export { applyAction, advanceClock, commandToAction, evalExpr, evalSensor } from "./battle/engine";
