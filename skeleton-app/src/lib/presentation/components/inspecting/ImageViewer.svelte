@@ -50,7 +50,7 @@
           <span>{emptyLabel}</span>
         </div>
       {:else}
-        <!-- イメージの正体：名前（主役）＋ドリフトバッジ／ハッシュ・時刻（従）。 -->
+        <!-- イメージの正体：名前（主役・ヘッダー）＋ドリフトバッジ／属性は base-hash-timestamp の表形式（従）。 -->
         <div class="flex flex-col gap-2">
           <div class="flex items-center gap-2">
             <Icon icon="mdi:cube" class="size-5 shrink-0 text-gray-400" />
@@ -64,16 +64,20 @@
               </span>
             {/if}
           </div>
-          <div class="flex items-center gap-3 text-xs text-gray-400">
-            <span class="font-mono">{hash}</span>
+          <!-- 名前（ヘッダー）に続く属性を key: value の表形式で並べる（ラベル列＋値列の2カラムグリッド）。 -->
+          <div class="grid grid-cols-[auto_1fr] gap-x-2 gap-y-1 text-xs text-gray-400">
             {#if baseImage}
               <!-- 素質＝何から作ったか（FROM）。アイコン＋版タグで系統を示す。 -->
+              <span class="text-gray-500">base</span>
               <span class="inline-flex items-center gap-1" title="ベースイメージ（素質）">
                 <Icon icon={baseImage.icon} class="size-3.5 text-emerald-400" />
                 <span class="font-mono">{baseImageTag(baseImage)}</span>
               </span>
             {/if}
+            <span class="text-gray-500">hash</span>
+            <span class="font-mono">{hash}</span>
             {#if timeLabel}
+              <span class="text-gray-500">timestamp</span>
               <span class="inline-flex items-center gap-1">
                 <Icon icon="mdi:clock-outline" class="size-3.5" />{timeLabel}
               </span>

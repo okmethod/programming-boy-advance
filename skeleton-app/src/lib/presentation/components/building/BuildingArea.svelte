@@ -388,9 +388,10 @@
           <ul class="flex min-h-0 flex-1 flex-col gap-2 overflow-auto">
             {#each registry.images as image (image.id)}
               <li class="flex h-12 items-center justify-between gap-3 rounded border border-surface-200 px-3">
-                <!-- 並び＝ハッシュ（中身の指紋）／名前（タグ）／時刻 or sample。 -->
+                <!-- 並び＝ハッシュ（中身の指紋）／素質（土台）／名前（タグ）／時刻 or sample。 -->
                 <div class="flex min-w-0 items-center gap-2">
                   <span class="font-mono text-xs opacity-60">{image.hash}</span>
+                  {@render baseImageChip(image.baseImage)}
                   {#if renamingId === image.id}
                     <!-- インライン編集：Enter/blur で確定、Escape で取消。 -->
                     <input
@@ -409,7 +410,6 @@
                   <span class="shrink-0 text-xs opacity-50">
                     {image.source === "preset" ? "sample" : pushedAtLabel(image.pushedAt ?? 0)}
                   </span>
-                  {@render baseImageChip(image.baseImage)}
                 </div>
                 <div class="flex shrink-0 gap-2">
                   <!-- プル＝Blockly に展開して編集面へ戻る（改良の起点）。
@@ -456,10 +456,12 @@
                 <Icon icon="mdi:cube-outline" class="size-4" /> 未ビルド
               </span>
             {:else}
-              <!-- カレント＝現在のビルド断面。保管済み行と同じ体裁（ハッシュ-名前-時刻）＋対称の操作列。 -->
+              <!-- カレント＝現在のビルド断面。保管済み行と同じ体裁（ハッシュ-素質-名前-時刻）＋対称の操作列。 -->
               <div class="flex min-w-0 items-center gap-2">
                 <Icon icon="mdi:cube" class="size-4 opacity-70" aria-label="カレント" />
                 <span class="font-mono text-xs opacity-60">{builtHash}</span>
+                <!-- カレントは編集中のビルド断面＝選択中の素質を土台にビルドしたもの。 -->
+                {@render baseImageChip(selectedBaseImage)}
                 {#if tileRenaming}
                   <!-- インライン改名：Enter/blur で確定・Escape で取消。 -->
                   <input
@@ -476,8 +478,6 @@
                   <span class="truncate text-sm">{builtName}</span>
                 {/if}
                 <span class="shrink-0 text-xs opacity-50">{builtAtLabel}</span>
-                <!-- カレントは編集中のビルド断面＝選択中の素質を土台にビルドしたもの。 -->
-                {@render baseImageChip(selectedBaseImage)}
               </div>
               <!-- 操作列：保管済み行（プル/リネーム/削除）と対称に プッシュ/リネーム/削除。 -->
               <div class="flex shrink-0 gap-2">
