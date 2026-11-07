@@ -44,7 +44,7 @@ function samePos(a: Position, b: Position): boolean {
 }
 
 /** コマンド名を、状態非依存のアクションに変換する。 */
-export function commandToAction(cmd: CommandName): Action {
+export const commandToAction = (cmd: CommandName): Action => {
   switch (cmd) {
     case "stepForward":
       return { kind: "move" };
@@ -64,10 +64,10 @@ export function commandToAction(cmd: CommandName): Action {
       throw new Error(`Unknown command: ${String(_exhaustive)}`);
     }
   }
-}
+};
 
 /** 式（クエリ）を評価して真偽を返す。CQS の query 層の入口。状態は変えない。 */
-export function evalExpr(expr: Expr, state: BattleState, selfId: AutomatonId): boolean {
+export const evalExpr = (expr: Expr, state: BattleState, selfId: AutomatonId): boolean => {
   switch (expr.kind) {
     case "sensor":
       return evalSensor(expr.sensor, state, selfId);
@@ -78,10 +78,10 @@ export function evalExpr(expr: Expr, state: BattleState, selfId: AutomatonId): b
       throw new Error(`Unknown expr: ${JSON.stringify(_exhaustive)}`);
     }
   }
-}
+};
 
 /** センサ（状態への純粋な問い合わせ）を評価する。状態は変えない。 */
-export function evalSensor(sensor: SensorName, state: BattleState, selfId: AutomatonId): boolean {
+export const evalSensor = (sensor: SensorName, state: BattleState, selfId: AutomatonId): boolean => {
   const self = state.automatons.find((e) => e.id === selfId);
   if (!self) return false;
   const front = frontCell(self.pos, self.dir);
@@ -97,7 +97,7 @@ export function evalSensor(sensor: SensorName, state: BattleState, selfId: Autom
       throw new Error(`Unknown sensor: ${String(_exhaustive)}`);
     }
   }
-}
+};
 
 function decideWinner(automatons: readonly Automaton[]): Winner | null {
   const ally = automatons.find((e) => e.id === "ally");

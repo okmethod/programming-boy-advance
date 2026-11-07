@@ -19,6 +19,5 @@ export const APP_ROUTES: readonly AppRoute[] = [
 ];
 
 /** ルート id から画面名を引く（該当なし＝ホーム等は空文字＝中央非表示）。 */
-export function pageTitle(routeId: string | null): string {
-  return APP_ROUTES.find((route) => route.id === routeId)?.title ?? "";
-}
+export const pageTitle = (routeId: string | null): string =>
+  APP_ROUTES.find((route) => route.id === routeId)?.title ?? "";

@@ -37,14 +37,10 @@ export interface BaseImage {
  * 版の表示ラベル（v版）。例: "v1.0"。
  * version は数値（"1.0"）で持ち、表示上の "v" 接頭辞はここに一元化する（版タイル・タグ双方の単一経路）。
  */
-export function versionTag(base: BaseImage): string {
-  return `v${base.version}`;
-}
+export const versionTag = (base: BaseImage): string => `v${base.version}`;
 
 /** A面の表示タグ（imageName:v版）。例: "turtlogo:v1.0"。 */
-export function baseImageTag(base: BaseImage): string {
-  return `${base.imageName}:${versionTag(base)}`;
-}
+export const baseImageTag = (base: BaseImage): string => `${base.imageName}:${versionTag(base)}`;
 
 /**
  * 素質がプログラムが使用する命令セットを提供しているか。
@@ -52,14 +48,14 @@ export function baseImageTag(base: BaseImage): string {
  * 版・ファミリーに依らず、命令セットの包含だけで判定する（互換性ガードは独立）。
  * false＝使用中のブロックが付与対象外になる＝切替にはプログラム破棄が要る、の合図。
  */
-export function baseImageSupports(base: BaseImage, program: Program): boolean {
+export const baseImageSupports = (base: BaseImage, program: Program): boolean => {
   const used = usedCapabilities(program);
   return (
     used.commands.every((c) => base.commands.includes(c)) &&
     used.queries.every((q) => base.queries.includes(q)) &&
     used.controls.every((c) => base.controls.includes(c))
   );
-}
+};
 
 /**
  * カメの歩み（turtlogo）1.0 ＝ 基本の行動のみ。
@@ -112,7 +108,7 @@ export interface BaseImageFamily {
  *
  * 系統が増える＝要素が増える／版が伸びる＝versions が伸びる、で選択UIが同じ形のまま拡張できる。
  */
-export function baseImageFamilies(): BaseImageFamily[] {
+export const baseImageFamilies = (): BaseImageFamily[] => {
   const byName = new Map<string, BaseImage[]>();
   for (const base of BASE_IMAGES) {
     const bucket = byName.get(base.imageName) ?? [];
@@ -125,7 +121,7 @@ export function baseImageFamilies(): BaseImageFamily[] {
     const head = sorted[0];
     return { imageName: head.imageName, family: head.family, icon: head.icon, versions: sorted };
   });
-}
+};
 
 // 版タグ（major.minor）を数値で比較する。文字列比較だと "10.0" < "2.0" を誤るため桁ごとに見る。
 function compareVersion(a: string, b: string): number {

@@ -27,7 +27,7 @@ export interface FlatLine {
 }
 
 /** Stmt 参照 → NodeId の対応表を作る（インタプリタが yield 時に引く）。 */
-export function nodeIdMap(program: Program): Map<Stmt, NodeId> {
+export const nodeIdMap = (program: Program): Map<Stmt, NodeId> => {
   const map = new Map<Stmt, NodeId>();
   let n = 0;
   const visit = (stmts: readonly Stmt[]): void => {
@@ -47,10 +47,10 @@ export function nodeIdMap(program: Program): Map<Stmt, NodeId> {
   };
   visit(program);
   return map;
-}
+};
 
 /** プログラムを擬似コードの行に平坦化する。各行は nodeIdMap と同じ id を持つ。 */
-export function flattenProgram(program: Program): FlatLine[] {
+export const flattenProgram = (program: Program): FlatLine[] => {
   const out: FlatLine[] = [];
   let n = 0;
   const visit = (stmts: readonly Stmt[], indent: number): void => {
@@ -82,4 +82,4 @@ export function flattenProgram(program: Program): FlatLine[] {
   };
   visit(program, 0);
   return out;
-}
+};

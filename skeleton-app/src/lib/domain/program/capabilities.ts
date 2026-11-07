@@ -16,7 +16,7 @@ export interface UsedCapabilities {
 }
 
 /** 命令木を走査して、使用中のコマンド／クエリ（センサ）／制御構文を集める。 */
-export function usedCapabilities(program: Program): UsedCapabilities {
+export const usedCapabilities = (program: Program): UsedCapabilities => {
   const commands = new Set<CommandName>();
   const queries = new Set<SensorName>();
   const controls = new Set<ControlName>();
@@ -51,4 +51,4 @@ export function usedCapabilities(program: Program): UsedCapabilities {
   visit(program);
 
   return { commands: [...commands], queries: [...queries], controls: [...controls] };
-}
+};

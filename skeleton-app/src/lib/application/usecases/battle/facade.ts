@@ -31,7 +31,7 @@ export interface BattleFacade {
 }
 
 /** StageRepository を注入してファサードを組み立てる（合成ルートから呼ぶ）。 */
-export function createBattleFacade(stages: StageRepository): BattleFacade {
+export const createBattleFacade = (stages: StageRepository): BattleFacade => {
   function runStage(stageId: string, allyProgram: Program): BattleRun {
     const stage = stages.get(stageId);
     const frames = recordBattle(stage.initial, allyProgram, stage.enemy);
@@ -62,4 +62,4 @@ export function createBattleFacade(stages: StageRepository): BattleFacade {
     runStage,
     runSandbox,
   };
-}
+};

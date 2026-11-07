@@ -181,17 +181,17 @@ const CONTROL_BLOCKS: Record<ControlName, FlyoutBlock[]> = {
  * カテゴリ式ツールボックス（クリックでポップアップ）は開閉で横幅が変わり盤面と重なるため使わない。
  * 代わりに上部タブで選んだ1カテゴリのみを常時表示の固定幅フライアウトに出す（横幅は不変）。
  */
-export function categoriesForBaseImage(base: BaseImage): BlockCategory[] {
+export const categoriesForBaseImage = (base: BaseImage): BlockCategory[] => {
   const categories: BlockCategory[] = [
     { id: "command", label: "コマンド", contents: toFlyoutBlocks(base.commands.map((cmd) => COMMAND_PREFIX + cmd)) },
     { id: "query", label: "クエリ", contents: toFlyoutBlocks(base.queries.map((sensor) => QUERY_PREFIX + sensor)) },
     { id: "control", label: "制御", contents: base.controls.flatMap((control) => CONTROL_BLOCKS[control]) },
   ];
   return categories.filter((category) => category.contents.length > 0);
-}
+};
 
 /** inject 用の初期ツールボックス（最初のカテゴリを出す固定幅フライアウト）。 */
-export function toolboxForBaseImage(base: BaseImage) {
+export const toolboxForBaseImage = (base: BaseImage) => {
   const categories = categoriesForBaseImage(base);
   return { kind: "flyoutToolbox", contents: categories[0]?.contents ?? [] };
-}
+};

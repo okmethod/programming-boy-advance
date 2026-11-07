@@ -10,9 +10,7 @@
 import type { Program, Stmt } from "$lib/domain/models/program";
 
 /** プログラム全体の CP 消費量（ブロック総数）を返す。 */
-export function programCost(program: Program): number {
-  return program.reduce((sum, stmt) => sum + stmtCost(stmt), 0);
-}
+export const programCost = (program: Program): number => program.reduce((sum, stmt) => sum + stmtCost(stmt), 0);
 
 function stmtCost(stmt: Stmt): number {
   switch (stmt.kind) {

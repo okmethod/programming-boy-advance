@@ -10,11 +10,11 @@ import type { CommandName, Expr, Program, SensorName, Stmt } from "$lib/domain";
 import { COMMAND_PREFIX, QUERY_PREFIX } from "./blocks";
 
 /** ワークスペースの先頭連鎖を Program に変換する。空なら空配列。 */
-export function workspaceToProgram(ws: Workspace): Program {
+export const workspaceToProgram = (ws: Workspace): Program => {
   // PoC では「入力元を持たない連鎖」の最初の1本だけを対象にする。
   const top = ws.getTopBlocks(true).find((b) => b.previousConnection && !b.previousConnection.targetBlock());
   return top ? blockChainToStmts(top) : [];
-}
+};
 
 // next 接続で繋がったブロック列を Stmt[] に変換する。
 function blockChainToStmts(start: Block): Stmt[] {
