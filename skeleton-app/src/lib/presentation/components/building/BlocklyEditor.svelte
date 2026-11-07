@@ -121,8 +121,10 @@
     selectCategory(blockCategories[0]);
 
     // ブロックの追加・移動・値変更のたびに命令木を作り直して通知する。
+    // ドラッグ中は新ブロックが独立トップ扱いになる過渡状態（workspaceToProgram は先頭連鎖1本だけ拾う）
+    // なので再構築しない。ドロップ時の最終イベントで正しい program に更新される。
     ws.addChangeListener(() => {
-      if (ws) onProgramChange(workspaceToProgram(ws));
+      if (ws && !ws.isDragging()) onProgramChange(workspaceToProgram(ws));
     });
 
     // コンテナのリサイズに Blockly の SVG を追従させる。
