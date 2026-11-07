@@ -1,5 +1,5 @@
 <script lang="ts">
-  // CP（キャパシティ）ゲージ＋メモリ配分（HP↔CP）操作をまとめた編集チップ。
+  // 総メモリを HP↔CP に割り当てる配分器。CP（キャパシティ）ゲージ＝割り当て結果の表示、配分パネル＝割り当て操作。
   // CP は戦闘には登場しない作成予算（docs/design/ui-screen-design.md）。HP（ヒープ）と同じメモリのメタファーなので
   // バーの見た目も HP バーに揃える。色は作成予算＝黄色系、超過＝赤。
   // メモリ配分：総メモリ(memoryTotal)を CP と HP に振り分け、CP 側の割り当て(cpAllocated)がバーの上限になる。
@@ -8,14 +8,14 @@
   import { untrack } from "svelte";
   import Icon from "@iconify/svelte";
 
-  interface CapacityGaugeProps {
+  interface CapacityAllocatorProps {
     // 現在のプログラムが消費する CP（組んだブロック数）。
     cpUsed: number;
     // 総メモリ＝HP↔CP 配分の原資（プレイ面=stage.capacity／レジストリ管理=既定容量）。
     memoryTotal: number;
   }
 
-  let { cpUsed, memoryTotal }: CapacityGaugeProps = $props();
+  let { cpUsed, memoryTotal }: CapacityAllocatorProps = $props();
 
   // 確定済みの CP 割り当て＝バーの上限。既定は全量 CP＝従来挙動（CP 上限＝総メモリ）を保つ。
   // untrack＝総メモリの現在値で初期シードするだけで以後は追従しない（配分はユーザー編集に委ねる）意図を明示。

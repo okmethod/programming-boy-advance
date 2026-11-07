@@ -24,7 +24,7 @@
   import { automatonIcon } from "$lib/presentation/utils/labels";
   import BlocklyEditor from "./BlocklyEditor.svelte";
   import BaseImageSelectModal from "./BaseImageSelectModal.svelte";
-  import CapacityGauge from "./CapacityGauge.svelte";
+  import CapacityAllocator from "./CapacityAllocator.svelte";
   import SegmentedTabs from "$lib/presentation/components/shared/SegmentedTabs.svelte";
   import ProgramViewer from "$lib/presentation/components/inspecting/ProgramViewer.svelte";
 
@@ -266,9 +266,9 @@
          ブロック編集・エディタ編集で同じ位置に出し、レジストリでは隠す。
          エディタ編集面のコードは暗地（gray-900）なので、淡色チップに載せてどちらの面でも読めるようにする。 -->
     {#if mainView !== "registry"}
-      <!-- 配置（右上オーバーレイ）は BuildingArea の責務。チップ本体と配分操作は CapacityGauge に閉じる。 -->
+      <!-- 配置（右上オーバーレイ）は BuildingArea の責務。チップ本体と配分操作は CapacityAllocator に閉じる。 -->
       <div class="absolute right-5 top-15 z-20">
-        <CapacityGauge {cpUsed} {memoryTotal} />
+        <CapacityAllocator {cpUsed} {memoryTotal} />
       </div>
     {/if}
 
