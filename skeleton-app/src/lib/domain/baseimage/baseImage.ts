@@ -9,7 +9,8 @@
  * （mdi 名は識別子であり描画依存ではない）。単価・解放スケジュールは本型の責務外（params / レベルデザイン）。
  */
 
-import type { CommandName, SensorName } from "../models/program";
+import type { CommandName, Program, SensorName } from "../models/program";
+import { usedCapabilities } from "../program/capabilities";
 
 /** 素質が付与しうる制御構文（ドメインの Stmt.kind に対応。if は else 有無を含む）。 */
 export type ControlName = "if" | "repeat" | "while";
@@ -20,19 +21,44 @@ export interface BaseImage {
   readonly imageName: string;
   // A面の系統名（JP・正）。例: "カメの歩み"。
   readonly family: string;
-  // 版タグ（メジャー.マイナー）。例: "1.0"。版を上げると命令が広がり単価が下がる。
+  // 版（メジャー.マイナー）の数値文字列。例: "1.0"（表示は baseImageTag が "v1.0" に整形）。
   readonly version: string;
   // 系統を UI で示す mdi アイコン名。アイコン＋JP名で「どの動物か」を担保する。
   readonly icon: string;
-  // 付与する命令セット（＝素質の能力）。ツールボックス生成の seam（固定定義をここから駆動する）。
+  // この版の「できること」を一言で表す概要（選択UIのカード説明）。ブロック数より質を伝える。
+  readonly summary: string;
+  // 付与する命令セット（プログラムブロック）。ツールボックス生成の seam（固定定義をここから駆動する）。
   readonly commands: readonly CommandName[];
   readonly queries: readonly SensorName[];
   readonly controls: readonly ControlName[];
 }
 
-/** A面の表示タグ（imageName:version）。例: "turtlogo:1.0"。 */
+/**
+ * 版の表示ラベル（v版）。例: "v1.0"。
+ * version は数値（"1.0"）で持ち、表示上の "v" 接頭辞はここに一元化する（版タイル・タグ双方の単一経路）。
+ */
+export function versionTag(base: BaseImage): string {
+  return `v${base.version}`;
+}
+
+/** A面の表示タグ（imageName:v版）。例: "turtlogo:v1.0"。 */
 export function baseImageTag(base: BaseImage): string {
-  return `${base.imageName}:${base.version}`;
+  return `${base.imageName}:${versionTag(base)}`;
+}
+
+/**
+ * 素質がプログラムが使用する命令セットを提供しているか。
+ *
+ * 版・ファミリーに依らず、命令セットの包含だけで判定する（互換性ガードは独立）。
+ * false＝使用中のブロックが付与対象外になる＝切替にはプログラム破棄が要る、の合図。
+ */
+export function baseImageSupports(base: BaseImage, program: Program): boolean {
+  const used = usedCapabilities(program);
+  return (
+    used.commands.every((c) => base.commands.includes(c)) &&
+    used.queries.every((q) => base.queries.includes(q)) &&
+    used.controls.every((c) => base.controls.includes(c))
+  );
 }
 
 /**
@@ -46,6 +72,7 @@ export const TURTLOGO_V1: BaseImage = {
   family: "カメの歩み",
   version: "1.0",
   icon: "mdi:turtle",
+  summary: "基本の行動だけ。決まった順に動く",
   commands: ["stepForward", "turnRight", "turnLeft", "attack", "wait"],
   queries: [],
   controls: [],
@@ -60,12 +87,56 @@ export const TURTLOGO_V1: BaseImage = {
 export const TURTLOGO_V2: BaseImage = {
   ...TURTLOGO_V1,
   version: "2.0",
+  summary: "まわりを見て、条件分岐とくりかえしで判断できる",
   queries: ["enemyAhead", "wallAhead"],
   controls: ["if", "repeat", "while"],
 };
 
 /** 素質カタログ（選択候補）。版が上がるほど使える命令が広がる（v1=基本行動 → v2=クエリ＋制御）。 */
 export const BASE_IMAGES: readonly BaseImage[] = [TURTLOGO_V1, TURTLOGO_V2];
+
+/** 系統（imageName）でまとめた版の並び。選択UIの「系統 × 版ラダー」の土台（カタログから動的生成）。 */
+export interface BaseImageFamily {
+  // EN 識別子（FROM のイメージ名）。系統の同定キー。例: "turtlogo"。
+  readonly imageName: string;
+  // A面の系統名（JP・正）。例: "カメの歩み"。
+  readonly family: string;
+  // 系統を UI で示す mdi アイコン名。
+  readonly icon: string;
+  // この系統の版（version 昇順＝開花の進行順）。隣接版の差分で「版を上げると広がる」を見せる。
+  readonly versions: readonly BaseImage[];
+}
+
+/**
+ * カタログ（BASE_IMAGES）を系統ごとにまとめ、各系統の版を昇順に並べる。
+ *
+ * 系統が増える＝要素が増える／版が伸びる＝versions が伸びる、で選択UIが同じ形のまま拡張できる。
+ */
+export function baseImageFamilies(): BaseImageFamily[] {
+  const byName = new Map<string, BaseImage[]>();
+  for (const base of BASE_IMAGES) {
+    const bucket = byName.get(base.imageName) ?? [];
+    bucket.push(base);
+    byName.set(base.imageName, bucket);
+  }
+  return [...byName.values()].map((versions) => {
+    // 版は数値 major.minor として昇順（開花の進行順）に並べる。
+    const sorted = [...versions].sort((a, b) => compareVersion(a.version, b.version));
+    const head = sorted[0];
+    return { imageName: head.imageName, family: head.family, icon: head.icon, versions: sorted };
+  });
+}
+
+// 版タグ（major.minor）を数値で比較する。文字列比較だと "10.0" < "2.0" を誤るため桁ごとに見る。
+function compareVersion(a: string, b: string): number {
+  const pa = a.split(".").map(Number);
+  const pb = b.split(".").map(Number);
+  for (let i = 0; i < Math.max(pa.length, pb.length); i++) {
+    const diff = (pa[i] ?? 0) - (pb[i] ?? 0);
+    if (diff !== 0) return diff;
+  }
+  return 0;
+}
 
 /**
  * 既定の素質。表示のフォールバック（プリセット／観戦の敵／カレント）に使う。

@@ -1,4 +1,4 @@
-import type { AutomatonId, BattleState, CommandName } from "$lib/domain";
+import type { AutomatonId, BattleState, CommandName, ControlName, SensorName } from "$lib/domain";
 
 /** コマンド（命令）の A面表示ラベル（実行ログなどで使う。ブロックの見た目と揃える）。 */
 export function commandLabel(cmd: CommandName): string {
@@ -15,6 +15,28 @@ export function commandLabel(cmd: CommandName): string {
       return "負荷攻撃する";
     case "wait":
       return "待機する";
+  }
+}
+
+/** クエリ（センサ）の A面表示ラベル（素質が解放する「調べる力」。ブロックの見た目と揃える）。 */
+export function sensorLabel(sensor: SensorName): string {
+  switch (sensor) {
+    case "wallAhead":
+      return "壁が前にある";
+    case "enemyAhead":
+      return "敵が前にいる";
+  }
+}
+
+/** 制御構文の A面表示ラベル（素質が解放する「組み立ての力」。ブロックの見た目と揃える）。 */
+export function controlLabel(control: ControlName): string {
+  switch (control) {
+    case "if":
+      return "もし〜なら";
+    case "repeat":
+      return "くりかえす";
+    case "while":
+      return "〜のあいだ";
   }
 }
 

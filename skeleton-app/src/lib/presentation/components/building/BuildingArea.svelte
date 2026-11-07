@@ -15,7 +15,7 @@
   import {
     programCost,
     baseImageTag,
-    BASE_IMAGES,
+    baseImageSupports,
     DEFAULT_BASE_IMAGE,
     type BaseImage,
     type Program,
@@ -23,6 +23,7 @@
   import { registry, type RegistryImage } from "$lib/presentation/stores/registryStore.svelte";
   import { automatonIcon } from "$lib/presentation/utils/labels";
   import BlocklyEditor from "./BlocklyEditor.svelte";
+  import BaseImageSelectModal from "./BaseImageSelectModal.svelte";
   import CapacityGauge from "./CapacityGauge.svelte";
   import SegmentedTabs from "$lib/presentation/components/shared/SegmentedTabs.svelte";
   import ProgramViewer from "$lib/presentation/components/inspecting/ProgramViewer.svelte";
@@ -72,11 +73,15 @@
 
   // 編集中に土台とする素質（系統×版）。付与命令セットがパレットに出せるブロックを決める。
   // 版を上げると命令が広がる（v1=基本行動のみ → v2=クエリ＋制御）。既定はフル機能の v2.0。
+  // 選択は「どちらを選ぶと何が解放されるか」を見て決められるよう、2軸モーダルに委ねる。
   let selectedBaseImage = $state<BaseImage>(DEFAULT_BASE_IMAGE);
-  let baseMenuOpen = $state(false);
+  let baseModalOpen = $state(false);
   function selectBaseImage(base: BaseImage) {
+    // 非互換切替＝使えなくなるブロックが残ると不整合になるため、編集中プログラムを全クリアしてから乗り換える
+    // （破棄の同意はモーダル側の確認で取得済み）。Blockly が編集の SSoT なので load([]) で空にする。
+    if (!baseImageSupports(base, program)) editor?.load([]);
     selectedBaseImage = base;
-    baseMenuOpen = false;
+    baseModalOpen = false;
   }
 
   // CP（作成予算）の消費量。組んだブロック数から算出する（戦闘状態とは独立）。
@@ -287,10 +292,11 @@
          ビルドの入力＝「何から作るか」なので、エディタ領域の上部中央（ビルドボタンの左）に置く。
          選んだ素質が BlocklyEditor のパレット（出せるブロック）を実際に切り替える＝コマンド解放の seam。 -->
     {#if mainView !== "registry"}
+      <!-- トリガ＝現在のベースイメージ（系統アイコン＋タグ）。押すと2軸モーダルで解放内容を見て選び直せる。 -->
       <div class="absolute left-1/2 top-2 z-20 -translate-x-1/2">
         <button
           type="button"
-          onclick={() => (baseMenuOpen = !baseMenuOpen)}
+          onclick={() => (baseModalOpen = true)}
           class="inline-flex items-center gap-1.5 rounded border border-surface-300 bg-surface-50/95 px-2 py-1 text-xs text-surface-700 shadow-sm hover:bg-surface-100"
           title="ベースイメージ（素質）を選ぶ"
         >
@@ -298,35 +304,6 @@
           <span class="font-mono opacity-70">{baseImageTag(selectedBaseImage)}</span>
           <Icon icon="mdi:chevron-down" class="size-4 opacity-50" />
         </button>
-        {#if baseMenuOpen}
-          <!-- 外側クリックで閉じる透明バックドロップ（メニューより下・他操作より上）。 -->
-          <button
-            type="button"
-            class="fixed inset-0 z-10 cursor-default"
-            aria-label="メニューを閉じる"
-            onclick={() => (baseMenuOpen = false)}
-          ></button>
-          <ul
-            class="absolute left-1/2 top-full z-20 mt-1 w-52 -translate-x-1/2 overflow-hidden rounded border border-surface-300 bg-surface-50 shadow-lg"
-          >
-            {#each BASE_IMAGES as base (baseImageTag(base))}
-              <li>
-                <button
-                  type="button"
-                  onclick={() => selectBaseImage(base)}
-                  class="flex w-full items-center gap-2 px-2 py-1.5 text-left text-xs hover:bg-surface-100 {base ===
-                  selectedBaseImage
-                    ? 'bg-surface-100 font-bold'
-                    : ''}"
-                >
-                  <Icon icon={base.icon} class="size-4 text-success-700" />
-                  <span>{base.family}</span>
-                  <span class="ml-auto font-mono opacity-60">{baseImageTag(base)}</span>
-                </button>
-              </li>
-            {/each}
-          </ul>
-        {/if}
       </div>
     {/if}
 
@@ -506,3 +483,12 @@
     {/if}
   </div>
 </div>
+
+<!-- ベースイメージ選択（2軸モーダル）。系統×版を見比べ、確定で素質を乗り換える＝パレット（出せるブロック）が追従する。 -->
+<BaseImageSelectModal
+  open={baseModalOpen}
+  selected={selectedBaseImage}
+  {program}
+  onSelect={selectBaseImage}
+  onClose={() => (baseModalOpen = false)}
+/>
