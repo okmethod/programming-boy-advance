@@ -27,7 +27,7 @@ interface BlockState {
 const LOAD_MARGIN = 24;
 
 /** Program をワークスペースに復元する。既存ブロックは消してから読み込む。 */
-export const programToWorkspace = (ws: Workspace, program: Program): void => {
+export function programToWorkspace(ws: Workspace, program: Program): void {
   ws.clear();
   const top = stmtsToState(program);
   if (!top) return;
@@ -35,7 +35,7 @@ export const programToWorkspace = (ws: Workspace, program: Program): void => {
   top.x = LOAD_MARGIN;
   top.y = LOAD_MARGIN;
   Blockly.serialization.workspaces.load({ blocks: { languageVersion: 0, blocks: [top] } }, ws);
-};
+}
 
 // Stmt[] を next 連鎖の先頭ブロック状態にする。空なら undefined。
 function stmtsToState(stmts: Program): BlockState | undefined {
