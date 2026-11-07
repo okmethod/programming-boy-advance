@@ -46,8 +46,7 @@
   // デプロイ済みイメージ＝対戦に出ている実体（未デプロイは null）。生の編集ではなく、
   // build→deploy の儀式を経たイメージが盤面で戦う。
   let deployedImage = $state<Program | null>(null);
-  // デプロイ済みイメージの表示メタ（イメージタイル用）。名前はデプロイ時に構築エリアから受け取り、
-  // 時刻はデプロイ操作の時刻。イメージ本体（deployedImage）とは別に保持する。
+  // デプロイ済みイメージの表示メタ（イメージタイル用）。名前は構築エリアから、時刻はデプロイ操作から受け取る。
   let deployedName = $state("");
   let deployedAt = $state<number | null>(null);
 
@@ -73,7 +72,7 @@
 
   let frameIndex = $state(0);
   let playing = $state(false);
-  // デプロイ後に一度でも実行したか。開始前は「実行」ボタン、実行後は再生コントロールを出す。
+  // デプロイ後に一度でも実行したか。
   let started = $state(false);
 
   // 盤面・自他プログラムは観戦ビューに常時表示し、構築（構築エリア＋試運転）だけをドロワーに畳む。
@@ -275,7 +274,7 @@
     ? 'translate-y-0'
     : 'translate-y-full'}"
 >
-  <!-- 2カラム：左＝構築エリア（flex-1）／右＝参照レール（固定幅）。両列のヘッダー高（h-9）を揃える。 -->
+  <!-- 2カラム：左＝構築エリア／右＝参照レール（固定幅）。両列のヘッダー高を揃える。 -->
   <div class="flex min-h-0 flex-1 gap-4">
     <!-- 構築エリア：タブ（ブロック編集/エディタ編集/レジストリ）＋CPゲージ＋Blockly 等を内包。
          ドロワーは transform で開くため active にドロワー開閉を渡して開いた後に resize させる。 -->
@@ -291,7 +290,7 @@
 
     <!-- 参照レール列：ヘッダー（参照⇄試運転タブ＋閉じる）＋本体（参照は inline／試運転は SandboxRail）。 -->
     <div class="flex min-h-0 w-[26rem] shrink-0 flex-col gap-3">
-      <!-- ヘッダー行（固定高 h-9＝構築エリアのヘッダーと高さを揃える）。 -->
+      <!-- ヘッダー行：高さは構築エリアのヘッダーと揃える。 -->
       <div class="flex h-9 shrink-0 items-center justify-between gap-3">
         <SegmentedTabs value={railView} items={railTabs} onChange={(v) => (railView = v as RailView)} />
         <button class="action-btn" onclick={() => (drawerOpen = false)}>
@@ -302,7 +301,7 @@
       <!-- 本体：参照（ステージの初期配置＋敵の手の内）／試運転（SandboxRail）を同じ枠線で囲う。 -->
       <div class="flex min-h-0 flex-1 flex-col gap-3 overflow-auto rounded border border-surface-300 bg-white p-3">
         {#if railView === "reference"}
-          <!-- ヘッダー（固定高 h-7・左寄せ）：サンドボックスの見出し行と高さ・位置を揃え、下の盤面を一致させる。 -->
+          <!-- ヘッダー（左寄せ）：サンドボックスの見出し行と高さ・位置を揃え、下の盤面を一致させる。 -->
           <div class="flex h-7 shrink-0 items-center gap-1 text-xs font-bold opacity-70">
             <Icon icon="mdi:view-grid-outline" class="size-4" /> 初期配置
           </div>

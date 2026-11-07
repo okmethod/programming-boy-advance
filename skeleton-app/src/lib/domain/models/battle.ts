@@ -15,10 +15,8 @@ export interface Position {
   readonly y: number;
 }
 
-// オートマトン＝プログラムで自律行動するエンティティ（この世界の種族名）。
-// 壁/アイテムも含む総称「エンティティ」のうち、現状のモデルは自キャラ・敵キャラの2体のみを扱う。
-// 陣営の区別：自キャラ=Ally（プレイヤーのオートマトン）、敵キャラ=Enemy。
-/** オートマトンの陣営 ID。PoC では自キャラ（Ally）と敵キャラ（Enemy）の2体のみ。 */
+// オートマトン＝プログラムで自律行動するエンティティ（この世界の種族名）。壁/アイテムを含む総称「エンティティ」の一種。
+/** オートマトンの陣営 ID。Ally＝プレイヤー、Enemy＝敵。PoC ではこの 2 体のみ。 */
 export type AutomatonId = "ally" | "enemy";
 
 export interface Automaton {
@@ -30,8 +28,7 @@ export interface Automaton {
   readonly bp: number;
   // フリーズ残りクロック数。> 0 の間はコマンドが wait に強制上書きされる。0 で通常行動。
   readonly freezeRemaining: number;
-  // スケジューリング優先度。同クロックでは高い方が先に行動する。
-  // PoC では固定値（ally を高くしてプレイヤー先手）。
+  // スケジューリング優先度。同クロックでは高い方が先に行動する（ally を高くしてプレイヤー先手）。
   readonly priority: number;
 }
 
@@ -58,7 +55,7 @@ export interface BattleState {
   readonly grid: Grid;
   readonly automatons: readonly Automaton[];
   readonly clock: number;
-  // 将来の乱数用。PoC では未使用（決定性維持のため乱数を導入していない）。
+  // 乱数の種。決定性を保つため導入しておらず、拡張用に予約している。
   readonly rngSeed: number;
   readonly logs: readonly DamageLog[];
   readonly winner: Winner | null;

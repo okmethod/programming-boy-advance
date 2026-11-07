@@ -1,6 +1,5 @@
 <script lang="ts">
-  // 行動ログ（表示専用）：先頭〜現在フレームまでに指定オートマトンが起こした行動を
-  // 1ターン1行の表（clock | command | code）で蓄積表示し、再生で末尾へ自動スクロールする。
+  // 行動ログ（表示専用）：指定オートマトンが起こした行動を1行ずつ蓄積し、再生に合わせて末尾へ自動スクロールする。
   // ノード id の採番はドメイン（nodeIdMap）に委譲し、インタプリタ／ProgramViewer と必ず一致させる。
   import { tick } from "svelte";
   import Icon from "@iconify/svelte";

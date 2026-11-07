@@ -3,13 +3,11 @@
  *
  * ビルド済みイメージをプッシュ（保存）／プル（編集に戻す）／削除する共有ストア。
  * プレイ面の構築ドロワーとサンドボックスで同じ手持ちを見るため、モジュール singleton で持つ。
- *
- * 永続化は未着手（in-memory）。リロードで消える。localStorage / バックエンド等は
- * このストア内部（seed と push/remove）に閉じ込めて差し替える前提で、
+ * 永続化層（localStorage / バックエンド等）は seed と push/remove に閉じ込め、
  * 公開 API（images / push / remove）は永続化非依存に保つ。
  *
- * 版管理（系統＝イメージ名／タグ v1→v2・ロールバック）は未着手（保留）。
- * 当面はプッシュ＝自動名でフラットに積むだけ（docs/design/ui-screen-design.md）。
+ * TODO: 永続化は未着手（in-memory のためリロードで消える）。
+ * TODO: 版管理（系統＝イメージ名／タグ v1→v2・ロールバック）は未着手。当面はプッシュ＝自動名でフラットに積む（docs/design/ui-screen-design.md）。
  */
 
 import type { BaseImage, Program } from "$lib/domain";
@@ -23,8 +21,7 @@ export interface RegistryImage {
   readonly program: Program;
   // 中身の指紋（A面に名前と並べて見せる短いハッシュ）。name＝タグ、hash＝中身の識別。
   readonly hash: string;
-  // 土台にした素質（系統×版）。素質選択が未実装の間は既定（turtlogo）で固定。
-  // 将来の素質選択ではここに選んだ素質が記録される（[[sotai-baseimage-plan]] Phase 3）。
+  // 土台にした素質（系統×版）。既定は turtlogo で固定。
   readonly baseImage: BaseImage;
   // お手本（初期シード・読み取り専用）か、ユーザがプッシュした手持ちか。
   readonly source: "preset" | "user";

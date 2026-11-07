@@ -1,8 +1,7 @@
 /**
  * ステージ定義データ（インフラ層・TS 定数版の供給元）。
  *
- * コンテンツ定義方式（TS/JSON/YAML+DSL）は後から移行可能な前提（docs/design/README.md）。
- * 現状は TS 定数で持ち、StageRepository の Adapter からのみ参照される。
+ * StageRepository の Adapter からのみ参照される（供給元の切替は Port で吸収する）。
  */
 
 import type { Stage } from "$lib/application";

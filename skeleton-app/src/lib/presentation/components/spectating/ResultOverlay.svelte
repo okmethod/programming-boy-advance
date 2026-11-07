@@ -28,7 +28,7 @@
   );
 </script>
 
-<!-- 親は relative を持つ観戦コンテナ。inset-0 で盤面全体を覆い、中央にカードを浮かせる。 -->
+<!-- 親の観戦コンテナが relative を持つ前提。全面に重ねて中央にカードを浮かせる。 -->
 <div class="absolute inset-0 flex items-center justify-center rounded bg-black/60">
   <div class="flex min-w-56 flex-col items-center gap-3 rounded-xl bg-surface-50 px-8 py-6 shadow-2xl">
     <span class="rounded-full px-3 py-0.5 text-xs font-bold tracking-widest {badgeClass}">{badgeLabel}</span>

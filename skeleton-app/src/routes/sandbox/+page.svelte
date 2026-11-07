@@ -18,11 +18,11 @@
 
 <!-- 一画面（iPad 横向き前提・スクロール無し）：ヘッダーの残り高を埋め、はみ出しは内側で吸収。 -->
 <div class="mx-auto flex h-full max-w-7xl flex-col gap-3 overflow-hidden p-3">
-  <!-- 2カラム：左＝構築エリア（flex-1）／右＝試運転レール（固定幅）。プレイ面ドロワーの骨格を踏襲。 -->
+  <!-- 2カラム：左＝構築エリア／右＝試運転レール（固定幅）。プレイ面ドロワーの骨格を踏襲。 -->
   <div class="flex min-h-0 flex-1 gap-4">
     <BuildingArea bind:program bind:builtImage memoryTotal={DEFAULT_AUTOMATON_CAPACITY} active panelClass="bg-white" />
 
-    <!-- 試運転レール：プレイ面のレールと同じ枠線で囲う。独立ページなので白地に馴染む bg-white にする。 -->
+    <!-- 試運転レール：プレイ面のレールと同じ枠線で囲う。独立ページなので白地に馴染ませる。 -->
     <div class="flex min-h-0 w-[26rem] shrink-0 flex-col">
       <div class="flex min-h-0 flex-1 flex-col gap-3 overflow-auto rounded border border-surface-300 bg-white p-3">
         <SandboxRail image={builtImage} facade={battleFacade} />

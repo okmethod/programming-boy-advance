@@ -2,8 +2,8 @@
  * 戦闘のチューニング値を 1 箇所に集約する。
  *
  * ゲームバランスの数値はここだけを編集すれば変えられる（調整しやすさを構造で担保する）。
- * 具体値は暫定（docs/game-rules/auto-battle.md の TODO）。将来はステージ単位の上書きも
- * この BattleParams を差し替えるだけで済むよう、関数へは引数（デフォルト付き）で渡す。
+ * ステージ単位の上書きに備え、関数へは BattleParams を引数（デフォルト付き）で渡せる構造にしてある。
+ * TODO: 具体値は暫定。docs/game-rules/auto-battle.md に沿って調整する。
  */
 
 export interface BattleParams {
@@ -21,7 +21,7 @@ export interface BattleParams {
   readonly bpCooldownPerClock: number;
 }
 
-/** 既定のチューニング値。調整はこの 1 箇所で行う。 */
+/** 既定のチューニング値。 */
 export const BATTLE_PARAMS: BattleParams = {
   attackDamage: 1,
   bpMax: 10,

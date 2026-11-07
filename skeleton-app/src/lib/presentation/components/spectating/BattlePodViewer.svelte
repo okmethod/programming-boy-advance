@@ -39,7 +39,7 @@
     `--cell:min((100cqw - 1rem - ${cols - 1} * 0.25rem) / ${cols}, (100cqh - 1rem - ${rows - 1} * 0.25rem) / ${rows});` +
       `grid-template-columns:repeat(${cols}, var(--cell));grid-auto-rows:var(--cell);`,
   );
-  // sm＝参照：固定 2.25rem（＝旧 h-9/w-9）のセルで小さく描く。
+  // sm＝参照：固定 2.25rem のセルで小さく描く。
   const smStyle = $derived(`grid-template-columns:repeat(${cols}, 2.25rem);grid-auto-rows:2.25rem;`);
 
   // 向きシェブロン（> < ∧ ∨）。向いている側にアイコンと密着させて出す。

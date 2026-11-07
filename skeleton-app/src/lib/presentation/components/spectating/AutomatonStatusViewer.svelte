@@ -44,7 +44,7 @@
   const freezeRemaining = $derived(cur?.freezeRemaining ?? 0);
   const frozen = $derived(freezeRemaining > 0);
 
-  // HP が残りわずか／BP が高いときは警告色にする（しきい値はひとまず暫定）。
+  // HP が残りわずか／BP が高いときは警告色にする。
   const hpDanger = $derived(defeated || hp / Math.max(1, maxHp) <= 0.34);
   const bpDanger = $derived(frozen || bp / Math.max(1, bpMax) >= 0.8);
 
@@ -72,7 +72,7 @@
   }
 </script>
 
-<!-- 計測器セクション：陣営カラムの黒パネル上段。枠・背景は親パネルが持つのでここは中身だけ（p-3 で余白）。 -->
+<!-- 計測器セクション：陣営カラムの黒パネル上段。枠・背景は親パネルが持つのでここは中身だけ。 -->
 <div class="flex w-full flex-col gap-2 p-3">
   <!-- 見出し：陣営アイコン＋名前。フリーズ中は山場としてバッジを出す。 -->
   <div class="flex items-center gap-1.5">
@@ -97,8 +97,8 @@
         <span class="flex-1 {i < hp ? (hpDanger ? 'bg-red-500' : 'bg-green-500') : 'bg-white/5'}"></span>
       {/each}
     </div>
-    <!-- 現在値（分子）を主役に大きく、容量（分母）は淡色の参照に。magnitude は数値が担う。
-         分子・分母を各 2 桁幅（2ch）の右揃えにして、スラッシュ位置を固定しつつ両数字を右揃えする。 -->
+    <!-- 現在値（分子）を主役に大きく、容量（分母）は淡色の参照に。
+         桁数が変わってもスラッシュ位置がぶれないよう、両数字を固定幅で右揃えする。 -->
     <span class="inline-flex shrink-0 items-baseline tabular-nums {hpDanger ? 'text-red-400' : 'text-gray-100'}">
       <span class="w-[2ch] text-right text-base font-bold">{hp}</span>
       <span class="text-xs text-gray-500">/</span>

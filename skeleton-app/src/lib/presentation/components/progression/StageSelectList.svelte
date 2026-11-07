@@ -1,5 +1,5 @@
 <script lang="ts">
-  // ステージ選択の「中身」。モーダル（今）と進行ページ（将来）で共通利用する。
+  // ステージ選択の「中身」。host（モーダル／進行ページ）から器を差し替えて共通利用する。
   // chrome（モーダル枠／ページ枠）は持たず、一覧表示と選択だけに責務を絞る＝器を差し替えられる。
   import Icon from "@iconify/svelte";
   import { stageList } from "$lib/presentation/composition";
@@ -18,7 +18,7 @@
   }
 </script>
 
-<!-- カード一覧。将来の進行ページでも同じ器で並べられるよう、切替行ではなくカードで持つ。
+<!-- カード一覧。進行ページでも同じ器で並べられるよう、切替行ではなくカードで持つ。
      TODO: アンロック状態・Tier/Chapter の階層表示は進行ルート導入時に足す。 -->
 <ul class="grid grid-cols-1 gap-2 sm:grid-cols-2">
   {#each stageList as s (s.id)}

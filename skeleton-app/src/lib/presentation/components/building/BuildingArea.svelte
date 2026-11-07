@@ -210,7 +210,7 @@
 
 <!-- 構築エリア全体：ヘッダー（タブ＋ゲージ）＋メイン領域を縦に積む。 -->
 <div class="flex min-h-0 flex-1 flex-col gap-3">
-  <!-- ヘッダー行（固定高 h-9＝右レールのヘッダーと高さを揃える）。
+  <!-- ヘッダー行：高さは右レールのヘッダーと揃える。
        左＝ビュー切替タブ（副作用なしのナビ＝セグメントタブ）／右＝カレントイメージタイル＋デプロイ。
        タイルはビュー切替タブとレール側タブの間の空きに ml-auto で右寄せし、ビルドの鮮度を畳み込む。 -->
   <div class="flex h-9 shrink-0 items-center gap-3">
@@ -412,7 +412,7 @@
         <!-- カレント領域：小見出し＋カレント行。 -->
         <div class="flex shrink-0 flex-col gap-1">
           <span class="shrink-0 text-xs font-bold text-surface-500">カレント</span>
-          <!-- 固定高 h-12＝状態（未ビルド／ビルド済み／改名入力中）で縦幅が変わらないよう揃える。
+          <!-- 状態（未ビルド／ビルド済み／改名入力中）で縦幅が変わらないよう固定高にする。
                中身は items-center で中央寄せ（ボタンや入力の高さに引っ張られない）。 -->
           <div
             class="flex h-12 shrink-0 items-center justify-between gap-3 rounded border border-surface-300 bg-surface-50 px-3"

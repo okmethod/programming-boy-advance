@@ -1,10 +1,9 @@
 <script lang="ts">
-  // 総メモリを HP↔CP に割り当てる配分器。CP（キャパシティ）ゲージ＝割り当て結果の表示、配分パネル＝割り当て操作。
-  // CP は戦闘には登場しない作成予算（docs/design/ui-screen-design.md）。HP（ヒープ）と同じメモリのメタファーなので
-  // バーの見た目も HP バーに揃える。色は作成予算＝黄色系、超過＝赤。
-  // メモリ配分：総メモリ(memoryTotal)を CP と HP に振り分け、CP 側の割り当て(cpAllocated)がバーの上限になる。
-  //   射程は「見た目＋CP 上限」まで＝HP 側は表示のみで戦闘には未配線（[[sotai-baseimage-plan]] Phase 3 で実挙動を配線）。
-  //   読み取り専用の CP 表示が要るようになったら editable prop を足し、必要なら配分状態を親へ lift する（YAGNI）。
+  // 総メモリ(memoryTotal)を HP↔CP に配分する。CP は戦闘に登場しない「作成予算」で、割り当てた cpAllocated がバーの上限になる。
+  // HP（ヒープ）と同じメモリのメタファーなのでバーの見た目を HP に揃える（色は予算＝黄・超過＝赤。docs/design/ui-screen-design.md）。
+  // 射程は見た目＋CP 上限まで。HP 側の配分はまだ表示だけで、実際の戦闘 HP には効かない。
+  // TODO: 配分値を戦闘パラメータ（domain/battle/params.ts の BATTLE_PARAMS）へ反映する。ステージ構成・数値バランス確定後に着手（docs/game-rules/base-images.md）。
+  // 読み取り専用の CP 表示が要るようになったら editable prop を足し、必要なら配分状態を親へ lift（YAGNI）。
   import { untrack } from "svelte";
   import Icon from "@iconify/svelte";
 
@@ -33,12 +32,11 @@
     draft = cpAllocated;
     open = true;
   }
-  // 決定＝下書きを確定値へ反映してゲージに効かせる。
   function commitAllocation() {
     cpAllocated = draft;
     open = false;
   }
-  // 左右ボタンで CP 下書きを 1 ずつ微調整する（0〜総メモリでクランプ）。向きはスライダと同じ＝右で CP 増・HP 減。
+  // 右で CP 増・HP 減（スライダと同じ向き）。0〜総メモリでクランプ。
   function adjustDraft(delta: number) {
     draft = Math.min(memoryTotal, Math.max(0, draft + delta));
   }
@@ -80,14 +78,12 @@
   {#if open}
     <!-- 下段：同じチップ内で罫線 1 本仕切るだけ（浮遊パネルにしない）。即時反映せずキャンセル/決定で確定する。 -->
     <div class="mt-1.5 border-t border-surface-300 pt-1.5 text-xs">
-      <!-- 超過は見出しに「（超過 N）」で添える＝即時反映しない代わりに、決定後どれだけ上限を超えるかを下書きで示す。 -->
       <div class="mb-2 font-bold text-surface-700">
         メモリ配分{#if draftOverflow > 0}<span class="text-red-600">（超過 {draftOverflow}）</span>{/if}
       </div>
       <!-- 総メモリを CP と HP に振り分ける。CP 厚め＝複雑なプログラム／HP 厚め＝打たれ強い（トレードオフ）。 -->
-      <!-- CP ↔ HP の配分。中央の左右ボタンで 1 ずつ微調整できる（スライダと同じ向き＝右で CP 増）。
-           CP の数字は警告色にしない＝超過の赤は見出しの「（超過 N）」に寄せる。 -->
-      <!-- 左右を等幅（1fr）にして中央ボタンを固定＝CP/HP の桁数が変わっても増減ボタンの位置がぶれない。 -->
+      <!-- CP の数字は警告色にしない＝超過の赤は見出しの「（超過 N）」に寄せる。 -->
+      <!-- 左右を等幅（1fr）＋中央ボタン固定＝CP/HP の桁数が変わっても増減ボタンの位置がぶれない。 -->
       <div class="mb-1.5 grid grid-cols-[1fr_auto_1fr] items-center tabular-nums">
         <span class="font-bold text-surface-700">CP {draft}</span>
         <div class="flex items-center justify-self-center gap-1">

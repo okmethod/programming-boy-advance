@@ -15,7 +15,6 @@ export type SensorName = "wallAhead" | "enemyAhead";
 
 // 式（クエリ）＝状態への問い合わせ（CQS の query 層）。値を返し状態は変えない。
 // sensor=センサ読み取り、literal=真偽の定数（「ずっとくりかえす」= while(true) の糖衣で使う）。
-// 将来 and/or/not 等を足すならこの Expr を広げる（文/式の二層構造）。
 export type Expr =
   { readonly kind: "sensor"; readonly sensor: SensorName } | { readonly kind: "literal"; readonly value: boolean };
 

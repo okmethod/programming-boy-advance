@@ -1,6 +1,5 @@
 <script lang="ts">
   // ステージ選択モーダル＝単純な切替用の器。中身は StageSelectList を共通利用する。
-  // 将来の進行ページは同じ StageSelectList を別の器（ルート）に載せ替えるだけで済む。
   import Icon from "@iconify/svelte";
   import { fade } from "svelte/transition";
   import StageSelectList from "./StageSelectList.svelte";
@@ -35,7 +34,6 @@
           <Icon icon="mdi:close" class="size-5" />
         </button>
       </div>
-      <!-- 選択は onSelect で呼び出し元へ通知（閉じる・遷移は呼び出し元が決める）。中身は共通コンポーネント。 -->
       <div class="min-h-0 overflow-auto">
         <StageSelectList {onSelect} {selectedId} />
       </div>

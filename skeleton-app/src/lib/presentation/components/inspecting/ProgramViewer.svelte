@@ -1,6 +1,5 @@
 <script lang="ts">
-  // 命令木（Program）を擬似コードで表示し、現在クロックで実行中の行を
-  // IDE のデバッガ風（行番号ガター＋矢印マーカー＋行ハイライト）に示す（表示専用）。
+  // 命令木（Program）を擬似コードで表示し、実行中の行を IDE のデバッガ風にハイライトする（表示専用）。
   // 平坦化とノード id の採番はドメイン（flatLines）に委譲し、インタプリタの採番と必ず一致させる。
   import { tick } from "svelte";
   import Icon from "@iconify/svelte";

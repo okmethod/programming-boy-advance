@@ -9,7 +9,7 @@
 
 import type { Expr, NodeId, Program, Stmt } from "$lib/domain/models/program";
 
-// 式（クエリ）を擬似コードの文字列にする。今はセンサ名（B面の実名）をそのまま出す。
+// 式（クエリ）を擬似コード文字列にする。センサは B 面の実名をそのまま出す（別名化しない）。
 function exprToText(expr: Expr): string {
   switch (expr.kind) {
     case "sensor":

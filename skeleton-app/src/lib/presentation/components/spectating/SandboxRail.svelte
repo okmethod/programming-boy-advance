@@ -38,7 +38,7 @@
   });
 </script>
 
-<!-- ヘッダー（固定高 h-7）：左に「サンドボックス」見出し、右にサンドバッグの有無スイッチ。 -->
+<!-- ヘッダー：左に「サンドボックス」見出し、右にサンドバッグの有無スイッチ。 -->
 <div class="flex h-7 shrink-0 items-center justify-between gap-1">
   <span class="flex items-center gap-1 text-xs font-bold opacity-70">
     <Icon icon="mdi:flask-outline" class="size-4" /> サンドボックス

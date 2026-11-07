@@ -1,6 +1,6 @@
 <script lang="ts">
   // ステージ選択ページ（簡易版）。モーダルと同じ中身 StageSelectList を、器だけページに載せ替える。
-  // 選ぶと観戦（プレイ面）へ遷移する。将来はここにアンロック状態・Tier/Chapter 階層を育てる。
+  // 選ぶと観戦（プレイ面）へ遷移する。
   import Icon from "@iconify/svelte";
   import { navigateTo } from "$lib/presentation/utils/navigation";
   import StageSelectList from "$lib/presentation/components/progression/StageSelectList.svelte";

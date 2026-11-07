@@ -14,7 +14,7 @@
   // ヘッダー中央に出す現在ページ名。ルート id（base path 非依存）から引く。
   const currentPageTitle = $derived(pageTitle(page.route.id));
 
-  // ステージ選択モーダル。単純切替は器としてモーダルを使う（将来はページへ昇格）。
+  // ステージ選択モーダル。単純切替は器としてモーダルを使う。
   // 現在ステージ名は画面中央上部に出るため、ここは固定ラベルにとどめる。
   let stageSelectOpen = $state(false);
 </script>
@@ -75,7 +75,7 @@
   </main>
 </div>
 
-<!-- ステージ選択モーダル（単純切替）。中身 StageSelectList は将来の進行ページと共通。
+<!-- ステージ選択モーダル（単純切替）。
      選ぶと閉じてプレイ面（/battle-pod/[stage]）へ遷移する。ステージ id は URL が SSoT。 -->
 <StageSelectModal
   open={stageSelectOpen}

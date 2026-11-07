@@ -41,5 +41,5 @@ export const ALLY_PRESETS: Record<string, AllyPreset> = {
 
 // CP（作成予算）の上限はステージではなくオートマトンに属する概念。
 // ステージ非依存で構築するレジストリ管理ページでは、この既定値を上限に使う。
-// TODO: 将来はオートマトンイメージ単位の capacity フィールドに置き換える。
+// TODO: オートマトンイメージ単位の capacity フィールドに置き換える。
 export const DEFAULT_AUTOMATON_CAPACITY = 25;

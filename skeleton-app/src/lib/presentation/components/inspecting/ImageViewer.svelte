@@ -42,7 +42,7 @@
   <div class={fill ? "min-h-0 flex-1" : ""}>
     <div class="overflow-auto rounded bg-gray-900 p-3 text-gray-200 {fill ? 'h-full' : 'min-h-24'}">
       {#if hash === null}
-        <!-- 空表示：プログラム/ログビューと見た目を揃える（中央寄せ・淡色・アイコン付き）。 -->
+        <!-- 空表示：プログラム/ログビューと見た目を揃える。 -->
         <div
           class="flex h-full min-h-24 flex-col items-center justify-center gap-1.5 p-4 text-center font-pixel text-gray-500"
         >
@@ -50,7 +50,6 @@
           <span>{emptyLabel}</span>
         </div>
       {:else}
-        <!-- イメージの正体：名前（主役・ヘッダー）＋ドリフトバッジ／属性は base-hash-timestamp の表形式（従）。 -->
         <div class="flex flex-col gap-2">
           <div class="flex items-center gap-2">
             <Icon icon="mdi:cube" class="size-5 shrink-0 text-gray-400" />
@@ -64,10 +63,9 @@
               </span>
             {/if}
           </div>
-          <!-- 名前（ヘッダー）に続く属性を key: value の表形式で並べる（ラベル列＋値列の2カラムグリッド）。 -->
           <div class="grid grid-cols-[auto_1fr] gap-x-2 gap-y-1 text-xs text-gray-400">
             {#if baseImage}
-              <!-- 素質＝何から作ったか（FROM）。アイコン＋版タグで系統を示す。 -->
+              <!-- 素質＝何から作ったか（FROM）。 -->
               <span class="text-gray-500">base</span>
               <span class="inline-flex items-center gap-1" title="ベースイメージ（素質）">
                 <Icon icon={baseImage.icon} class="size-3.5 text-emerald-400" />
