@@ -8,7 +8,7 @@
   //   - デプロイ＝イメージを対戦へ → イメージタイルの直右（プレイ面のみ＝showDeploy）
   //   - プッシュ/リネーム/削除＝カレントイメージの保管・改名・破棄 → レジストリタブのカレント行（破線の下・保管済み行と対称）
   //   - CP ゲージ＝編集予算 → 枠内ヘッダー帯の中央オーバーレイ（ブロック/エディタ編集で同位置・レジストリでは隠す）
-  // プレイ面の構築ドロワーとサンドボックスで共有し、ステージ依存・画面依存の差分は props（cpLimit/showDeploy 等）で吸収する。
+  // プレイ面の構築ドロワーとサンドボックスで共有し、ステージ依存・画面依存の差分は props（memoryTotal/showDeploy 等）で吸収する。
   // 2画面の見た目差は「イメージタイル直右のデプロイ1個」だけ＝サンドボックスは showDeploy=false で消える。
   import { tick } from "svelte";
   import Icon from "@iconify/svelte";
@@ -34,8 +34,9 @@
     // ビルド済みイメージ（編集を凍結したスナップショット・不変）。試運転／デプロイの対象。
     // 未ビルドは null。生の編集とは別物で、ビルドして初めて確定する（bindable）。
     builtImage: Program | null;
-    // CP（作成予算）の上限。プレイ面=stage.capacity／レジストリ管理=既定容量。
-    cpLimit: number;
+    // 総メモリ＝HP↔CP 配分の原資。プレイ面=stage.capacity／レジストリ管理=既定容量。
+    // この総量をプレイヤーが HP と CP に振り分ける（CP 厚め＝複雑だが脆い）。配分は編集時のローカル状態で持つ。
+    memoryTotal: number;
     // 表示中か。transform で開くドロワーは ResizeObserver が発火しないため、
     // active かつブロック編集面のとき tick 後に Blockly を明示 resize する。
     active: boolean;
@@ -51,7 +52,7 @@
   let {
     program = $bindable(),
     builtImage = $bindable(null),
-    cpLimit,
+    memoryTotal,
     active,
     showDeploy = false,
     onDeploy,
@@ -85,6 +86,7 @@
   }
 
   // CP（作成予算）の消費量。組んだブロック数から算出する（戦闘状態とは独立）。
+  // メモリ配分（CP↔HP）と CP 上限は CapacityControl に閉じ込め、ここは消費量だけを渡す。
   const cpUsed = $derived(programCost(program));
 
   // ビルド状態：未ビルド（null）か、ビルド後に編集が乖離したか（要ビルド）。
@@ -264,22 +266,9 @@
          ブロック編集・エディタ編集で同じ位置に出し、レジストリでは隠す。
          エディタ編集面のコードは暗地（gray-900）なので、淡色チップに載せてどちらの面でも読めるようにする。 -->
     {#if mainView !== "registry"}
-      <div
-        class="absolute right-5 top-15 z-20 flex items-center gap-1.5 rounded border border-surface-300 bg-surface-50/95 px-2 py-0.5 shadow-sm"
-      >
-        <CapacityGauge used={cpUsed} limit={cpLimit} />
-        <!-- メモリ割り振り（HP↔CP）＝ビルド時の新ギミック其の二。配分が将来この CP ゲージの上限を決める
-             （BP は CPU＝ステージ固定なので対象外＝3 分割ではない）。CP の予算そのものに紐づくのでゲージの真横に置く。
-             配分の実挙動は未実装のため非活性プレースホルダ。
-             TODO: HP↔CP スライダのポップオーバーと cpLimit への反映（[[sotai-baseimage-plan]] Phase 3）。 -->
-        <button
-          type="button"
-          disabled
-          class="inline-flex items-center rounded p-0.5 text-surface-500 disabled:opacity-50"
-          title="メモリ割り振り（HP↔CP）は未実装"
-        >
-          <Icon icon="mdi:cog-outline" class="size-4" aria-label="メモリ割り振り" />
-        </button>
+      <!-- 配置（右上オーバーレイ）は BuildingArea の責務。チップ本体と配分操作は CapacityGauge に閉じる。 -->
+      <div class="absolute right-5 top-15 z-20">
+        <CapacityGauge {cpUsed} {memoryTotal} />
       </div>
     {/if}
 

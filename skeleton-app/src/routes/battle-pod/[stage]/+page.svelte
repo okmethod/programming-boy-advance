@@ -282,7 +282,7 @@
     <BuildingArea
       bind:program={allyProgram}
       bind:builtImage
-      cpLimit={stage.capacity}
+      memoryTotal={stage.capacity}
       active={drawerOpen}
       showDeploy
       onDeploy={deployImage}
