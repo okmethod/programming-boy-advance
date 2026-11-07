@@ -53,7 +53,7 @@
       const frame = frames[i];
       const nid = frame.active?.[id];
       const cmd = nid !== undefined ? cmdByNode[nid] : undefined;
-      // 擬似コードは flattenProgram と同じ `cmd()` 形式（B面＝実コードの対応を見せる）。
+      // 擬似コードは flatLines と同じ `cmd()` 形式（B面＝実コードの対応を見せる）。
       if (cmd) lines.push({ clock: frame.clock, label: commandLabel(cmd), code: `${cmd}()` });
     }
     return lines;

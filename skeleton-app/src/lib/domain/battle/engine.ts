@@ -67,10 +67,10 @@ export const commandToAction = (cmd: CommandName): Action => {
 };
 
 /** 式（クエリ）を評価して真偽を返す。CQS の query 層の入口。状態は変えない。 */
-export const evalExpr = (expr: Expr, state: BattleState, selfId: AutomatonId): boolean => {
+export const exprValue = (expr: Expr, state: BattleState, selfId: AutomatonId): boolean => {
   switch (expr.kind) {
     case "sensor":
-      return evalSensor(expr.sensor, state, selfId);
+      return sensorValue(expr.sensor, state, selfId);
     case "literal":
       return expr.value;
     default: {
@@ -81,7 +81,7 @@ export const evalExpr = (expr: Expr, state: BattleState, selfId: AutomatonId): b
 };
 
 /** センサ（状態への純粋な問い合わせ）を評価する。状態は変えない。 */
-export const evalSensor = (sensor: SensorName, state: BattleState, selfId: AutomatonId): boolean => {
+export const sensorValue = (sensor: SensorName, state: BattleState, selfId: AutomatonId): boolean => {
   const self = state.automatons.find((e) => e.id === selfId);
   if (!self) return false;
   const front = frontCell(self.pos, self.dir);

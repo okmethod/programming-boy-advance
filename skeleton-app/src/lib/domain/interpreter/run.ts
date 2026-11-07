@@ -7,7 +7,7 @@
 
 import type { AutomatonId, BattleState } from "$lib/domain/models/battle";
 import type { NodeId, Program, Step, Stmt } from "$lib/domain/models/program";
-import { commandToAction, evalExpr } from "$lib/domain/battle/engine";
+import { commandToAction, exprValue } from "$lib/domain/battle/engine";
 
 // yield を伴わないループ（空の while(true) 等）を検出するための上限。
 // 正常にアクションを yield するループは、呼び出し側が maxClocks で pull を止めるため、ここには達しない。
@@ -54,7 +54,7 @@ function* execStmt(
       }
       return;
     case "if":
-      if (evalExpr(s.cond, read(), selfId)) {
+      if (exprValue(s.cond, read(), selfId)) {
         yield* execStmts(s.then, selfId, read, nodeIds);
       } else if (s.else) {
         yield* execStmts(s.else, selfId, read, nodeIds);
@@ -62,7 +62,7 @@ function* execStmt(
       return;
     case "while": {
       let guard = 0;
-      while (evalExpr(s.cond, read(), selfId)) {
+      while (exprValue(s.cond, read(), selfId)) {
         if (++guard > LOOP_GUARD) {
           throw new Error("Interpreter loop guard tripped: a loop iterated without yielding an action");
         }

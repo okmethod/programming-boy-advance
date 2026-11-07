@@ -1,11 +1,11 @@
 <script lang="ts">
   // 命令木（Program）を擬似コードで表示し、現在クロックで実行中の行を
   // IDE のデバッガ風（行番号ガター＋矢印マーカー＋行ハイライト）に示す（表示専用）。
-  // 平坦化とノード id の採番はドメイン（flattenProgram）に委譲し、インタプリタの採番と必ず一致させる。
+  // 平坦化とノード id の採番はドメイン（flatLines）に委譲し、インタプリタの採番と必ず一致させる。
   import { tick } from "svelte";
   import Icon from "@iconify/svelte";
   import type { NodeId, Program } from "$lib/domain";
-  import { flattenProgram } from "$lib/domain";
+  import { flatLines } from "$lib/domain";
 
   interface ProgramViewerProps {
     // 省略時はヘッダー（見出し）を描画しない。観戦列はステータス側に名前を出すため不要。
@@ -33,7 +33,7 @@
     bodyClass = "",
   }: ProgramViewerProps = $props();
 
-  const lines = $derived(flattenProgram(program));
+  const lines = $derived(flatLines(program));
 
   let scrollEl = $state<HTMLElement>();
 

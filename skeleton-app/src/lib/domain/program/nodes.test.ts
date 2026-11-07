@@ -1,10 +1,10 @@
 import { describe, it, expect } from "vitest";
-import { flattenProgram, nodeIdMap } from "./nodes";
+import { flatLines, nodeIdMap } from "./nodes";
 import { recordBattle } from "$lib/domain/battle/runBattle";
 import type { BattleState } from "$lib/domain/models/battle";
 import type { Program } from "$lib/domain/models/program";
 
-describe("flattenProgram / nodeIdMap", () => {
+describe("flatLines / nodeIdMap", () => {
   const program: Program = [
     { kind: "call", cmd: "stepForward" },
     {
@@ -16,7 +16,7 @@ describe("flattenProgram / nodeIdMap", () => {
   ];
 
   it("flatten と nodeIdMap は同じ採番を共有する（pre-order）", () => {
-    const lines = flattenProgram(program);
+    const lines = flatLines(program);
     const map = nodeIdMap(program);
     // 行の id（else 区切りを除く）と、Stmt→id の値が一致する。
     expect(lines.map((l) => l.id)).toEqual([0, 1, 2, null, 3]);
@@ -25,7 +25,7 @@ describe("flattenProgram / nodeIdMap", () => {
   });
 
   it("else 区切り行は id を持たない", () => {
-    const elseLine = flattenProgram(program).find((l) => l.text === "else:");
+    const elseLine = flatLines(program).find((l) => l.text === "else:");
     expect(elseLine?.id).toBeNull();
   });
 });

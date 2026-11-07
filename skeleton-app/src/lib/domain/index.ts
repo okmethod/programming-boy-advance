@@ -32,7 +32,7 @@ export {
 export { usedCapabilities } from "./program/capabilities";
 export { runBattle, recordBattle } from "./battle/runBattle";
 export { run } from "./interpreter/run";
-export { applyAction, advanceClock, commandToAction, evalExpr, evalSensor } from "./battle/engine";
+export { applyAction, advanceClock, commandToAction, exprValue, sensorValue } from "./battle/engine";
 export { BATTLE_PARAMS, type BattleParams } from "./battle/params";
 export { programCost } from "./program/cost";
-export { flattenProgram, nodeIdMap, type FlatLine } from "./program/nodes";
+export { flatLines, nodeIdMap, type FlatLine } from "./program/nodes";

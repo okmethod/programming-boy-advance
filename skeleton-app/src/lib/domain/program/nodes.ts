@@ -4,7 +4,7 @@
  * 各 Stmt に pre-order（親→子、子リストは body / then → else の順）で連番 NodeId を振る。
  * インタプリタ（run）とプログラム表示（ProgramViewer）が同じ採番を共有することで、
  * 「今どのノードを実行中か」を id 1 つで突き合わせられる。
- * nodeIdMap と flattenProgram は同一の走査順を使う（＝実 Stmt を数える順が一致する）ことが不変条件。
+ * nodeIdMap と flatLines は同一の走査順を使う（＝実 Stmt を数える順が一致する）ことが不変条件。
  */
 
 import type { Expr, NodeId, Program, Stmt } from "$lib/domain/models/program";
@@ -50,7 +50,7 @@ export const nodeIdMap = (program: Program): Map<Stmt, NodeId> => {
 };
 
 /** プログラムを擬似コードの行に平坦化する。各行は nodeIdMap と同じ id を持つ。 */
-export const flattenProgram = (program: Program): FlatLine[] => {
+export const flatLines = (program: Program): FlatLine[] => {
   const out: FlatLine[] = [];
   let n = 0;
   const visit = (stmts: readonly Stmt[], indent: number): void => {

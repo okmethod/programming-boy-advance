@@ -2,7 +2,7 @@
  * プログラムが実際に使っている命令セット（コマンド／クエリ／制御）の抽出。
  *
  * 素質（BaseImage）切替の互換性ガードの土台。プログラムが使用する命令セットを収集する。
- * 走査順は nodeIdMap / flattenProgram と同じ（親→子、then→else・body）。
+ * 走査順は nodeIdMap / flatLines と同じ（親→子、then→else・body）。
  */
 
 import type { CommandName, Expr, Program, SensorName, Stmt } from "$lib/domain/models/program";
