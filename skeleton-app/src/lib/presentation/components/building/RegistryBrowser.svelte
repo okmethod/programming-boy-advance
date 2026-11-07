@@ -4,8 +4,15 @@
   // ワークベンチ（workbenchDraft）とレジストリ（registryImages）を直接購読して自己完結する。
   // 唯一の継ぎ目は pull 時の Blockly 流し込み＝編集の SSoT は親の BlocklyEditor なので onPull で親に委ねる。
   import Icon from "@iconify/svelte";
-  import { baseImageTag, areProgramsEqual, type BaseImage, type Program } from "$lib/domain";
-  import { registryImages, workbenchFacade, workbenchDraft, currentImage, type RegistryImage } from "$lib/application";
+  import { baseImageTag, type BaseImage, type Program } from "$lib/domain";
+  import {
+    registryImages,
+    workbenchFacade,
+    workbenchDraft,
+    currentImage,
+    imageOf,
+    type RegistryImage,
+  } from "$lib/application";
   import { registryFacade } from "$lib/presentation/composition";
 
   interface RegistryBrowserProps {
@@ -22,12 +29,9 @@
   // 変数名は current（レジストリ各行の image と衝突させない）。
   const current = $derived($currentImage);
 
-  // 同一内容の既存イメージ（あれば＝プッシュ不要・表示名の基）＝registry との join。別スライスの読みなので
-  // アプリ層に持たせず、ここで registry 投影（$registryImages）と内容等価で突き合わせて解決する。
-  const duplicate = $derived.by(() => {
-    const built = draft.builtImage;
-    return built ? $registryImages.find((img) => areProgramsEqual(img.program, built)) : undefined;
-  });
+  // 同一内容の既存イメージ（あれば＝プッシュ不要・表示名の基／push・rename の対象）。
+  // 内容等価の引き当ては registry スライスのセレクタ（imageOf）に委ね、反応性は $registryImages の購読で担う。
+  const duplicate = $derived(draft.builtImage ? imageOf($registryImages, draft.builtImage) : undefined);
   const alreadyPushed = $derived(duplicate !== undefined);
   // タイルに出す表示名。ローカル名（draft.imageName）> 同一内容の既存イメージのラベル > プレースホルダ の順で解決する。
   const builtName = $derived(draft.imageName || duplicate?.label || "未保存イメージ");

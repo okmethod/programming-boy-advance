@@ -12,8 +12,8 @@
   // 2画面の見た目差は「イメージタイル直右のデプロイ1個」だけ＝サンドボックスは showDeploy=false で消える。
   import { tick } from "svelte";
   import Icon from "@iconify/svelte";
-  import { programCost, areProgramsEqual, type Program } from "$lib/domain";
-  import { registryImages, workbenchFacade, workbenchDraft, currentImage } from "$lib/application";
+  import { programCost, type Program } from "$lib/domain";
+  import { registryImages, workbenchFacade, workbenchDraft, currentImage, labelOf } from "$lib/application";
   import { automatonIcon } from "$lib/presentation/utils/labels";
   import BlocklyEditor from "./BlocklyEditor.svelte";
   import BaseImageSelector from "./BaseImageSelector.svelte";
@@ -70,14 +70,11 @@
   // カレントイメージの読みモデル（未ビルド/編集乖離/指紋）＝workbench state だけの純投影（アプリ層）。
   const current = $derived($currentImage);
 
-  // 表示名の解決には「同一内容の既存イメージ」が要る＝registry との join。これは別スライスの読みなので
-  // アプリ層に持たせず、ここで registry 投影（$registryImages）と内容等価で突き合わせて解決する。
-  const duplicate = $derived.by(() => {
-    const built = draft.builtImage;
-    return built ? $registryImages.find((img) => areProgramsEqual(img.program, built)) : undefined;
-  });
   // 名前＝ローカル名（draft.imageName）> 同一内容の既存イメージのラベル > プレースホルダ の順で解決する。
-  const builtName = $derived(draft.imageName || duplicate?.label || "未保存イメージ");
+  // 同一内容ラベルの引き当ては registry スライスのセレクタ（labelOf）に委ね、反応性は $registryImages の購読で担う。
+  const builtName = $derived(
+    draft.imageName || (draft.builtImage ? labelOf($registryImages, draft.builtImage) : undefined) || "未保存イメージ",
+  );
 
   // 最終ビルド時刻ラベル。ビルドが「いつの断面か」を示し、ビルドの実在を体感させる（復元点の目印）。
   const builtAtLabel = $derived(

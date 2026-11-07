@@ -10,7 +10,7 @@
 
 import { get, readonly, writable } from "svelte/store";
 import type { BaseImage, Program } from "$lib/domain";
-import { DEFAULT_BASE_IMAGE, hashProgram } from "$lib/domain";
+import { DEFAULT_BASE_IMAGE, hashProgram, areProgramsEqual } from "$lib/domain";
 import { ALLY_PRESETS } from "./presets";
 
 /** レジストリに並ぶオートマトンイメージ（ビルド済みの保管単位）。 */
@@ -49,6 +49,20 @@ let seq = 0;
 
 /** 一覧（お手本＋手持ち・登録順）。コンポーネントはこの readonly store を `$`購読する。 */
 export const registryImages = readonly(imagesStore);
+
+/**
+ * 同一内容（content-addressable）の登録済みイメージを引く。無ければ undefined。
+ * 一覧（$registryImages）を引数で受ける純セレクタ＝内容等価の判定（ドメイン）をこのスライスに閉じ、
+ * 突き合わせの反応性は呼び出し側の `$`購読に委ねる（プレゼンにドメイン述語を漏らさない）。
+ */
+export function imageOf(images: readonly RegistryImage[], program: Program): RegistryImage | undefined {
+  return images.find((image) => areProgramsEqual(image.program, program));
+}
+
+/** 同一内容の登録済みイメージの表示名（表示名フォールバック用）。無ければ undefined。 */
+export function labelOf(images: readonly RegistryImage[], program: Program): string | undefined {
+  return imageOf(images, program)?.label;
+}
 
 /**
  * レジストリへの唯一の書き込み口。facade だけが呼ぶ（UI から直接は触らない）。

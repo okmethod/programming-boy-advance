@@ -73,6 +73,16 @@ export const currentImage = derived(draftStore, (draft): CurrentImage => {
 });
 
 /**
+ * 外部イメージが現在のビルド断面とズレているか（例: デプロイ済みの再デプロイ要否）。
+ * 比較対象が揃わないとき（未ビルド／外部 null）は「ズレ無し」扱いで false を返す。
+ * 外部オペランドを引数で受ける単一スライスのセレクタ＝内容等価の判定（ドメイン）をアプリ層に閉じ、
+ * builtImage との突き合わせの合成だけをプレゼン側に委ねる（join store は作らない）。
+ */
+export function differsFromBuilt(draft: WorkbenchDraft, image: Program | null): boolean {
+  return draft.builtImage !== null && image !== null && !areProgramsEqual(draft.builtImage, image);
+}
+
+/**
  * ドラフトへの機械的な書き込み口（facade からのみ呼ぶ・UI には公開しない）。
  * 単一レコードなので、集合版 registry の add/replace とは異なり update/snapshot が機械的プリミティブ。
  */

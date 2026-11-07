@@ -8,7 +8,7 @@
   // 構築エリア内の Blockly を編集の SSoT とし、store の断面はサンドボックス画面とも共有・画面跨ぎで保持する。
   import Icon from "@iconify/svelte";
   import { battleFacade, registryFacade } from "$lib/presentation/composition";
-  import { workbenchDraft } from "$lib/application";
+  import { workbenchDraft, differsFromBuilt } from "$lib/application";
   import type { PageData } from "./$types";
   import type { Program } from "$lib/domain";
   import { DEFAULT_BASE_IMAGE } from "$lib/domain";
@@ -53,12 +53,8 @@
       : new Date(deployedAt).toLocaleTimeString("ja-JP", { hour: "2-digit", minute: "2-digit" }),
   );
   // デプロイ済みと編集側の最新ビルドがズレているか＝「要再デプロイ」（dirty と対称）。
-  // 未デプロイ／未ビルドは対象外。JSON 文字列化比較で十分（dirty 判定と同じ前提）。
-  const deployDrift = $derived(
-    deployedImage !== null &&
-      $workbenchDraft.builtImage !== null &&
-      JSON.stringify($workbenchDraft.builtImage) !== JSON.stringify(deployedImage),
-  );
+  // 内容等価判定はアプリ層セレクタに閉じ、ルーターはドメインへ直接依存しない（P→A のみ）。
+  const deployDrift = $derived(differsFromBuilt($workbenchDraft, deployedImage));
   // 敵イメージの指紋（ステージ固定・不変）。Ally と同体裁のタイルを対称に出すため算出する。
   const enemyHash = $derived(registryFacade.hashOf(stage.enemy));
 

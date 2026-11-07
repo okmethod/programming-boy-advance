@@ -12,11 +12,11 @@ export type { Stage, StageRepository } from "./ports/stageRepository";
 
 export { createRegistryFacade } from "./usecases/registry/facade";
 export type { RegistryFacade } from "./usecases/registry/facade";
-export { registryImages } from "./usecases/registry/store";
+export { registryImages, imageOf, labelOf } from "./usecases/registry/store";
 export type { RegistryImage } from "./usecases/registry/store";
 export type { PersistedImage, PersistedRegistry, RegistryRepository } from "./ports/registryRepository";
 
 export { workbenchFacade } from "./usecases/workbench/facade";
 export type { WorkbenchFacade } from "./usecases/workbench/facade";
-export { workbenchDraft, currentImage } from "./usecases/workbench/store";
+export { workbenchDraft, currentImage, differsFromBuilt } from "./usecases/workbench/store";
 export type { WorkbenchDraft, CurrentImage } from "./usecases/workbench/store";
