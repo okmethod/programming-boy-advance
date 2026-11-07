@@ -8,6 +8,13 @@
 
 import type { Program } from "$lib/domain/models/program";
 
+/**
+ * 命令木の内容等価（content-addressable な一致判定）。中身が同じなら true。
+ * ハッシュ衝突に依らず正確に判定したいので、指紋比較ではなく構造の文字列化で突き合わせる
+ * （命令木は順序のある素直な JSON なので文字列化比較で十分・YAGNI）。
+ */
+export const areProgramsEqual = (a: Program, b: Program): boolean => JSON.stringify(a) === JSON.stringify(b);
+
 /** 命令木の内容ハッシュ（FNV-1a 32bit を 8 桁 hex で）。中身が同じなら同じ指紋。 */
 export const hashProgram = (program: Program): string => {
   const json = JSON.stringify(program);

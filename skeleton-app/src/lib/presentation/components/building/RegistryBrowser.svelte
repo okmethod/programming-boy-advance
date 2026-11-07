@@ -4,8 +4,8 @@
   // ワークベンチ（workbenchDraft）とレジストリ（registryImages）を直接購読して自己完結する。
   // 唯一の継ぎ目は pull 時の Blockly 流し込み＝編集の SSoT は親の BlocklyEditor なので onPull で親に委ねる。
   import Icon from "@iconify/svelte";
-  import { baseImageTag, type BaseImage, type Program } from "$lib/domain";
-  import { registryImages, workbenchFacade, workbenchDraft, type RegistryImage } from "$lib/application";
+  import { baseImageTag, areProgramsEqual, type BaseImage, type Program } from "$lib/domain";
+  import { registryImages, workbenchFacade, workbenchDraft, currentImage, type RegistryImage } from "$lib/application";
   import { registryFacade } from "$lib/presentation/composition";
 
   interface RegistryBrowserProps {
@@ -18,7 +18,19 @@
   let { panelClass = "bg-surface-50", onPull }: RegistryBrowserProps = $props();
 
   const draft = $derived($workbenchDraft);
-  const notBuilt = $derived(draft.builtImage === null);
+  // カレントイメージの読みモデル（未ビルド/指紋）＝workbench state だけの純投影（アプリ層）。
+  // 変数名は current（レジストリ各行の image と衝突させない）。
+  const current = $derived($currentImage);
+
+  // 同一内容の既存イメージ（あれば＝プッシュ不要・表示名の基）＝registry との join。別スライスの読みなので
+  // アプリ層に持たせず、ここで registry 投影（$registryImages）と内容等価で突き合わせて解決する。
+  const duplicate = $derived.by(() => {
+    const built = draft.builtImage;
+    return built ? $registryImages.find((img) => areProgramsEqual(img.program, built)) : undefined;
+  });
+  const alreadyPushed = $derived(duplicate !== undefined);
+  // タイルに出す表示名。ローカル名（draft.imageName）> 同一内容の既存イメージのラベル > プレースホルダ の順で解決する。
+  const builtName = $derived(draft.imageName || duplicate?.label || "未保存イメージ");
 
   // 最終ビルド時刻ラベル（HH:MM）。ビルドの実在を体感させる（復元点の目印）。
   const builtAtLabel = $derived(
@@ -26,19 +38,6 @@
       ? null
       : new Date(draft.builtAt).toLocaleTimeString("ja-JP", { hour: "2-digit", minute: "2-digit" }),
   );
-
-  // ビルド済みイメージと同一内容の既存イメージ（あれば＝プッシュ不要）。未ビルドは対象外。
-  // facade.duplicateOf は get() の一発読みで非追跡のため、$registryImages を購読してレジストリ変化でも再評価する。
-  const duplicate = $derived.by(() => {
-    void $registryImages;
-    return draft.builtImage !== null ? registryFacade.duplicateOf(draft.builtImage) : undefined;
-  });
-  const alreadyPushed = $derived(duplicate !== undefined);
-
-  // タイルに出す表示名。ローカル名（draft.imageName）> 同一内容の既存イメージのラベル > プレースホルダ の順で解決する。
-  const builtName = $derived(draft.imageName || duplicate?.label || "未保存イメージ");
-  // カレントイメージの内容ハッシュ（レジストリ行と同じ指紋）。未ビルドは無し。
-  const builtHash = $derived(draft.builtImage === null ? null : registryFacade.hashOf(draft.builtImage));
 
   // プッシュ＝ビルド済みイメージをレジストリに保存（ローカル名で保管）。生の編集ではなくビルド断面を積む。
   function pushImage() {
@@ -190,7 +189,7 @@
     <div
       class="flex h-12 shrink-0 items-center justify-between gap-3 rounded border border-surface-300 bg-surface-50 px-3"
     >
-      {#if notBuilt}
+      {#if current.notBuilt}
         <span class="inline-flex items-center gap-2 text-sm text-surface-400">
           <Icon icon="mdi:cube-outline" class="size-4" /> 未ビルド
         </span>
@@ -198,7 +197,7 @@
         <!-- カレント＝現在のビルド断面。保管済み行と同じ体裁（ハッシュ-素質-名前-時刻）＋対称の操作列。 -->
         <div class="flex min-w-0 items-center gap-2">
           <Icon icon="mdi:cube" class="size-4 opacity-70" aria-label="カレント" />
-          <span class="font-mono text-xs opacity-60">{builtHash}</span>
+          <span class="font-mono text-xs opacity-60">{current.hash}</span>
           <!-- カレントは編集中のビルド断面＝選択中の素質を土台にビルドしたもの。 -->
           {@render baseImageChip(draft.baseImage)}
           {#if tileRenaming}

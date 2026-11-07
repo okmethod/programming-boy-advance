@@ -15,9 +15,9 @@
  * 汚染は起きない（初期ドラフトのまま）。
  */
 
-import { get, readonly, writable } from "svelte/store";
+import { derived, get, readonly, writable } from "svelte/store";
 import type { BaseImage, Program } from "$lib/domain";
-import { DEFAULT_BASE_IMAGE } from "$lib/domain";
+import { DEFAULT_BASE_IMAGE, hashProgram, areProgramsEqual } from "$lib/domain";
 
 /** 編集中のドラフト断面。program＝Blockly からの最新、builtImage＝ビルドで凍結した断面。 */
 export interface WorkbenchDraft {
@@ -46,6 +46,31 @@ const draftStore = writable<WorkbenchDraft>(INITIAL_DRAFT);
 
 /** 編集中ドラフト（readonly）。コンポーネントはこの readonly store を `$`購読する。 */
 export const workbenchDraft = readonly(draftStore);
+
+/**
+ * カレントイメージ（ビルド断面）の読みモデル＝この store の state だけの純投影。
+ * 未ビルドか／編集がビルド断面から乖離したか（要再ビルド）／内容ハッシュ（指紋）を算出する。
+ * registry のラベル（表示名）や重複判定は別スライス（registry）との join になるため、ここには含めない
+ * ＝クロススライスの読みはプレゼン側で registry 投影と突き合わせて解決する（4層の依存を単一スライスに閉じる）。
+ */
+export interface CurrentImage {
+  // ビルド断面が無い（未ビルド）か。
+  readonly notBuilt: boolean;
+  // ビルド後に編集（program）がビルド断面から乖離したか。未ビルドは false。
+  readonly dirty: boolean;
+  // ビルド断面の内容ハッシュ（レジストリ行と同じ指紋）。未ビルドは null。
+  readonly hash: string | null;
+}
+
+/** カレントイメージの読みモデル（readonly derived）。等価・ハッシュはドメインに委ねる。 */
+export const currentImage = derived(draftStore, (draft): CurrentImage => {
+  const built = draft.builtImage;
+  return {
+    notBuilt: built === null,
+    dirty: built !== null && !areProgramsEqual(draft.program, built),
+    hash: built === null ? null : hashProgram(built),
+  };
+});
 
 /**
  * ドラフトへの機械的な書き込み口（facade からのみ呼ぶ・UI には公開しない）。

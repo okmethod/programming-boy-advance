@@ -12,9 +12,8 @@
   // 2画面の見た目差は「イメージタイル直右のデプロイ1個」だけ＝サンドボックスは showDeploy=false で消える。
   import { tick } from "svelte";
   import Icon from "@iconify/svelte";
-  import { programCost, type Program } from "$lib/domain";
-  import { registryImages, workbenchFacade, workbenchDraft } from "$lib/application";
-  import { registryFacade } from "$lib/presentation/composition";
+  import { programCost, areProgramsEqual, type Program } from "$lib/domain";
+  import { registryImages, workbenchFacade, workbenchDraft, currentImage } from "$lib/application";
   import { automatonIcon } from "$lib/presentation/utils/labels";
   import BlocklyEditor from "./BlocklyEditor.svelte";
   import BaseImageSelector from "./BaseImageSelector.svelte";
@@ -68,12 +67,17 @@
   // メモリ配分（CP↔HP）と CP 上限は CapacityControl に閉じ込め、ここは消費量だけを渡す。
   const cpUsed = $derived(programCost(draft.program));
 
-  // ビルド状態：未ビルド（null）か、ビルド後に編集が乖離したか（要ビルド）。
-  // 命令木は素直な JSON 構造なので文字列化比較で十分（YAGNI）。
-  const notBuilt = $derived(draft.builtImage === null);
-  const dirty = $derived(
-    draft.builtImage !== null && JSON.stringify(draft.program) !== JSON.stringify(draft.builtImage),
-  );
+  // カレントイメージの読みモデル（未ビルド/編集乖離/指紋）＝workbench state だけの純投影（アプリ層）。
+  const current = $derived($currentImage);
+
+  // 表示名の解決には「同一内容の既存イメージ」が要る＝registry との join。これは別スライスの読みなので
+  // アプリ層に持たせず、ここで registry 投影（$registryImages）と内容等価で突き合わせて解決する。
+  const duplicate = $derived.by(() => {
+    const built = draft.builtImage;
+    return built ? $registryImages.find((img) => areProgramsEqual(img.program, built)) : undefined;
+  });
+  // 名前＝ローカル名（draft.imageName）> 同一内容の既存イメージのラベル > プレースホルダ の順で解決する。
+  const builtName = $derived(draft.imageName || duplicate?.label || "未保存イメージ");
 
   // 最終ビルド時刻ラベル。ビルドが「いつの断面か」を示し、ビルドの実在を体感させる（復元点の目印）。
   const builtAtLabel = $derived(
@@ -93,17 +97,6 @@
     if (draft.builtImage === null) return;
     editor?.load(draft.builtImage);
   }
-
-  // ヘッダーのカレントイメージタイルに出す表示名／ハッシュ。
-  // 名前＝ローカル名（draft.imageName）> 同一内容の既存イメージのラベル > プレースホルダ の順で解決する。
-  // 同一内容の既存イメージは facade.duplicateOf（非追跡の一発読み）なので、$registryImages 購読でレジストリ変化にも追従する。
-  const duplicate = $derived.by(() => {
-    void $registryImages;
-    return draft.builtImage !== null ? registryFacade.duplicateOf(draft.builtImage) : undefined;
-  });
-  const builtName = $derived(draft.imageName || duplicate?.label || "未保存イメージ");
-  // カレントイメージの内容ハッシュ（レジストリ行と同じ指紋）。未ビルドは無し。
-  const builtHash = $derived(draft.builtImage === null ? null : registryFacade.hashOf(draft.builtImage));
 
   // 表示開始／編集面復帰で Blockly の表示領域が変わる。transform で開くと ResizeObserver が
   // 発火しないため、DOM 反映（tick）後に明示 resize してスクロールバーを正す。
@@ -134,7 +127,7 @@
     <div class="ml-auto flex items-center gap-2">
       <!-- カレントイメージタイル＝現在のビルド断面の表示（ハッシュ-名前-ビルド時刻／レジストリ行と同体裁・表示専用）。
            ダーティーに依らず一定。改名・プッシュ・削除はレジストリタブのカレント行に集約する。 -->
-      {#if notBuilt}
+      {#if current.notBuilt}
         <span
           class="inline-flex items-center gap-1.5 rounded border border-dashed border-surface-300 px-2 py-1 text-xs text-surface-400"
         >
@@ -146,7 +139,7 @@
           class="inline-flex items-center gap-1.5 rounded border border-surface-300 bg-surface-50 px-2 py-1 text-xs text-surface-700"
         >
           <Icon icon="mdi:cube" class="size-4" aria-label="カレントイメージ" />
-          <span class="font-mono opacity-60">{builtHash}</span>
+          <span class="font-mono opacity-60">{current.hash}</span>
           <!-- 名前は表示専用。改名はレジストリタブのカレント行に一本化する。 -->
           <span class="max-w-[8rem] truncate font-medium">{builtName}</span>
           <span class="opacity-70">{builtAtLabel}</span>
@@ -158,8 +151,8 @@
         <button
           class="action-btn-strong disabled:opacity-40"
           onclick={() => draft.builtImage && onDeploy?.(draft.builtImage, builtName)}
-          disabled={notBuilt}
-          title={notBuilt ? "先にビルド" : "ビルド済みイメージを対戦に反映"}
+          disabled={current.notBuilt}
+          title={current.notBuilt ? "先にビルド" : "ビルド済みイメージを対戦に反映"}
         >
           <Icon icon="mdi:rocket-launch-outline" class="size-4" /> デプロイ
         </button>
@@ -196,12 +189,12 @@
       <!-- ビルド＋同期操作：右上。ダーティー表示は専用ラベルを持たず、「前回ビルド時に戻す」が出ている事自体が
            ダーティーの合図＝戻すが無い（＝編集とビルド断面が一致）＝「ビルド済み（最新）」を✓で示す。 -->
       <div class="absolute right-5 top-2 z-20 flex items-center gap-2">
-        {#if dirty}
+        {#if current.dirty}
           <!-- ロールバック＝編集を捨てて前回ビルド時へ戻す。この表示自体がダーティーの合図。破壊寄りなので淡色。 -->
           <button class="action-btn" onclick={revertToBuilt} title="編集を捨てて前回ビルド時に戻す">
             <Icon icon="mdi:history" class="size-4" /> 前回ビルドに戻す
           </button>
-        {:else if !notBuilt}
+        {:else if !current.notBuilt}
           <!-- 戻すが無い＝編集とビルド断面が一致＝ビルド済み（最新）。 -->
           <span class="inline-flex items-center gap-1 text-xs text-success-700">
             <Icon icon="mdi:check-circle" class="size-4" /> ビルド済み

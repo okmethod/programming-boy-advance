@@ -11,7 +11,7 @@
  */
 
 import type { BaseImage, Program } from "$lib/domain";
-import { BASE_IMAGES, DEFAULT_BASE_IMAGE, hashProgram } from "$lib/domain";
+import { BASE_IMAGES, DEFAULT_BASE_IMAGE, hashProgram, areProgramsEqual } from "$lib/domain";
 import type { PersistedImage, PersistedRegistry, RegistryRepository } from "$lib/application/ports/registryRepository";
 import { registryImages, storeWriter, type RegistryImage } from "./store";
 
@@ -75,9 +75,8 @@ export const createRegistryFacade = (repo: RegistryRepository): RegistryFacade =
   }
 
   function duplicateOf(program: Program): RegistryImage | undefined {
-    // 命令木は素直な JSON なので文字列化比較で content-addressable に判定する。
-    const key = JSON.stringify(program);
-    return storeWriter.snapshot().find((image) => JSON.stringify(image.program) === key);
+    // 内容等価（content-addressable）で同一イメージを探す。等価判定はドメインに委ねる。
+    return storeWriter.snapshot().find((image) => areProgramsEqual(image.program, program));
   }
 
   function push(program: Program, label?: string, baseImage: BaseImage = DEFAULT_BASE_IMAGE): void {

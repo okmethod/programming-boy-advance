@@ -11,7 +11,7 @@
  */
 
 import type { BaseImage, Program } from "$lib/domain";
-import { storeWriter, workbenchDraft, type WorkbenchDraft } from "./store";
+import { storeWriter, type WorkbenchDraft } from "./store";
 
 // プルで取り込む元イメージの最小形（RegistryImage の必要フィールドのみ）。
 interface PullSource {
@@ -74,5 +74,5 @@ export const workbenchFacade: WorkbenchFacade = {
   },
 };
 
-// 読みの投影も同じ入口（$lib/application）から取れるよう再公開する（registry 準拠）。
-export { workbenchDraft };
+// 読みの投影（state の読み取り専用 derived）も同じ入口（$lib/application）から取れるよう再公開する（registry 準拠）。
+export { workbenchDraft, currentImage } from "./store";
