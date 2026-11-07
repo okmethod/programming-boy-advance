@@ -1,42 +1,36 @@
 <script lang="ts">
-  // ベースイメージ（素質＝系統×版）の選択モーダル。
+  // ベースイメージ（素質＝系統×版）のセレクタ。閉＝現在の素質チップ釦／開＝2軸カタログで解放内容を見て選び直す。
   // 「どちらを選ぶと何が解放されるか」を見てから決めるための器。2軸でカタログを写す:
   //   左＝系統リスト（増える＝行が増える）／右＝選んだ系統の版ラダー（伸びる＝ノードが増える）。
   // 各版カードは「できること」の一言概要で版の違いを示し、下段に解放ブロックのフルリスト（コマンド/クエリ/制御）を出す。
-  // 系統が増え・版が伸びても同じレイアウトのまま拡張できる（StageSelectModal と同じモーダル殻を踏襲）。
+  // 系統が増え・版が伸びても同じレイアウトのまま拡張できる。
+  // 現在値（適用中の素質）と編集中プログラムは workbenchDraft を直接購読し、確定は workbenchFacade.setBaseImage で行う。
   import Icon from "@iconify/svelte";
   import { fade } from "svelte/transition";
-  import {
-    baseImageFamilies,
-    baseImageTag,
-    versionTag,
-    baseImageSupports,
-    type BaseImage,
-    type Program,
-  } from "$lib/domain";
+  import { baseImageFamilies, baseImageTag, versionTag, baseImageSupports, type BaseImage } from "$lib/domain";
+  import { workbenchDraft, workbenchFacade } from "$lib/application";
   import { commandLabel, sensorLabel, controlLabel } from "$lib/presentation/utils/labels";
 
-  interface BaseImageSelectModalProps {
-    open: boolean;
-    // 現在適用中の素質（開いたときのプレビュー初期値・「使用中」表示の対象）。
-    selected: BaseImage;
-    // 現在の編集中プログラム（互換性ガードの判定材料）。切替で使えなくなるブロックが無いかを見る。
-    program: Program;
-    // ×/背景クリックで閉じるときのフック。
-    onClose: () => void;
-    // 素質を確定したときのフック（閉じるは呼び出し元が決める）。
-    // 非互換（プログラム破棄を伴う）切替かは呼び出し元が再判定してクリアする。
-    onSelect: (base: BaseImage) => void;
+  interface BaseImageSelectorProps {
+    // 非互換（使用中ブロックが残ると不整合）な切替のとき、編集中プログラムを空にする。
+    // Blockly が編集の SSoT なので実際の load([]) は親に委ねる（破棄の同意はこの中の確認で取得済み）。
+    onClear: () => void;
   }
 
-  let { open, selected, program, onClose, onSelect }: BaseImageSelectModalProps = $props();
+  let { onClear }: BaseImageSelectorProps = $props();
+
+  // 現在適用中の素質・編集中プログラムはドラフトを直接購読する（プレビュー初期値／互換性ガードの材料）。
+  const draft = $derived($workbenchDraft);
+
+  // 開閉状態（このセレクタが所有）。トリガで開き、確定／閉じるで閉じる。
+  let open = $state(false);
 
   const families = baseImageFamilies();
 
   // プレビュー中の版（＝選択候補・下段の解放リストとラダーの強調対象）。
-  // 既定は適用中（selected）。モーダル内でブラウズした分だけ override で上書きし、開くたび override を消す。
+  // 既定は適用中（draft.baseImage）。開いた後にブラウズした分だけ override で上書きし、開くたび override を消す。
   let override = $state<BaseImage | null>(null);
-  const focused = $derived(override ?? selected);
+  const focused = $derived(override ?? draft.baseImage);
   // 非互換切替の確認中フラグ（フッターを確認文に差し替える）。候補が変われば解除。
   let confirming = $state(false);
   $effect(() => {
@@ -47,9 +41,9 @@
   const focusedFamily = $derived(families.find((f) => f.imageName === focused.imageName) ?? families[0]);
 
   // 候補が現適用と同じか＝切替不要（ボタン無効）。
-  const isCurrent = $derived(baseImageTag(focused) === baseImageTag(selected));
+  const isCurrent = $derived(baseImageTag(focused) === baseImageTag(draft.baseImage));
   // 候補へ切り替えても使用中ブロックが失われないか（互換性ガード）。
-  const supported = $derived(baseImageSupports(focused, program));
+  const supported = $derived(baseImageSupports(focused, draft.program));
 
   // 候補を切り替える。確認中フラグは候補が変わったら必ず解除する。
   function pick(base: BaseImage) {
@@ -62,35 +56,49 @@
     if (fam) pick(fam.versions[fam.versions.length - 1]);
   }
 
-  // 確定ボタン。互換なら即適用。非互換は一度確認を挟み、OK でプログラム破棄込みの切替を親に委ねる。
+  // 候補を確定して素質を乗り換える。非互換は編集を空に（親へ委譲）してから適用する。
+  function commit() {
+    if (!supported) onClear();
+    workbenchFacade.setBaseImage(focused);
+    open = false;
+  }
+  // 確定ボタン。互換なら即適用。非互換は一度確認を挟み、OK でプログラム破棄込みの切替を行う。
   function apply() {
-    if (supported) {
-      onSelect(focused);
-    } else if (!confirming) {
-      confirming = true;
-    } else {
-      onSelect(focused);
-    }
+    if (supported) commit();
+    else if (!confirming) confirming = true;
+    else commit();
   }
 </script>
+
+<!-- トリガ＝現在のベースイメージ（系統アイコン＋タグ）。押すと2軸カタログで解放内容を見て選び直せる。 -->
+<button
+  type="button"
+  onclick={() => (open = true)}
+  class="inline-flex items-center gap-1.5 rounded border border-surface-300 bg-surface-50/95 px-2 py-1 text-xs text-surface-700 shadow-sm hover:bg-surface-100"
+  title="ベースイメージ（素質）を選ぶ"
+>
+  <Icon icon={draft.baseImage.icon} class="size-4 text-success-700" aria-label="素質" />
+  <span class="font-mono opacity-70">{baseImageTag(draft.baseImage)}</span>
+  <Icon icon="mdi:chevron-down" class="size-4 opacity-50" />
+</button>
 
 {#if open}
   <div
     class="fixed inset-0 z-50 flex items-start justify-center p-4 sm:items-center"
     transition:fade={{ duration: 150 }}
   >
-    <button class="absolute inset-0 bg-black/40" aria-label="閉じる" onclick={onClose}></button>
+    <button class="absolute inset-0 bg-black/40" aria-label="閉じる" onclick={() => (open = false)}></button>
     <!-- 高さは固定（h-[32rem]／小画面は 80dvh で頭打ち）。版を切替えても解放リストの量でモーダルが伸縮しないよう、
          器の高さを一定にして内側リストだけスクロールさせる。 -->
     <div
       class="relative z-10 flex h-[32rem] max-h-[80dvh] w-full max-w-3xl flex-col gap-3 overflow-hidden rounded-xl bg-white p-4 shadow-xl"
     >
-      <!-- ヘッダー：タイトル＋閉じる（StageSelectModal と同体裁）。 -->
+      <!-- ヘッダー：タイトル＋閉じる。 -->
       <div class="flex shrink-0 items-center justify-between">
         <h2 class="inline-flex items-center gap-1 text-base font-bold">
           <Icon icon="mdi:dna" class="size-5 text-success-700" /> ベースイメージを選ぶ
         </h2>
-        <button class="rounded p-1 hover:bg-gray-100" aria-label="閉じる" onclick={onClose}>
+        <button class="rounded p-1 hover:bg-gray-100" aria-label="閉じる" onclick={() => (open = false)}>
           <Icon icon="mdi:close" class="size-5" />
         </button>
       </div>
@@ -137,7 +145,7 @@
               {/if}
               <!-- 一致判定はタグ（値）で行う。$state はオブジェクトを Proxy 化するため参照比較は当てにならない。 -->
               {@const isFocused = baseImageTag(ver) === baseImageTag(focused)}
-              {@const isApplied = baseImageTag(ver) === baseImageTag(selected)}
+              {@const isApplied = baseImageTag(ver) === baseImageTag(draft.baseImage)}
               <!-- タイルは版番号＋状態だけに絞る（説明は下の説明欄に集約）。
                    固定幅＋左詰めで「使用中」の有無に依らず全タイルの幅を揃える。
                    候補（選択中）は色をかえる。 -->
@@ -235,7 +243,7 @@
             <Icon icon="mdi:delete-alert" class="size-4" /> 破棄して切替
           </button>
         {:else}
-          <button class="action-btn shrink-0 whitespace-nowrap" onclick={onClose}>閉じる</button>
+          <button class="action-btn shrink-0 whitespace-nowrap" onclick={() => (open = false)}>閉じる</button>
           {#if isCurrent}
             <!-- 現適用と同じ＝切替不要。押せない状態で「今これが使われている」ことを示す。 -->
             <button class="action-btn-strong shrink-0 whitespace-nowrap disabled:opacity-40" disabled>

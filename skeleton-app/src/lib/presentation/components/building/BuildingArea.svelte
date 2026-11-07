@@ -12,12 +12,12 @@
   // 2画面の見た目差は「イメージタイル直右のデプロイ1個」だけ＝サンドボックスは showDeploy=false で消える。
   import { tick } from "svelte";
   import Icon from "@iconify/svelte";
-  import { programCost, baseImageTag, baseImageSupports, type BaseImage, type Program } from "$lib/domain";
+  import { programCost, type Program } from "$lib/domain";
   import { registryImages, workbenchFacade, workbenchDraft } from "$lib/application";
   import { registryFacade } from "$lib/presentation/composition";
   import { automatonIcon } from "$lib/presentation/utils/labels";
   import BlocklyEditor from "./BlocklyEditor.svelte";
-  import BaseImageSelectModal from "./BaseImageSelectModal.svelte";
+  import BaseImageSelector from "./BaseImageSelector.svelte";
   import CapacityAllocator from "./CapacityAllocator.svelte";
   import RegistryBrowser from "./RegistryBrowser.svelte";
   import SegmentedTabs from "$lib/presentation/components/shared/SegmentedTabs.svelte";
@@ -63,18 +63,6 @@
   // BlocklyEditor への参照。お手本 pull は program を直接書き換えず、この load() を通して
   // Blockly に流し込む（Blockly → Program の順方向で program が更新される）。
   let editor = $state<BlocklyEditor>();
-
-  // 編集中に土台とする素質（系統×版）はドラフト（draft.baseImage）が持つ。
-  // 付与命令セットがパレットに出せるブロックを決める。
-  // 選択は「どちらを選ぶと何が解放されるか」を見て決められるよう、2軸モーダルに委ねる。
-  let baseModalOpen = $state(false);
-  function selectBaseImage(base: BaseImage) {
-    // 非互換切替＝使えなくなるブロックが残ると不整合になるため、編集中プログラムを全クリアしてから乗り換える
-    // （破棄の同意はモーダル側の確認で取得済み）。Blockly が編集の SSoT なので load([]) で空にする。
-    if (!baseImageSupports(base, draft.program)) editor?.load([]);
-    workbenchFacade.setBaseImage(base);
-    baseModalOpen = false;
-  }
 
   // CP（作成予算）の消費量。組んだブロック数から算出する（戦闘状態とは独立）。
   // メモリ配分（CP↔HP）と CP 上限は CapacityControl に閉じ込め、ここは消費量だけを渡す。
@@ -210,21 +198,12 @@
          戻すが無い（＝編集とビルド断面が一致）＝「ビルド済み（最新）」を✓で示す。 -->
     <!-- ベースイメージ選択（素質＝系統×版）＝ビルド時の新ギミック其の一。コマンド解放の土台を選ぶ口。
          編集文脈（ブロック/エディタ編集）でだけ出す＝ビルド/CP ゲージと同条件。レジストリ（保管）では隠す。
-         ビルドの入力＝「何から作るか」なので、エディタ領域の上部中央（ビルドボタンの左）に置く。
-         選んだ素質が BlocklyEditor のパレット（出せるブロック）を実際に切り替える＝コマンド解放の seam。 -->
+         ビルドの入力＝「何から作るか」なので、エディタ領域の上部中央（ビルドボタンの左）に置く。配置は親の責務・選択は子に閉じる。
+         選んだ素質が BlocklyEditor のパレット（出せるブロック）を実際に切り替える＝コマンド解放の seam。
+         非互換切替のときだけ Blockly を空にする＝編集の SSoT はここの editor なので onClear で受ける。 -->
     {#if mainView !== "registry"}
-      <!-- トリガ＝現在のベースイメージ（系統アイコン＋タグ）。押すと2軸モーダルで解放内容を見て選び直せる。 -->
       <div class="absolute left-1/2 top-2 z-20 -translate-x-1/2">
-        <button
-          type="button"
-          onclick={() => (baseModalOpen = true)}
-          class="inline-flex items-center gap-1.5 rounded border border-surface-300 bg-surface-50/95 px-2 py-1 text-xs text-surface-700 shadow-sm hover:bg-surface-100"
-          title="ベースイメージ（素質）を選ぶ"
-        >
-          <Icon icon={draft.baseImage.icon} class="size-4 text-success-700" aria-label="素質" />
-          <span class="font-mono opacity-70">{baseImageTag(draft.baseImage)}</span>
-          <Icon icon="mdi:chevron-down" class="size-4 opacity-50" />
-        </button>
+        <BaseImageSelector onClear={() => editor?.load([])} />
       </div>
     {/if}
 
@@ -273,12 +252,3 @@
     {/if}
   </div>
 </div>
-
-<!-- ベースイメージ選択（2軸モーダル）。系統×版を見比べ、確定で素質を乗り換える＝パレット（出せるブロック）が追従する。 -->
-<BaseImageSelectModal
-  open={baseModalOpen}
-  selected={draft.baseImage}
-  program={draft.program}
-  onSelect={selectBaseImage}
-  onClose={() => (baseModalOpen = false)}
-/>
