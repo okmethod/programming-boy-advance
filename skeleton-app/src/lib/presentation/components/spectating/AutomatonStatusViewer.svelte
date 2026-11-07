@@ -11,6 +11,7 @@
   import type { AutomatonId, BattleState } from "$lib/domain";
   import { BATTLE_PARAMS } from "$lib/domain";
   import { automatonIcon, automatonName } from "$lib/presentation/utils/labels";
+  import FractionReadout from "$lib/presentation/components/shared/FractionReadout.svelte";
 
   interface AutomatonStatusViewerProps {
     frames: readonly BattleState[];
@@ -99,11 +100,14 @@
     </div>
     <!-- 現在値（分子）を主役に大きく、容量（分母）は淡色の参照に。
          桁数が変わってもスラッシュ位置がぶれないよう、両数字を固定幅で右揃えする。 -->
-    <span class="inline-flex shrink-0 items-baseline tabular-nums {hpDanger ? 'text-red-400' : 'text-gray-100'}">
-      <span class="w-[2ch] text-right text-base font-bold">{hp}</span>
-      <span class="text-xs text-gray-500">/</span>
-      <span class="w-[2ch] text-right text-xs text-gray-500">{maxHp}</span>
-    </span>
+    <FractionReadout
+      numerator={hp}
+      denominator={maxHp}
+      cRoot={hpDanger ? "text-red-400" : "text-gray-100"}
+      cNumerator="text-base font-bold"
+      cSlash="text-xs text-gray-500"
+      cDenominator="text-xs text-gray-500"
+    />
   </div>
 
   <!-- BP：CPU 負荷の軌跡を時系列波形で（溜まって天井＝フリーズ）。 -->
@@ -166,10 +170,13 @@
         />
       </svg>
     </div>
-    <span class="inline-flex shrink-0 items-baseline tabular-nums {bpDanger ? 'text-red-400' : 'text-gray-100'}">
-      <span class="w-[2ch] text-right text-base font-bold">{bp}</span>
-      <span class="text-xs text-gray-500">/</span>
-      <span class="w-[2ch] text-right text-xs text-gray-500">{bpMax}</span>
-    </span>
+    <FractionReadout
+      numerator={bp}
+      denominator={bpMax}
+      cRoot={bpDanger ? "text-red-400" : "text-gray-100"}
+      cNumerator="text-base font-bold"
+      cSlash="text-xs text-gray-500"
+      cDenominator="text-xs text-gray-500"
+    />
   </div>
 </div>

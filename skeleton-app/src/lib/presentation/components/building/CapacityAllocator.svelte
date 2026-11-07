@@ -6,6 +6,7 @@
   // 読み取り専用の CP 表示が要るようになったら editable prop を足し、必要なら配分状態を親へ lift（YAGNI）。
   import { untrack } from "svelte";
   import Icon from "@iconify/svelte";
+  import FractionReadout from "$lib/presentation/components/shared/FractionReadout.svelte";
 
   interface CapacityAllocatorProps {
     // 現在のプログラムが消費する CP（組んだブロック数）。
@@ -87,12 +88,15 @@
           <span class="flex-1 {over ? 'bg-red-500' : i < cpUsed ? 'bg-amber-300' : 'bg-surface-50'}"></span>
         {/each}
       </div>
-      <!-- 数字は固定幅（2桁ぶん）で右揃え＝桁数が変わっても歯車までの幅がぶれない。 -->
-      <span class="inline-flex shrink-0 items-baseline tabular-nums {over ? 'text-red-600' : 'text-surface-900'}">
-        <span class="inline-block w-[2ch] text-right text-sm font-bold">{cpUsed}</span>
-        <span class="px-0.5 text-xs text-surface-400">/</span>
-        <span class="inline-block w-[2ch] text-right text-xs text-surface-500">{cpAllocated}</span>
-      </span>
+      <!-- 固定幅の分数で桁数が変わっても歯車までの幅がぶれない。 -->
+      <FractionReadout
+        numerator={cpUsed}
+        denominator={cpAllocated}
+        cRoot={over ? "text-red-600" : "text-surface-900"}
+        cNumerator="text-sm font-bold"
+        cSlash="px-0.5 text-xs text-surface-400"
+        cDenominator="text-xs text-surface-500"
+      />
     </div>
     <!-- メモリ配分（HP↔CP）＝ビルド時の新ギミック其の二。CP 側の割り当てがこの CP ゲージの上限になる
          （BP は CPU＝ステージ固定なので対象外＝3 分割ではない）。CP の予算そのものに紐づくのでゲージの真横に置く。 -->
