@@ -5,3 +5,4 @@
  */
 
 export { staticStageRepository } from "./adapters/staticStageRepository";
+export { localStorageRegistryRepository } from "./adapters/localStorageRegistryRepository";

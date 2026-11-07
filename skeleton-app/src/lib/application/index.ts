@@ -8,3 +8,8 @@ export { createBattleFacade } from "./usecases/battle/facade";
 export type { BattleFacade, BattleRun } from "./usecases/battle/facade";
 export type { SandboxTarget } from "./usecases/battle/sandbox";
 export type { Stage, StageRepository } from "./ports/stageRepository";
+
+export { createRegistryFacade, registryImages } from "./usecases/registry/facade";
+export type { RegistryFacade } from "./usecases/registry/facade";
+export type { RegistryImage } from "./usecases/registry/store";
+export type { PersistedImage, PersistedRegistry, RegistryRepository } from "./ports/registryRepository";

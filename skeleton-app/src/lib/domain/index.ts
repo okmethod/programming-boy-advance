@@ -35,4 +35,5 @@ export { run } from "./interpreter/run";
 export { applyAction, advanceClock, commandToAction, exprValue, sensorValue } from "./battle/engine";
 export { BATTLE_PARAMS, type BattleParams } from "./battle/params";
 export { programCost } from "./program/cost";
+export { hashProgram } from "./program/hash";
 export { flatLines, nodeIdMap, type FlatLine } from "./program/nodes";

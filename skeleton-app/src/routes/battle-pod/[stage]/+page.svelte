@@ -5,7 +5,7 @@
   // 対戦実行はアプリ層ファサード runStage() 経由。設計は docs/design/execution-model.md を参照。
   // 構築エリア（左）・試運転レール（右）はレジストリ管理ページと共有する部品に切り出した。
   import Icon from "@iconify/svelte";
-  import { battleFacade } from "$lib/presentation/composition";
+  import { battleFacade, registryFacade } from "$lib/presentation/composition";
   import type { PageData } from "./$types";
   import type { Program } from "$lib/domain";
   import { DEFAULT_BASE_IMAGE } from "$lib/domain";
@@ -19,7 +19,6 @@
   import ProgramViewer from "$lib/presentation/components/inspecting/ProgramViewer.svelte";
   import ActionLogViewer from "$lib/presentation/components/inspecting/ActionLogViewer.svelte";
   import ImageViewer from "$lib/presentation/components/inspecting/ImageViewer.svelte";
-  import { registry } from "$lib/presentation/stores/registryStore.svelte";
   import { automatonIcon } from "$lib/presentation/utils/labels";
   import { fade } from "svelte/transition";
 
@@ -51,7 +50,7 @@
   let deployedAt = $state<number | null>(null);
 
   // 観戦側イメージタイルの表示値。ハッシュはイメージ本体から算出し、構築エリアのカレントタイルと同じ指紋を見せる。
-  const deployedHash = $derived(deployedImage === null ? null : registry.hashOf(deployedImage));
+  const deployedHash = $derived(deployedImage === null ? null : registryFacade.hashOf(deployedImage));
   const deployedAtLabel = $derived(
     deployedAt === null
       ? null
@@ -63,7 +62,7 @@
     deployedImage !== null && builtImage !== null && JSON.stringify(builtImage) !== JSON.stringify(deployedImage),
   );
   // 敵イメージの指紋（ステージ固定・不変）。Ally と同体裁のタイルを対称に出すため算出する。
-  const enemyHash = $derived(registry.hashOf(stage.enemy));
+  const enemyHash = $derived(registryFacade.hashOf(stage.enemy));
 
   // 対戦はデプロイ済みイメージのみ。未デプロイ（null）なら走らせず、観戦は空状態にする。
   const run = $derived(deployedImage ? facade.runStage(stageId, deployedImage) : null);

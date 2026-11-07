@@ -17,12 +17,19 @@
  * ステージ選択は URL（/battle-pod/[stage]）を SSoT とする。
  */
 
-import { createBattleFacade } from "$lib/application";
-import type { BattleFacade, Stage } from "$lib/application";
-import { staticStageRepository } from "$lib/infrastructure";
+import { createBattleFacade, createRegistryFacade } from "$lib/application";
+import type { BattleFacade, RegistryFacade, Stage } from "$lib/application";
+import { localStorageRegistryRepository, staticStageRepository } from "$lib/infrastructure";
 
 /** UI 全体で共有する単一のファサード＝ UI からゲームロジックへの唯一の窓口。 */
 export const battleFacade: BattleFacade = createBattleFacade(staticStageRepository);
 
 /** ステージ選択 UI 用の一覧（不変・登録順）。 */
 export const stageList: readonly Stage[] = battleFacade.listStages();
+
+/** 手持ちイメージ操作の単一窓口。読みは registryImages（readonly store）を `$`購読する。 */
+export const registryFacade: RegistryFacade = createRegistryFacade(localStorageRegistryRepository);
+
+// 起動時に永続化済みの手持ちを state へ復元する（ブラウザのみ実際に読み込む＝adapter が typeof で判定）。
+// SSR/プリレンダ時は no-op でプリセットのみの初期シードのまま。
+registryFacade.restore();

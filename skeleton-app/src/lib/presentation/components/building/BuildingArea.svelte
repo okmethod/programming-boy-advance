@@ -20,7 +20,8 @@
     type BaseImage,
     type Program,
   } from "$lib/domain";
-  import { registry, type RegistryImage } from "$lib/presentation/stores/registryStore.svelte";
+  import { registryImages, type RegistryImage } from "$lib/application";
+  import { registryFacade } from "$lib/presentation/composition";
   import { automatonIcon } from "$lib/presentation/utils/labels";
   import BlocklyEditor from "./BlocklyEditor.svelte";
   import BaseImageSelectModal from "./BaseImageSelectModal.svelte";
@@ -122,7 +123,11 @@
   }
 
   // ビルド済みイメージと同一内容の既存イメージ（あれば＝プッシュ不要）。未ビルドは対象外。
-  const duplicate = $derived(builtImage !== null ? registry.duplicateOf(builtImage) : undefined);
+  // facade.duplicateOf は get() の一発読みで非追跡のため、$registryImages を購読してレジストリ変化でも再評価する。
+  const duplicate = $derived.by(() => {
+    void $registryImages;
+    return builtImage !== null ? registryFacade.duplicateOf(builtImage) : undefined;
+  });
   const alreadyPushed = $derived(duplicate !== undefined);
 
   // カレントイメージのローカル名。push 前から付けられ、push 時にこの名前で保管する。
@@ -131,12 +136,12 @@
   // タイルに出す表示名。ローカル名 > 同一内容の既存イメージのラベル > プレースホルダ の順で解決する。
   const builtName = $derived(imageName || duplicate?.label || "未保存イメージ");
   // カレントイメージの内容ハッシュ（レジストリ行と同じ指紋）。未ビルドは無し。
-  const builtHash = $derived(builtImage === null ? null : registry.hashOf(builtImage));
+  const builtHash = $derived(builtImage === null ? null : registryFacade.hashOf(builtImage));
 
   // プッシュ＝ビルド済みイメージをレジストリに保存（ローカル名で保管）。生の編集ではなくビルド断面を積む。
   function pushImage() {
     if (builtImage === null) return;
-    registry.push(builtImage, imageName, selectedBaseImage);
+    registryFacade.push(builtImage, imageName, selectedBaseImage);
   }
 
   // プル＝レジストリのイメージをカレント（ビルド断面）に取り込む。改良の起点。
@@ -162,7 +167,7 @@
   function commitRename() {
     if (renamingId === null) return;
     const label = renameValue.trim();
-    if (label.length > 0) registry.rename(renamingId, label);
+    if (label.length > 0) registryFacade.rename(renamingId, label);
     renamingId = null;
   }
   // インライン入力はマウント時にフォーカスしたい（bind:this は不安定なので use: で登録）。
@@ -182,7 +187,7 @@
     const name = renameValue.trim();
     if (name.length > 0) {
       imageName = name;
-      if (duplicate?.source === "user") registry.rename(duplicate.id, name);
+      if (duplicate?.source === "user") registryFacade.rename(duplicate.id, name);
     }
     tileRenaming = false;
   }
@@ -352,7 +357,7 @@
           <span class="shrink-0 text-xs font-bold text-surface-500">レジストリ</span>
           <!-- 一覧（各行＝オートマトンイメージ）。お手本＝初期シード／手持ち＝プッシュ分（保存時刻つき）。 -->
           <ul class="flex min-h-0 flex-1 flex-col gap-2 overflow-auto">
-            {#each registry.images as image (image.id)}
+            {#each $registryImages as image (image.id)}
               <li class="flex h-12 items-center justify-between gap-3 rounded border border-surface-200 px-3">
                 <!-- 並び＝ハッシュ（中身の指紋）／素質（土台）／名前（タグ）／時刻 or sample。 -->
                 <div class="flex min-w-0 items-center gap-2">
@@ -395,7 +400,7 @@
                   <button
                     class="action-btn disabled:opacity-40"
                     disabled={image.source === "preset"}
-                    onclick={() => registry.remove(image.id)}
+                    onclick={() => registryFacade.remove(image.id)}
                   >
                     <Icon icon="mdi:delete-outline" class="size-4" /> 削除
                   </button>

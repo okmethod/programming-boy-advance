@@ -5,7 +5,7 @@
   // 構築エリア・試運転レールはプレイ面の構築ドロワーと同じコンポーネントを共有する。
   import { battleFacade } from "$lib/presentation/composition";
   import type { Program } from "$lib/domain";
-  import { DEFAULT_AUTOMATON_CAPACITY } from "$lib/presentation/constants/allyPresets";
+  import { DEFAULT_AUTOMATON_CAPACITY } from "$lib/presentation/constants/automatonCapacity";
   import BuildingArea from "$lib/presentation/components/building/BuildingArea.svelte";
   import SandboxRail from "$lib/presentation/components/spectating/SandboxRail.svelte";
 
