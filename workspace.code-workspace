@@ -6,6 +6,9 @@
     {
       "path": "skeleton-app",
     },
+    {
+      "path": "docs",
+    },
   ],
   "settings": {
     "editor.tabSize": 2,
