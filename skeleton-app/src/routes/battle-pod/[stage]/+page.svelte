@@ -4,8 +4,11 @@
   // 決定的なフレーム列を再生する。ally は F1 からブロックUI（Blockly）で組む。
   // 対戦実行はアプリ層ファサード runStage() 経由。設計は docs/design/execution-model.md を参照。
   // 構築エリア（左）・試運転レール（右）はレジストリ管理ページと共有する部品に切り出した。
+  // ally の編集中ドラフト（program／builtImage）はアプリ層のワークベンチ store が持つ。
+  // 構築エリア内の Blockly を編集の SSoT とし、store の断面はサンドボックス画面とも共有・画面跨ぎで保持する。
   import Icon from "@iconify/svelte";
   import { battleFacade, registryFacade } from "$lib/presentation/composition";
+  import { workbenchDraft } from "$lib/application";
   import type { PageData } from "./$types";
   import type { Program } from "$lib/domain";
   import { DEFAULT_BASE_IMAGE } from "$lib/domain";
@@ -35,13 +38,6 @@
     Object.fromEntries(stage.initial.automatons.map((a) => [a.id, a.hp])),
   );
 
-  // ally の Program はブロックUI から供給される（継ぎ目は runStage の引数＝Program で確定済み）。
-  // 構築エリア内の Blockly を編集の SSoT とし、allyProgram はそこから流れてくる読み取り専用の断面。
-  let allyProgram = $state<Program>([]);
-
-  // ビルド済みイメージ（試運転の対象・未ビルドは null）。試運転レールが食う。
-  let builtImage = $state<Program | null>(null);
-
   // デプロイ済みイメージ＝対戦に出ている実体（未デプロイは null）。生の編集ではなく、
   // build→deploy の儀式を経たイメージが盤面で戦う。
   let deployedImage = $state<Program | null>(null);
@@ -59,7 +55,9 @@
   // デプロイ済みと編集側の最新ビルドがズレているか＝「要再デプロイ」（dirty と対称）。
   // 未デプロイ／未ビルドは対象外。JSON 文字列化比較で十分（dirty 判定と同じ前提）。
   const deployDrift = $derived(
-    deployedImage !== null && builtImage !== null && JSON.stringify(builtImage) !== JSON.stringify(deployedImage),
+    deployedImage !== null &&
+      $workbenchDraft.builtImage !== null &&
+      JSON.stringify($workbenchDraft.builtImage) !== JSON.stringify(deployedImage),
   );
   // 敵イメージの指紋（ステージ固定・不変）。Ally と同体裁のタイルを対称に出すため算出する。
   const enemyHash = $derived(registryFacade.hashOf(stage.enemy));
@@ -278,8 +276,6 @@
     <!-- 構築エリア：タブ（ブロック編集/エディタ編集/レジストリ）＋CPゲージ＋Blockly 等を内包。
          ドロワーは transform で開くため active にドロワー開閉を渡して開いた後に resize させる。 -->
     <BuildingArea
-      bind:program={allyProgram}
-      bind:builtImage
       memoryTotal={stage.capacity}
       active={drawerOpen}
       showDeploy
@@ -318,7 +314,7 @@
             fill
           />
         {:else}
-          <SandboxRail image={builtImage} {facade} />
+          <SandboxRail image={$workbenchDraft.builtImage} {facade} />
         {/if}
       </div>
     </div>

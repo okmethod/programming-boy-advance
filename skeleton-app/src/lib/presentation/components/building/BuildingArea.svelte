@@ -12,15 +12,8 @@
   // 2画面の見た目差は「イメージタイル直右のデプロイ1個」だけ＝サンドボックスは showDeploy=false で消える。
   import { tick } from "svelte";
   import Icon from "@iconify/svelte";
-  import {
-    programCost,
-    baseImageTag,
-    baseImageSupports,
-    DEFAULT_BASE_IMAGE,
-    type BaseImage,
-    type Program,
-  } from "$lib/domain";
-  import { registryImages, type RegistryImage } from "$lib/application";
+  import { programCost, baseImageTag, baseImageSupports, type BaseImage, type Program } from "$lib/domain";
+  import { registryImages, workbenchFacade, workbenchDraft, type RegistryImage } from "$lib/application";
   import { registryFacade } from "$lib/presentation/composition";
   import { automatonIcon } from "$lib/presentation/utils/labels";
   import BlocklyEditor from "./BlocklyEditor.svelte";
@@ -30,11 +23,6 @@
   import ProgramViewer from "$lib/presentation/components/inspecting/ProgramViewer.svelte";
 
   interface BuildingAreaProps {
-    // 編集中の Program。SSoT は内部 Blockly で、ここから読み取り専用の断面が流れ出る（bindable）。
-    program: Program;
-    // ビルド済みイメージ（編集を凍結したスナップショット・不変）。試運転／デプロイの対象。
-    // 未ビルドは null。生の編集とは別物で、ビルドして初めて確定する（bindable）。
-    builtImage: Program | null;
     // 総メモリ＝HP↔CP 配分の原資。プレイ面=stage.capacity／レジストリ管理=既定容量。
     // この総量をプレイヤーが HP と CP に振り分ける（CP 厚め＝複雑だが脆い）。配分は編集時のローカル状態で持つ。
     memoryTotal: number;
@@ -51,14 +39,16 @@
   }
 
   let {
-    program = $bindable(),
-    builtImage = $bindable(null),
     memoryTotal,
     active,
     showDeploy = false,
     onDeploy,
     panelClass = "bg-surface-50", // 既定: 薄緑地
   }: BuildingAreaProps = $props();
+
+  // 編集中ドラフト＝アプリ層のワークベンチ store（サンドボックス⇄プレイ面で共有・画面跨ぎで保持）。
+  // program／builtImage／builtAt／imageName／baseImage はこの1つの断面として持ち運ぶ。
+  const draft = $derived($workbenchDraft);
 
   // メイン領域の表示切替。ブロック編集 / エディタ編集（生成コード表示）/ レジストリ。
   type MainView = "edit" | "code" | "registry";
@@ -73,87 +63,79 @@
   // Blockly に流し込む（Blockly → Program の順方向で program が更新される）。
   let editor = $state<BlocklyEditor>();
 
-  // 編集中に土台とする素質（系統×版）。付与命令セットがパレットに出せるブロックを決める。
-  // 版を上げると命令が広がる（v1=基本行動のみ → v2=クエリ＋制御）。既定はフル機能の v2.0。
+  // 編集中に土台とする素質（系統×版）はドラフト（draft.baseImage）が持つ。
+  // 付与命令セットがパレットに出せるブロックを決める。
   // 選択は「どちらを選ぶと何が解放されるか」を見て決められるよう、2軸モーダルに委ねる。
-  let selectedBaseImage = $state<BaseImage>(DEFAULT_BASE_IMAGE);
   let baseModalOpen = $state(false);
   function selectBaseImage(base: BaseImage) {
     // 非互換切替＝使えなくなるブロックが残ると不整合になるため、編集中プログラムを全クリアしてから乗り換える
     // （破棄の同意はモーダル側の確認で取得済み）。Blockly が編集の SSoT なので load([]) で空にする。
-    if (!baseImageSupports(base, program)) editor?.load([]);
-    selectedBaseImage = base;
+    if (!baseImageSupports(base, draft.program)) editor?.load([]);
+    workbenchFacade.setBaseImage(base);
     baseModalOpen = false;
   }
 
   // CP（作成予算）の消費量。組んだブロック数から算出する（戦闘状態とは独立）。
   // メモリ配分（CP↔HP）と CP 上限は CapacityControl に閉じ込め、ここは消費量だけを渡す。
-  const cpUsed = $derived(programCost(program));
+  const cpUsed = $derived(programCost(draft.program));
 
   // ビルド状態：未ビルド（null）か、ビルド後に編集が乖離したか（要ビルド）。
   // 命令木は素直な JSON 構造なので文字列化比較で十分（YAGNI）。
-  const notBuilt = $derived(builtImage === null);
-  const dirty = $derived(builtImage !== null && JSON.stringify(program) !== JSON.stringify(builtImage));
-
-  // 最終ビルド時刻。ビルドが「いつの断面か」を示し、ビルドの実在を体感させる（復元点の目印）。
-  let builtAt = $state<number | null>(null);
-  const builtAtLabel = $derived(
-    builtAt === null ? null : new Date(builtAt).toLocaleTimeString("ja-JP", { hour: "2-digit", minute: "2-digit" }),
+  const notBuilt = $derived(draft.builtImage === null);
+  const dirty = $derived(
+    draft.builtImage !== null && JSON.stringify(draft.program) !== JSON.stringify(draft.builtImage),
   );
 
-  // ビルド＝現在の編集を凍結してイメージ化（試運転・デプロイの前提）。
-  // $state.snapshot で生編集から切り離した不変スナップショットにする。
+  // 最終ビルド時刻ラベル。ビルドが「いつの断面か」を示し、ビルドの実在を体感させる（復元点の目印）。
+  const builtAtLabel = $derived(
+    draft.builtAt === null
+      ? null
+      : new Date(draft.builtAt).toLocaleTimeString("ja-JP", { hour: "2-digit", minute: "2-digit" }),
+  );
+
+  // ビルド＝現在の編集を凍結してイメージ化（試運転・デプロイの前提）。スナップショット化は facade が担う。
   function build() {
-    builtImage = $state.snapshot(program) as Program;
-    builtAt = Date.now();
+    workbenchFacade.build();
   }
 
   // 最新ビルドに戻す＝編集中の変更を破棄してビルド断面へ復帰（ビルドを復元点として使う）。
   // Blockly が編集の SSoT なので load() で流し込み、program が順方向で戻る。
   function revertToBuilt() {
-    if (builtImage === null) return;
-    editor?.load(builtImage);
+    if (draft.builtImage === null) return;
+    editor?.load(draft.builtImage);
   }
 
   // カレントイメージを破棄＝未ビルドに戻す（編集中の Blockly はそのまま・凍結した断面だけ捨てる）。
   function clearBuiltImage() {
-    builtImage = null;
-    builtAt = null;
-    imageName = "";
+    workbenchFacade.clearBuilt();
   }
 
   // ビルド済みイメージと同一内容の既存イメージ（あれば＝プッシュ不要）。未ビルドは対象外。
   // facade.duplicateOf は get() の一発読みで非追跡のため、$registryImages を購読してレジストリ変化でも再評価する。
   const duplicate = $derived.by(() => {
     void $registryImages;
-    return builtImage !== null ? registryFacade.duplicateOf(builtImage) : undefined;
+    return draft.builtImage !== null ? registryFacade.duplicateOf(draft.builtImage) : undefined;
   });
   const alreadyPushed = $derived(duplicate !== undefined);
 
-  // カレントイメージのローカル名。push 前から付けられ、push 時にこの名前で保管する。
-  // 改良（再ビルド）では保持し、別イメージを pull したらその名前へ乗り換える（＝自分のオートマトンに名を付けて育てる）。
-  let imageName = $state("");
-  // タイルに出す表示名。ローカル名 > 同一内容の既存イメージのラベル > プレースホルダ の順で解決する。
-  const builtName = $derived(imageName || duplicate?.label || "未保存イメージ");
+  // タイルに出す表示名。ローカル名（draft.imageName）> 同一内容の既存イメージのラベル > プレースホルダ の順で解決する。
+  const builtName = $derived(draft.imageName || duplicate?.label || "未保存イメージ");
   // カレントイメージの内容ハッシュ（レジストリ行と同じ指紋）。未ビルドは無し。
-  const builtHash = $derived(builtImage === null ? null : registryFacade.hashOf(builtImage));
+  const builtHash = $derived(draft.builtImage === null ? null : registryFacade.hashOf(draft.builtImage));
 
   // プッシュ＝ビルド済みイメージをレジストリに保存（ローカル名で保管）。生の編集ではなくビルド断面を積む。
   function pushImage() {
-    if (builtImage === null) return;
-    registryFacade.push(builtImage, imageName, selectedBaseImage);
+    if (draft.builtImage === null) return;
+    registryFacade.push(draft.builtImage, draft.imageName, draft.baseImage);
   }
 
   // プル＝レジストリのイメージをカレント（ビルド断面）に取り込む。改良の起点。
   // 編集内容（Blockly）も同じ断面に合わせてダーティーを出さず、タブは切り替えない（カレントが更新されるだけ）。
-  // 時刻はイメージの保存時刻（お手本は保存時刻を持たないので現在時刻）。
   // 素質もそのイメージが土台にした版へ乗り換える（パレットの出せるブロックも追従する）。
+  // Blockly への流し込みは load() 経由、カレント断面（builtImage/時刻/名前/素質）は facade が受ける。
   function pullImage(image: RegistryImage) {
     editor?.load(image.program);
-    builtImage = image.program;
-    builtAt = image.pushedAt ?? Date.now();
-    imageName = image.label;
-    selectedBaseImage = image.baseImage;
+    workbenchFacade.pull(image);
   }
 
   // リネーム（インライン編集）。編集中の行 id と入力値を持ち、Enter/blur で確定・Escape で取消。
@@ -180,13 +162,13 @@
   // その登録名も合わせて更新する（一覧と齟齬が出ないように）。入力値は一覧の改名と共有（同時編集はしない）。
   let tileRenaming = $state(false);
   function startTileRename() {
-    renameValue = imageName || duplicate?.label || "";
+    renameValue = draft.imageName || duplicate?.label || "";
     tileRenaming = true;
   }
   function commitTileRename() {
     const name = renameValue.trim();
     if (name.length > 0) {
-      imageName = name;
+      workbenchFacade.setName(name);
       if (duplicate?.source === "user") registryFacade.rename(duplicate.id, name);
     }
     tileRenaming = false;
@@ -202,6 +184,17 @@
   $effect(() => {
     if (!active || mainView !== "edit") return;
     tick().then(() => editor?.resize());
+  });
+
+  // 画面跨ぎで持ち越したドラフトを Blockly に復元する（マウント後に一度だけ）。
+  // Blockly は空で初期化され onProgramChange を発火しないため、持ち越した program は load で流し込む。
+  // baseImage は inject 時に draft.baseImage で揃っており、ここでは中身（ブロック）だけ復元する。
+  let hydrated = false;
+  $effect(() => {
+    if (hydrated || !editor) return;
+    hydrated = true;
+    const { program } = workbenchFacade.current();
+    if (program.length > 0) editor.load(program);
   });
 </script>
 
@@ -246,7 +239,7 @@
              副作用のある命令なのでビルドと同じ強調色（action-btn-strong）で揃える。 -->
         <button
           class="action-btn-strong disabled:opacity-40"
-          onclick={() => builtImage && onDeploy?.(builtImage, builtName)}
+          onclick={() => draft.builtImage && onDeploy?.(draft.builtImage, builtName)}
           disabled={notBuilt}
           title={notBuilt ? "先にビルド" : "ビルド済みイメージを対戦に反映"}
         >
@@ -263,7 +256,11 @@
          visibility:hidden なのでサイズは保持され、切替で再描画が壊れない（unmount しない）。 -->
     <div class="h-full {mainView !== 'edit' ? 'invisible' : ''}">
       <!-- 選んだ素質がパレットに出せるブロックを決める（上部のベースイメージ選択と連動）。 -->
-      <BlocklyEditor bind:this={editor} baseImage={selectedBaseImage} onProgramChange={(p) => (program = p)} />
+      <BlocklyEditor
+        bind:this={editor}
+        baseImage={draft.baseImage}
+        onProgramChange={(p) => workbenchFacade.setProgram(p)}
+      />
     </div>
 
     <!-- CP ゲージ＝編集中プログラムの作成予算。
@@ -294,8 +291,8 @@
           class="inline-flex items-center gap-1.5 rounded border border-surface-300 bg-surface-50/95 px-2 py-1 text-xs text-surface-700 shadow-sm hover:bg-surface-100"
           title="ベースイメージ（素質）を選ぶ"
         >
-          <Icon icon={selectedBaseImage.icon} class="size-4 text-success-700" aria-label="素質" />
-          <span class="font-mono opacity-70">{baseImageTag(selectedBaseImage)}</span>
+          <Icon icon={draft.baseImage.icon} class="size-4 text-success-700" aria-label="素質" />
+          <span class="font-mono opacity-70">{baseImageTag(draft.baseImage)}</span>
           <Icon icon="mdi:chevron-down" class="size-4 opacity-50" />
         </button>
       </div>
@@ -331,7 +328,7 @@
         <ProgramViewer
           title="プログラム"
           titleIcon={automatonIcon("ally")}
-          {program}
+          program={draft.program}
           activeId={undefined}
           fill
           bodyClass="mt-3"
@@ -432,7 +429,7 @@
                 <Icon icon="mdi:cube" class="size-4 opacity-70" aria-label="カレント" />
                 <span class="font-mono text-xs opacity-60">{builtHash}</span>
                 <!-- カレントは編集中のビルド断面＝選択中の素質を土台にビルドしたもの。 -->
-                {@render baseImageChip(selectedBaseImage)}
+                {@render baseImageChip(draft.baseImage)}
                 {#if tileRenaming}
                   <!-- インライン改名：Enter/blur で確定・Escape で取消。 -->
                   <input
@@ -481,8 +478,8 @@
 <!-- ベースイメージ選択（2軸モーダル）。系統×版を見比べ、確定で素質を乗り換える＝パレット（出せるブロック）が追従する。 -->
 <BaseImageSelectModal
   open={baseModalOpen}
-  selected={selectedBaseImage}
-  {program}
+  selected={draft.baseImage}
+  program={draft.program}
   onSelect={selectBaseImage}
   onClose={() => (baseModalOpen = false)}
 />

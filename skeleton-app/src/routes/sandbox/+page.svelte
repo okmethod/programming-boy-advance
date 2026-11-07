@@ -3,29 +3,24 @@
   // プレイ面のような対戦（勝敗）・deploy は無く、構築エリア（左）と試運転レール（右）だけを置く。
   // レジストリ（お手本/手持ちイメージの管理）は構築エリア内のタブ＝このページの一部。
   // 構築エリア・試運転レールはプレイ面の構築ドロワーと同じコンポーネントを共有する。
+  // 編集中ドラフト（program／builtImage）はアプリ層のワークベンチ store が持ち、プレイ面と共有・画面跨ぎで保持する。
   import { battleFacade } from "$lib/presentation/composition";
-  import type { Program } from "$lib/domain";
+  import { workbenchDraft } from "$lib/application";
   import { DEFAULT_AUTOMATON_CAPACITY } from "$lib/presentation/constants/automatonCapacity";
   import BuildingArea from "$lib/presentation/components/building/BuildingArea.svelte";
   import SandboxRail from "$lib/presentation/components/spectating/SandboxRail.svelte";
-
-  // 編集中の Program。SSoT は BuildingArea 内部の Blockly で、ここへ断面が流れてくる。
-  let program = $state<Program>([]);
-
-  // ビルド済みイメージ（試運転の対象・未ビルドは null）。ビルドで編集が凍結される。
-  let builtImage = $state<Program | null>(null);
 </script>
 
 <!-- 一画面（iPad 横向き前提・スクロール無し）：ヘッダーの残り高を埋め、はみ出しは内側で吸収。 -->
 <div class="mx-auto flex h-full max-w-7xl flex-col gap-3 overflow-hidden p-3">
   <!-- 2カラム：左＝構築エリア／右＝試運転レール（固定幅）。プレイ面ドロワーの骨格を踏襲。 -->
   <div class="flex min-h-0 flex-1 gap-4">
-    <BuildingArea bind:program bind:builtImage memoryTotal={DEFAULT_AUTOMATON_CAPACITY} active panelClass="bg-white" />
+    <BuildingArea memoryTotal={DEFAULT_AUTOMATON_CAPACITY} active panelClass="bg-white" />
 
     <!-- 試運転レール：プレイ面のレールと同じ枠線で囲う。独立ページなので白地に馴染ませる。 -->
     <div class="flex min-h-0 w-[26rem] shrink-0 flex-col">
       <div class="flex min-h-0 flex-1 flex-col gap-3 overflow-auto rounded border border-surface-300 bg-white p-3">
-        <SandboxRail image={builtImage} facade={battleFacade} />
+        <SandboxRail image={$workbenchDraft.builtImage} facade={battleFacade} />
       </div>
     </div>
   </div>
