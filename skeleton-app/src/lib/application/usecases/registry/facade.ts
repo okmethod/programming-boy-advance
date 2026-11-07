@@ -13,7 +13,7 @@
 import type { BaseImage, Program } from "$lib/domain";
 import { BASE_IMAGES, DEFAULT_BASE_IMAGE, hashProgram, areProgramsEqual } from "$lib/domain";
 import type { PersistedImage, PersistedRegistry, RegistryRepository } from "$lib/application/ports/registryRepository";
-import { registryImages, storeWriter, type RegistryImage } from "./store";
+import { storeWriter, type RegistryImage } from "./store";
 
 /** UI が参照する手持ちイメージ操作の単一窓口。 */
 export interface RegistryFacade {
@@ -124,6 +124,3 @@ export const createRegistryFacade = (repo: RegistryRepository): RegistryFacade =
     restore,
   };
 };
-
-// 一覧の readonly store も同じ入口（$lib/application）から取れるよう再公開する。
-export { registryImages };

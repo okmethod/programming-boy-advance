@@ -73,6 +73,3 @@ export const workbenchFacade: WorkbenchFacade = {
     return storeWriter.snapshot();
   },
 };
-
-// 読みの投影（state の読み取り専用 derived）も同じ入口（$lib/application）から取れるよう再公開する（registry 準拠）。
-export { workbenchDraft, currentImage } from "./store";
