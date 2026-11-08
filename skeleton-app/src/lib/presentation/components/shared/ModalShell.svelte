@@ -3,6 +3,7 @@
   // トリガ釦・開閉 state は呼び出し元が所有する（この器は open を受けて描くだけ）。
   // 器ごとに差が出るのはパネルのサイズ（panelClass）とタイトル／本体／任意フッターの中身のみ。
   import type { Snippet } from "svelte";
+  import { Portal } from "@skeletonlabs/skeleton-svelte";
   import Icon from "@iconify/svelte";
   import { fade } from "svelte/transition";
 
@@ -23,28 +24,33 @@
   let { open, onClose, panelClass = "", title, children, footer }: ModalShellProps = $props();
 </script>
 
-{#if open}
-  <div
-    class="fixed inset-0 z-50 flex items-start justify-center p-4 sm:items-center"
-    transition:fade={{ duration: 150 }}
-  >
-    <button class="absolute inset-0 bg-black/40" aria-label="閉じる" onclick={onClose}></button>
+<!-- Portal で body 直下へ退避する（Toast と同じ退避手段に揃える）。
+     `fixed` は transform/filter 等を持つ祖先があるとその祖先基準に封じ込められるため、
+     器をどこに置いても常にビューポート全面に出せるよう DOM 上は最前へ逃がす。 -->
+<Portal>
+  {#if open}
     <div
-      class="relative z-10 flex max-h-[80dvh] w-full flex-col gap-3 overflow-hidden rounded-xl bg-white p-4 shadow-xl {panelClass}"
+      class="fixed inset-0 z-50 flex items-start justify-center p-4 sm:items-center"
+      transition:fade={{ duration: 150 }}
     >
-      <!-- ヘッダー：タイトル（中身は呼び出し元）＋閉じる釦（全器共通）。 -->
-      <div class="flex shrink-0 items-center justify-between">
-        <h2 class="inline-flex items-center gap-1 text-base font-bold">
-          {@render title()}
-        </h2>
-        <button class="rounded p-1 hover:bg-gray-100" aria-label="閉じる" onclick={onClose}>
-          <Icon icon="mdi:close" class="size-5" />
-        </button>
+      <button class="absolute inset-0 bg-black/40" aria-label="閉じる" onclick={onClose}></button>
+      <div
+        class="relative z-10 flex max-h-[80dvh] w-full flex-col gap-3 overflow-hidden rounded-xl bg-white p-4 shadow-xl {panelClass}"
+      >
+        <!-- ヘッダー：タイトル（中身は呼び出し元）＋閉じる釦（全器共通）。 -->
+        <div class="flex shrink-0 items-center justify-between">
+          <h2 class="inline-flex items-center gap-1 text-base font-bold">
+            {@render title()}
+          </h2>
+          <button class="rounded p-1 hover:bg-gray-100" aria-label="閉じる" onclick={onClose}>
+            <Icon icon="mdi:close" class="size-5" />
+          </button>
+        </div>
+        {@render children()}
+        {#if footer}
+          {@render footer()}
+        {/if}
       </div>
-      {@render children()}
-      {#if footer}
-        {@render footer()}
-      {/if}
     </div>
-  </div>
-{/if}
+  {/if}
+</Portal>
