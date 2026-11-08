@@ -30,7 +30,7 @@ export type {
   Winner,
   BattleRun,
 } from "$lib/domain";
-export { resolveBattleParams, DEFAULT_BASE_IMAGE } from "$lib/domain";
+export { DEFAULT_BASE_IMAGE } from "$lib/domain";
 
 export { createBattleFacade } from "./usecases/battle/facade";
 export type { BattleFacade } from "./usecases/battle/facade";
@@ -39,6 +39,7 @@ export { buildActionLog } from "./usecases/battle/actionLog";
 export type { ActionLogRow } from "./usecases/battle/actionLog";
 export {
   battleSession,
+  battleParams,
   battleRun,
   allyLines,
   enemyLines,

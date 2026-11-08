@@ -21,7 +21,7 @@
     enemyLog,
     deployedHash,
     enemyHash,
-    resolveBattleParams,
+    battleParams,
     DEFAULT_BASE_IMAGE,
     type Program,
   } from "$lib/application";
@@ -52,8 +52,8 @@
     Object.fromEntries(stage.initial.automatons.map((a) => [a.id, a.hp])),
   );
 
-  // BP 波形の天井＝このステージで確定した bpMax（既定へステージ上書きを重ねた値）。
-  const bpMax = $derived(resolveBattleParams(stage.params).bpMax);
+  // BP 波形の天井＝このセッションで確定した bpMax（store が既定へステージ上書きを重ねた投影）。
+  const bpMax = $derived($battleParams.bpMax);
 
   // デプロイ済みイメージ（出撃した実体・未デプロイは null）と表示メタは battle store の所有 state を購読する。
   const deployedImage = $derived($battleSession.deployedImage);

@@ -12,7 +12,7 @@
 
 import { derived, get, readonly, writable } from "svelte/store";
 import { recordRun, resolveBattleParams, hashProgram, flatLines } from "$lib/domain";
-import type { BattleRun, FlatLine, Program } from "$lib/domain";
+import type { BattleParams, BattleRun, FlatLine, Program } from "$lib/domain";
 import type { Stage } from "$lib/application/ports/stageRepository";
 import { buildActionLog, type ActionLogRow } from "./actionLog";
 
@@ -47,11 +47,17 @@ export const storeWriter = {
   },
 };
 
+/**
+ * このセッションに効く戦闘 params＝既定へステージ上書きを重ねた確定値の投影。
+ * 合成規則（既定＋上書き）の実行はここ 1 点に集約し、run も表示も同じ解決値を共有する。
+ */
+export const battleParams = derived(sessionStore, (session): BattleParams =>
+  resolveBattleParams(session.stage?.params),
+);
+
 /** 対戦結果（観戦フレーム列＋勝敗）＝所有 state の投影。未デプロイ／未セッションは null。 */
-export const battleRun = derived(sessionStore, (session): BattleRun | null => {
+export const battleRun = derived([sessionStore, battleParams], ([session, params]): BattleRun | null => {
   if (session.stage === null || session.deployedImage === null) return null;
-  // バランス knob はステージが持つ（既定へ上書きを重ねて確定）。この一戦をステージ固有の調整で回す。
-  const params = resolveBattleParams(session.stage.params);
   return recordRun(session.stage.initial, session.deployedImage, session.stage.enemy, { params });
 });
 
