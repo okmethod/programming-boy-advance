@@ -2,7 +2,7 @@
   // 結果オーバーレイ：決着時に観戦（盤面）の上へ重ねる（docs/design/ui-screen-design.md）。
   // 独立画面にはせず、勝敗と次アクションだけを薄く重ねて画面数を増やさない。
   import Icon from "@iconify/svelte";
-  import type { Winner } from "$lib/domain";
+  import type { Winner } from "$lib/application";
   import { winnerText } from "$lib/presentation/utils/labels";
 
   interface ResultOverlayProps {

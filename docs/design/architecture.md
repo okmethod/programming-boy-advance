@@ -63,6 +63,8 @@ graph LR
 
 - 状態を持つ機能では、書き込み（操作）は Facade に集約する。読み取り（参照）は、状態の読み取り専用な投影を購読する（Facade を介さなくてもよい）。
 - 状態を持たない機能の Facade はステートレスに保ち、戻り値で状態を返す。
+- **プレゼン層はアプリ層バレル（`$lib/application`）のみを窓口とする**。ドメイン層（`$lib/domain`）・インフラ層（`$lib/infrastructure`）を直接 import しない。プレゼンが要るドメイン型/定数はアプリ層バレルが re-export で供給する（型は素通し＝将来 View Model へ差し替え可能。業務操作は re-export せず Facade/投影に閉じる）。唯一の例外は合成ルート（`presentation/composition.ts`）がインフラ層の具体 Adapter を取る時のみ。
+- 各層の依存ルール（ROLE / ALLOWED / FORBIDDEN）は各層バレルの冒頭 `@architecture` コメントに宣言し、プレゼン層からのドメイン/インフラ直 import は lint（`no-restricted-imports`）で機械的に禁止する。
 
 ---
 

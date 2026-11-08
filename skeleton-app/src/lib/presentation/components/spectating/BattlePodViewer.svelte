@@ -1,7 +1,7 @@
 <script lang="ts">
   // バトルポッドの盤面描画（表示専用）。1 フレーム分の BattleState を受けてグリッドと勝敗を描く。
   import Icon from "@iconify/svelte";
-  import type { BattleState, Direction } from "$lib/domain";
+  import type { BattleState, Direction } from "$lib/application";
   import { automatonIcon } from "$lib/presentation/utils/labels";
 
   interface BattlePodViewerProps {

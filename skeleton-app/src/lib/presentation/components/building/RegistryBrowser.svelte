@@ -4,7 +4,6 @@
   // ワークベンチ（workbenchDraft）とレジストリ（registryImages）を直接購読して自己完結する。
   // 唯一の継ぎ目は pull 時の Blockly 流し込み＝編集の SSoT は親の BlocklyEditor なので onPull で親に委ねる。
   import Icon from "@iconify/svelte";
-  import type { Program } from "$lib/domain";
   import {
     registryImages,
     workbenchFacade,
@@ -12,6 +11,7 @@
     currentImage,
     imageOf,
     type RegistryImage,
+    type Program,
   } from "$lib/application";
   import { registryFacade } from "$lib/presentation/composition";
   import { hhmm } from "$lib/presentation/utils/labels";

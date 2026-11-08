@@ -6,8 +6,15 @@
   // 系統が増え・版が伸びても同じレイアウトのまま拡張できる。
   // 現在値（適用中の素質）と編集中プログラムは workbenchDraft を直接購読し、確定は workbenchFacade.setBaseImage で行う。
   import Icon from "@iconify/svelte";
-  import { baseImageFamilies, baseImageTag, versionTag, baseImageSupports, type BaseImage } from "$lib/domain";
-  import { workbenchDraft, workbenchFacade } from "$lib/application";
+  import {
+    baseImageFamilies,
+    baseImageTag,
+    versionTag,
+    baseImageSupports,
+    workbenchDraft,
+    workbenchFacade,
+    type BaseImage,
+  } from "$lib/application";
   import { commandLabel, sensorLabel, controlLabel } from "$lib/presentation/utils/labels";
   import BaseImageChip from "$lib/presentation/components/shared/BaseImageChip.svelte";
   import ModalShell from "$lib/presentation/components/shared/ModalShell.svelte";

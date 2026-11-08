@@ -2,8 +2,7 @@
   // 試運転レール＝作業台の右側（試運転のみ）。相手なし／stub の固定盤で ally を単体実行し、
   // 「観る→直す→また観る」を本番対戦と切り離して回す。プレイ面のレールとレジストリ管理ページで共有する。
   import Icon from "@iconify/svelte";
-  import { buildActionLog, type BattleFacade, type SandboxTarget } from "$lib/application";
-  import type { Program } from "$lib/domain";
+  import { buildActionLog, type BattleFacade, type SandboxTarget, type Program } from "$lib/application";
   import BattlePodViewer from "./BattlePodViewer.svelte";
   import PlaybackController from "./PlaybackController.svelte";
   import ActionLogViewer from "$lib/presentation/components/inspecting/ActionLogViewer.svelte";

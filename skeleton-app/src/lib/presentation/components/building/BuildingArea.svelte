@@ -12,7 +12,6 @@
   // 2画面の見た目差は「イメージタイル直右のデプロイ1個」だけ＝サンドボックスは showDeploy=false で消える。
   import { tick } from "svelte";
   import Icon from "@iconify/svelte";
-  import type { Program } from "$lib/domain";
   import {
     registryImages,
     workbenchFacade,
@@ -21,6 +20,7 @@
     cpUsed,
     draftLines,
     labelOf,
+    type Program,
   } from "$lib/application";
   import { automatonIcon, hhmm } from "$lib/presentation/utils/labels";
   import BlocklyEditor from "./BlocklyEditor.svelte";

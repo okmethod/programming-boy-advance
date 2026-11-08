@@ -8,8 +8,7 @@
   //
   // ネタバレ防止：BP 波形の横軸は全バトル長で固定しつつ、描画は現在フレームまで（右側＝未来は空白）。
   import Icon from "@iconify/svelte";
-  import type { AutomatonId, BattleState } from "$lib/domain";
-  import { BATTLE_PARAMS } from "$lib/domain";
+  import { BATTLE_PARAMS, type AutomatonId, type BattleState } from "$lib/application";
   import { automatonIcon, automatonName } from "$lib/presentation/utils/labels";
   import FractionReadout from "$lib/presentation/components/shared/FractionReadout.svelte";
 

@@ -3,7 +3,7 @@
   // 平坦化とノード id 採番はドメイン（flatLines）の責務なので、呼び出し元が投影した View Model を受け取る
   // ＝この部品は Program を知らない dumb view（採番はインタプリタ／flatLines と必ず一致する）。
   import { tick } from "svelte";
-  import type { NodeId, FlatLine } from "$lib/domain";
+  import type { NodeId, FlatLine } from "$lib/application";
   import DarkViewerPanel from "./DarkViewerPanel.svelte";
 
   interface ProgramViewerProps {

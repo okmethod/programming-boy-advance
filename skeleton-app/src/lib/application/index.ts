@@ -1,13 +1,45 @@
 /**
  * アプリ層の公開 API。
  *
- * プレゼン層からはこの入口を参照する。
+ * @architecture レイヤー間依存ルール - アプリ層
+ * - ROLE: バトル進行・ゲーム状態管理（操作受付）
+ * - ALLOWED: ドメイン層・自層 Port への依存
+ * - FORBIDDEN: インフラ層（具体 Adapter）・プレゼン層への依存
+ * - CONSUMED BY: プレゼン層（プレゼン層からの唯一の窓口）
+ *
  * 読みは store の readonly 投影、書きは facade のコマンドから取る（CQRS 分離を import の形に出す）。
+ * プレゼンが要るドメイン型/定数はここで re-export する。
+ * プレゼン層からの直接 import は禁止（アプリ層バレル経由）
  */
+
+// ドメイン型/定数の再公開（プレゼン層向けの単一窓口）
+export type {
+  Program,
+  Expr,
+  Stmt,
+  CommandName,
+  SensorName,
+  ControlName,
+  NodeId,
+  FlatLine,
+  BaseImage,
+  BattleState,
+  AutomatonId,
+  Direction,
+  Winner,
+  BattleRun,
+} from "$lib/domain";
+export {
+  baseImageTag,
+  versionTag,
+  baseImageFamilies,
+  baseImageSupports,
+  BATTLE_PARAMS,
+  DEFAULT_BASE_IMAGE,
+} from "$lib/domain";
 
 export { createBattleFacade } from "./usecases/battle/facade";
 export type { BattleFacade } from "./usecases/battle/facade";
-export type { BattleRun } from "$lib/domain";
 export type { SandboxTarget } from "./usecases/battle/sandbox";
 export { buildActionLog } from "./usecases/battle/actionLog";
 export type { ActionLogRow } from "./usecases/battle/actionLog";

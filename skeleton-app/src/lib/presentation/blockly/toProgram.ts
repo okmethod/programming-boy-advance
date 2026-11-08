@@ -6,7 +6,7 @@
  */
 
 import type { Block, Workspace } from "blockly";
-import type { CommandName, Expr, Program, SensorName, Stmt } from "$lib/domain";
+import type { CommandName, Expr, Program, SensorName, Stmt } from "$lib/application";
 import { COMMAND_PREFIX, QUERY_PREFIX } from "./blocks";
 
 /** ワークスペースの先頭連鎖を Program に変換する。空なら空配列。 */

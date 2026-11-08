@@ -9,7 +9,7 @@
  */
 
 import * as Blockly from "blockly";
-import type { BaseImage, ControlName } from "$lib/domain";
+import type { BaseImage, ControlName } from "$lib/application";
 
 // 配色（Blockly の HSV 色相）。コマンド=緑系 / クエリ=青系 / 制御=橙系。
 const COLOUR_COMMAND = 160;

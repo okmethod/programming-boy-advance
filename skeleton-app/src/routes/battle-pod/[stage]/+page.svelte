@@ -21,10 +21,10 @@
     enemyLog,
     deployedHash,
     enemyHash,
+    DEFAULT_BASE_IMAGE,
+    type Program,
   } from "$lib/application";
   import type { PageData } from "./$types";
-  import type { Program } from "$lib/domain";
-  import { DEFAULT_BASE_IMAGE } from "$lib/domain";
   import BuildingArea from "$lib/presentation/components/building/BuildingArea.svelte";
   import BattlePodViewer from "$lib/presentation/components/spectating/BattlePodViewer.svelte";
   import PlaybackController from "$lib/presentation/components/spectating/PlaybackController.svelte";

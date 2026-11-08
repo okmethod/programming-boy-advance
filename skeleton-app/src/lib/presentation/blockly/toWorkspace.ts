@@ -9,7 +9,7 @@
 
 import * as Blockly from "blockly";
 import type { Workspace } from "blockly";
-import type { Expr, Program, Stmt } from "$lib/domain";
+import type { Expr, Program, Stmt } from "$lib/application";
 import { COMMAND_PREFIX, QUERY_PREFIX } from "./blocks";
 
 // Blockly の serialization が受け取るブロック状態（必要な部分だけを型付け）。

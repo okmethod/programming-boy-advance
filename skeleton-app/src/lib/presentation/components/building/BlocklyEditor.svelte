@@ -3,7 +3,7 @@
   // Blockly は DOM 必須のため use: アクション内で inject する（アクションはクライアントでのみ走る）。
   import { untrack } from "svelte";
   import * as Blockly from "blockly";
-  import type { BaseImage, Program } from "$lib/domain";
+  import type { BaseImage, Program } from "$lib/application";
   import {
     registerBlocks,
     registerFixedWidthFlyout,
