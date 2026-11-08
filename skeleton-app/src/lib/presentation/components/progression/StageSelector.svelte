@@ -3,9 +3,9 @@
   // 中身の一覧は StageSelectList を共通利用する（器と中身を分離）。
   // 現在ステージ id は URL（page.params.stage）が SSoT。強調の材料として直接購読する。
   import Icon from "@iconify/svelte";
-  import { fade } from "svelte/transition";
   import { page } from "$app/state";
   import { navigateTo } from "$lib/presentation/utils/navigation";
+  import ModalShell from "$lib/presentation/components/shared/ModalShell.svelte";
   import StageSelectList from "./StageSelectList.svelte";
 
   // 開閉状態（このセレクタが所有）。トリガで開き、選択／閉じるで閉じる。
@@ -26,26 +26,11 @@
   <Icon icon="mdi:map-marker-path" class="size-4" /> ステージ選択
 </button>
 
-{#if open}
-  <div
-    class="fixed inset-0 z-50 flex items-start justify-center p-4 sm:items-center"
-    transition:fade={{ duration: 150 }}
-  >
-    <button class="absolute inset-0 bg-black/40" aria-label="閉じる" onclick={() => (open = false)}></button>
-    <div
-      class="relative z-10 flex max-h-[80dvh] w-full max-w-lg flex-col gap-3 overflow-hidden rounded-xl bg-white p-4 shadow-xl"
-    >
-      <div class="flex shrink-0 items-center justify-between">
-        <h2 class="inline-flex items-center gap-1 text-base font-bold">
-          <Icon icon="mdi:map-marker-path" class="size-5" /> ステージ選択
-        </h2>
-        <button class="rounded p-1 hover:bg-gray-100" aria-label="閉じる" onclick={() => (open = false)}>
-          <Icon icon="mdi:close" class="size-5" />
-        </button>
-      </div>
-      <div class="min-h-0 overflow-auto">
-        <StageSelectList onSelect={select} {selectedId} />
-      </div>
-    </div>
+<ModalShell {open} onClose={() => (open = false)} panelClass="max-w-lg">
+  {#snippet title()}
+    <Icon icon="mdi:map-marker-path" class="size-5" /> ステージ選択
+  {/snippet}
+  <div class="min-h-0 overflow-auto">
+    <StageSelectList onSelect={select} {selectedId} />
   </div>
-{/if}
+</ModalShell>
