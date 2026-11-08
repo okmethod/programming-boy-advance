@@ -8,14 +8,12 @@
   import Icon from "@iconify/svelte";
   import {
     baseImageFamilies,
-    baseImageTag,
-    versionTag,
     baseImageSupports,
     workbenchDraft,
     workbenchFacade,
     type BaseImage,
   } from "$lib/application";
-  import { commandLabel, sensorLabel, controlLabel } from "$lib/presentation/utils/labels";
+  import { commandLabel, sensorLabel, controlLabel, baseImageTag, versionTag } from "$lib/presentation/utils/labels";
   import BaseImageChip from "$lib/presentation/components/shared/BaseImageChip.svelte";
   import ModalShell from "$lib/presentation/components/shared/ModalShell.svelte";
 

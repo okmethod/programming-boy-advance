@@ -34,15 +34,6 @@ export interface BaseImage {
 }
 
 /**
- * 版の表示ラベル（v版）。例: "v1.0"。
- * version は数値（"1.0"）で持ち、表示上の "v" 接頭辞はここに一元化する（版タイル・タグ双方の単一経路）。
- */
-export const versionTag = (base: BaseImage): string => `v${base.version}`;
-
-/** A面の表示タグ（imageName:v版）。例: "turtlogo:v1.0"。 */
-export const baseImageTag = (base: BaseImage): string => `${base.imageName}:${versionTag(base)}`;
-
-/**
  * 素質がプログラムが使用する命令セットを提供しているか。
  *
  * 版・ファミリーに依らず、命令セットの包含だけで判定する（互換性ガードは独立）。

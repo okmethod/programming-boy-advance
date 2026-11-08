@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { baseImageFamilies, baseImageSupports, baseImageTag, versionTag, TURTLOGO_V1, TURTLOGO_V2 } from "./baseImage";
+import { baseImageFamilies, baseImageSupports, TURTLOGO_V1, TURTLOGO_V2 } from "./baseImage";
 import type { Program } from "$lib/domain/models/program";
 
 describe("後方互換の原則（同一系統）", () => {
@@ -10,7 +10,7 @@ describe("後方互換の原則（同一系統）", () => {
       for (let i = 1; i < family.versions.length; i++) {
         const prev = family.versions[i - 1];
         const next = family.versions[i];
-        const subsetMsg = `${baseImageTag(prev)} ⊄ ${baseImageTag(next)}`;
+        const subsetMsg = `${prev.imageName}:v${prev.version} ⊄ ${next.imageName}:v${next.version}`;
         expect(
           prev.commands.every((c) => next.commands.includes(c)),
           subsetMsg,
@@ -52,12 +52,5 @@ describe("baseImageSupports（互換性ガード）", () => {
       { kind: "while", cond: { kind: "sensor", sensor: "wallAhead" }, body: [{ kind: "call", cmd: "turnRight" }] },
     ];
     expect(baseImageSupports(TURTLOGO_V1, p)).toBe(false);
-  });
-});
-
-describe("versionTag / baseImageTag", () => {
-  it("表示は v 接頭辞つき（例: v1.0 / turtlogo:v1.0）", () => {
-    expect(versionTag(TURTLOGO_V1)).toBe("v1.0");
-    expect(baseImageTag(TURTLOGO_V1)).toBe("turtlogo:v1.0");
   });
 });

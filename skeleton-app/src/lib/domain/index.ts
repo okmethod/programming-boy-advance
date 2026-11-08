@@ -28,8 +28,6 @@ export {
   TURTLOGO_V2,
   BASE_IMAGES,
   DEFAULT_BASE_IMAGE,
-  baseImageTag,
-  versionTag,
   baseImageFamilies,
   baseImageSupports,
 } from "./baseimage/baseImage";

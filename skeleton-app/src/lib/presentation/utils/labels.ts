@@ -1,4 +1,4 @@
-import type { AutomatonId, BattleState, CommandName, ControlName, SensorName } from "$lib/application";
+import type { AutomatonId, BaseImage, BattleState, CommandName, ControlName, SensorName } from "$lib/application";
 
 /** コマンド（命令）の A面表示ラベル（実行ログなどで使う。ブロックの見た目と揃える）。 */
 export const commandLabel = (cmd: CommandName): string => {
@@ -60,3 +60,12 @@ export const winnerText = (winner: BattleState["winner"]): string => {
   if (winner === "draw") return "引き分け";
   return "";
 };
+
+/**
+ * 版の表示ラベル（v版）。例: "v1.0"。
+ * version は数値表記（"1.0"）で持ち、表示上の "v" 接頭辞はここに一元化する（版タイル・タグ双方の単一経路）。
+ */
+export const versionTag = (base: BaseImage): string => `v${base.version}`;
+
+/** 素質（ベースイメージ）の A面表示タグ（imageName:v版）。例: "turtlogo:v1.0"。 */
+export const baseImageTag = (base: BaseImage): string => `${base.imageName}:${versionTag(base)}`;
