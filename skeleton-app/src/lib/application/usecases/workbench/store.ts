@@ -109,6 +109,13 @@ export function differsFromBuilt(draft: WorkbenchDraft, image: Program | null): 
 }
 
 /**
+ * 素質互換セレクタ＝候補の素質が編集中プログラムの命令セットを提供できるか（differsFromBuilt と同列の読み）。
+ * 判定規則そのもの（命令セットの包含）はドメインに委ね、プレゼンは候補×program を引数で渡して購読する
+ * ＝素質選択UIの関心を workbench の公開面へ畳む（プレゼンがドメインルールを直呼びしない）。
+ */
+export { baseImageSupports } from "$lib/domain";
+
+/**
  * ドラフトへの機械的な書き込み口（facade からのみ呼ぶ・UI には公開しない）。
  * 単一レコードなので、集合版 registry の add/replace とは異なり update/snapshot が機械的プリミティブ。
  */

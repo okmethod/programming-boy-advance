@@ -30,7 +30,7 @@ export type {
   Winner,
   BattleRun,
 } from "$lib/domain";
-export { baseImageSupports, BATTLE_PARAMS, DEFAULT_BASE_IMAGE } from "$lib/domain";
+export { BATTLE_PARAMS, DEFAULT_BASE_IMAGE } from "$lib/domain";
 
 export { createBattleFacade } from "./usecases/battle/facade";
 export type { BattleFacade } from "./usecases/battle/facade";
@@ -65,5 +65,6 @@ export {
   draftLines,
   differsFromBuilt,
   baseImageCatalog,
+  baseImageSupports,
 } from "./usecases/workbench/store";
 export type { WorkbenchDraft, CurrentImage } from "./usecases/workbench/store";
