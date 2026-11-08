@@ -40,6 +40,6 @@ export { flatLines, nodeIdMap, type FlatLine } from "./program/nodes";
 export { run } from "./interpreter/run";
 
 export type { BattleRun } from "./battle/runBattle";
-export { BATTLE_PARAMS, type BattleParams } from "./battle/params";
+export { resolveBattleParams, type BattleParams } from "./battle/params";
 export { applyAction, advanceClock, commandToAction, exprValue, sensorValue } from "./battle/engine";
 export { runBattle, recordBattle, recordRun } from "./battle/runBattle";

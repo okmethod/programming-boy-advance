@@ -11,7 +11,7 @@
  */
 
 import { derived, get, readonly, writable } from "svelte/store";
-import { recordRun, hashProgram, flatLines } from "$lib/domain";
+import { recordRun, resolveBattleParams, hashProgram, flatLines } from "$lib/domain";
 import type { BattleRun, FlatLine, Program } from "$lib/domain";
 import type { Stage } from "$lib/application/ports/stageRepository";
 import { buildActionLog, type ActionLogRow } from "./actionLog";
@@ -50,7 +50,9 @@ export const storeWriter = {
 /** 対戦結果（観戦フレーム列＋勝敗）＝所有 state の投影。未デプロイ／未セッションは null。 */
 export const battleRun = derived(sessionStore, (session): BattleRun | null => {
   if (session.stage === null || session.deployedImage === null) return null;
-  return recordRun(session.stage.initial, session.deployedImage, session.stage.enemy);
+  // バランス knob はステージが持つ（既定へ上書きを重ねて確定）。この一戦をステージ固有の調整で回す。
+  const params = resolveBattleParams(session.stage.params);
+  return recordRun(session.stage.initial, session.deployedImage, session.stage.enemy, { params });
 });
 
 /** ally（デプロイ済み）の擬似コード行＝ProgramViewer に渡す View Model。 */

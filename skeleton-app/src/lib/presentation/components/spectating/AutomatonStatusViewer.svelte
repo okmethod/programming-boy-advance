@@ -8,7 +8,7 @@
   //
   // ネタバレ防止：BP 波形の横軸は全バトル長で固定しつつ、描画は現在フレームまで（右側＝未来は空白）。
   import Icon from "@iconify/svelte";
-  import { BATTLE_PARAMS, type AutomatonId, type BattleState } from "$lib/application";
+  import type { AutomatonId, BattleState } from "$lib/application";
   import { automatonIcon, automatonName } from "$lib/presentation/utils/labels";
   import FractionReadout from "$lib/presentation/components/shared/FractionReadout.svelte";
 
@@ -18,11 +18,11 @@
     id: AutomatonId;
     // ヒープ容量＝初期 HP（ブロックの総数）。
     maxHp: number;
+    // BP 天井＝フリーズ閾値（波形スケールの分母）。戦闘パラメータは合成ルートから供給する。
+    bpMax: number;
   }
 
-  let { frames, frameIndex, id, maxHp }: AutomatonStatusViewerProps = $props();
-
-  const bpMax = BATTLE_PARAMS.bpMax;
+  let { frames, frameIndex, id, maxHp, bpMax }: AutomatonStatusViewerProps = $props();
 
   // BP 波形の SVG 座標系（preserveAspectRatio=none で横に引き伸ばす）。
   const VBW = 100;

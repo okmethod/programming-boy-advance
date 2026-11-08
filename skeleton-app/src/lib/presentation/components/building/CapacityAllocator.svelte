@@ -3,9 +3,11 @@
   // 位置づけ＝起動時パラメータ（コンテナの docker run --memory/--cpus 相当）。イメージには焼かれず、
   // 起動（デプロイ）時に供給される自動機の属性なので、ヘッダーのマニフェスト（イメージタイル横）に常時出す。
   // HP（ヒープ）と同じメモリのメタファーなのでバーの見た目を HP に揃える（色は予算＝黄・超過＝赤。docs/design/ui-screen-design.md）。
-  // 射程は見た目＋CP 上限まで。HP 側の配分はまだ表示だけで、実際の戦闘 HP には効かない。
-  // TODO: 配分値を戦闘パラメータ（domain/battle/params.ts の BATTLE_PARAMS）へ反映する。ステージ構成・数値バランス確定後に着手（docs/game-rules/base-images.md）。
-  // 読み取り専用の CP 表示が要るようになったら editable prop を足し、必要なら配分状態を親へ lift（YAGNI）。
+  // 射程は見た目＋CP 上限まで。HP 側の配分は表示だけで、実際の戦闘 HP にはまだ効かない。
+  // TODO: 配分確定値（cpAllocated／HP 側）を親へ lift し、デプロイ時に自動機の個体値
+  //       （初期 HP・CP 予算）として供給する。反映の配線はアプリ層のデプロイ境界が担う。
+  //       ステージ構成・数値バランス確定後に着手（docs/game-rules/base-images.md）。
+  // 読み取り専用の CP 表示が要るようになったら editable prop を足す（YAGNI）。
   import { untrack } from "svelte";
   import Icon from "@iconify/svelte";
   import FractionReadout from "$lib/presentation/components/shared/FractionReadout.svelte";

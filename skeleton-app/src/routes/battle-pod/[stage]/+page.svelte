@@ -21,6 +21,7 @@
     enemyLog,
     deployedHash,
     enemyHash,
+    resolveBattleParams,
     DEFAULT_BASE_IMAGE,
     type Program,
   } from "$lib/application";
@@ -50,6 +51,9 @@
   const maxHpById = $derived<Record<string, number>>(
     Object.fromEntries(stage.initial.automatons.map((a) => [a.id, a.hp])),
   );
+
+  // BP 波形の天井＝このステージで確定した bpMax（既定へステージ上書きを重ねた値）。
+  const bpMax = $derived(resolveBattleParams(stage.params).bpMax);
 
   // デプロイ済みイメージ（出撃した実体・未デプロイは null）と表示メタは battle store の所有 state を購読する。
   const deployedImage = $derived($battleSession.deployedImage);
@@ -168,7 +172,7 @@
     <div
       class="flex min-h-0 flex-1 flex-col overflow-hidden rounded-lg border border-gray-700 bg-gray-900 text-gray-200"
     >
-      <AutomatonStatusViewer frames={displayFrames} {frameIndex} id="ally" maxHp={maxHpById.ally} />
+      <AutomatonStatusViewer frames={displayFrames} {frameIndex} id="ally" maxHp={maxHpById.ally} {bpMax} />
       <!-- ビュー切替タブ（ダーク）＝パネル内の区切り兼見出し。イメージ/プログラム/ログ。 -->
       <div class="flex shrink-0 justify-center border-t border-gray-800 p-2">
         <SegmentedTabs value={allyView} items={columnTabs} onChange={(v) => (allyView = v as ColumnView)} dense dark />
@@ -224,7 +228,7 @@
     <div
       class="flex min-h-0 flex-1 flex-col overflow-hidden rounded-lg border border-gray-700 bg-gray-900 text-gray-200"
     >
-      <AutomatonStatusViewer frames={displayFrames} {frameIndex} id="enemy" maxHp={maxHpById.enemy} />
+      <AutomatonStatusViewer frames={displayFrames} {frameIndex} id="enemy" maxHp={maxHpById.enemy} {bpMax} />
       <div class="flex shrink-0 justify-center border-t border-gray-800 p-2">
         <SegmentedTabs
           value={enemyView}

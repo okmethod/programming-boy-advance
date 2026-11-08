@@ -1,8 +1,9 @@
 /**
  * 戦闘のチューニング値を 1 箇所に集約する。
  *
- * ゲームバランスの数値はここだけを編集すれば変えられる（調整しやすさを構造で担保する）。
- * ステージ単位の上書きに備え、関数へは BattleParams を引数（デフォルト付き）で渡せる構造にしてある。
+ * ここは全ステージ共通の既定値。ステージ固有の調整は Stage.params（Partial 上書き）で宣言し、
+ * resolveBattleParams で既定へ重ねて確定する＝全バランス knob がステージ側で成り立つ構造。
+ * 関数（engine/runBattle）は確定済み BattleParams を引数で受ける（デフォルト付き）。
  * TODO: 具体値は暫定。docs/game-rules/auto-battle.md に沿って調整する。
  */
 
@@ -21,7 +22,7 @@ export interface BattleParams {
   readonly bpCooldownPerClock: number;
 }
 
-/** 既定のチューニング値。 */
+/** 既定のチューニング値。ステージが上書きしなかった knob はこれが効く。 */
 export const BATTLE_PARAMS: BattleParams = {
   attackDamage: 1,
   bpMax: 10,
@@ -30,3 +31,9 @@ export const BATTLE_PARAMS: BattleParams = {
   freezeClocks: 3,
   bpCooldownPerClock: 1,
 };
+
+/** 既定値にステージ上書きを重ねて確定 params を得る（上書きの合成規則はここが SSoT）。 */
+export const resolveBattleParams = (override?: Partial<BattleParams>): BattleParams => ({
+  ...BATTLE_PARAMS,
+  ...override,
+});

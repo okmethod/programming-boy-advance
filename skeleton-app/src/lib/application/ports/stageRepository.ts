@@ -6,7 +6,7 @@
  * 設計の最新断面は docs/design/architecture.md を正とする。
  */
 
-import type { BattleState, Program } from "$lib/domain";
+import type { BattleParams, BattleState, Program } from "$lib/domain";
 
 /**
  * ステージ＝1 回の対戦の「お膳立て」。
@@ -23,6 +23,9 @@ export interface Stage {
   readonly initial: BattleState;
   // CP（キャパシティ）上限＝このステージで組めるブロック数の予算。
   readonly capacity: number;
+  // 戦闘チューニングのステージ固有上書き（未指定 knob は既定 BATTLE_PARAMS が効く）。
+  // ここを足場に「全バランス調整がステージ側で成り立つ」を担保する。
+  readonly params?: Partial<BattleParams>;
 }
 
 /** ステージ定義の取得口。供給元はインフラ層の Adapter が実装する。 */
