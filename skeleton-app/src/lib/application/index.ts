@@ -6,7 +6,8 @@
  */
 
 export { createBattleFacade } from "./usecases/battle/facade";
-export type { BattleFacade, BattleRun } from "./usecases/battle/facade";
+export type { BattleFacade } from "./usecases/battle/facade";
+export type { BattleRun } from "$lib/domain";
 export type { SandboxTarget } from "./usecases/battle/sandbox";
 export { buildActionLog } from "./usecases/battle/actionLog";
 export type { ActionLogRow } from "./usecases/battle/actionLog";

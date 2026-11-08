@@ -10,17 +10,11 @@
  * ステージ定義の「どれを」はプレゼン（URL）が解決し、openSession で渡す（供給元の選択はプレゼンの役目）。
  */
 
-import { recordBattle } from "$lib/domain";
-import type { BattleResult, BattleState, Program } from "$lib/domain";
+import { recordRun } from "$lib/domain";
+import type { BattleRun, Program } from "$lib/domain";
 import type { Stage, StageRepository } from "$lib/application/ports/stageRepository";
 import { sandboxInitial, SANDBOX_MAX_CLOCKS, type SandboxTarget } from "./sandbox";
 import { storeWriter } from "./store";
-
-export interface BattleRun {
-  // 観戦・リプレイ用の各クロックの状態列（初期状態を含む）。
-  readonly frames: readonly BattleState[];
-  readonly result: BattleResult;
-}
 
 /** UI が参照するゲームロジックの単一窓口。 */
 export interface BattleFacade {
@@ -50,13 +44,8 @@ export const createBattleFacade = (stages: StageRepository): BattleFacade => {
 
   function runSandbox(program: Program, target: SandboxTarget): BattleRun {
     // 勝敗で打ち切らず、固定盤で ally のプログラムだけを走らせる（stub は反撃しない的）。
-    const frames = recordBattle(sandboxInitial(target), program, [], {
-      maxClocks: SANDBOX_MAX_CLOCKS,
-      ignoreWinner: true,
-    });
-    const finalState = frames[frames.length - 1];
-    const result: BattleResult = { winner: finalState.winner ?? "draw", clocks: finalState.clock, finalState };
-    return { frames, result };
+    // 盤面・上限などの試運転パラメータは app（sandbox.ts）が供給し、回す／畳む実行は domain に委ねる。
+    return recordRun(sandboxInitial(target), program, [], { maxClocks: SANDBOX_MAX_CLOCKS, ignoreWinner: true });
   }
 
   return {

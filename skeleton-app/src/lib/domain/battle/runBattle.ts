@@ -22,6 +22,23 @@ function turnOrder(automatons: readonly Automaton[]): readonly AutomatonId[] {
   return [...automatons].sort((a, b) => b.priority - a.priority).map((e) => e.id);
 }
 
+/** 記録された一戦＝観戦フレーム列と、そこから導いた結果。観戦・リプレイの読み元になる。 */
+export interface BattleRun {
+  // 各クロックの状態列（初期状態を含む）。
+  readonly frames: readonly BattleState[];
+  readonly result: BattleResult;
+}
+
+/**
+ * フレーム列から対戦結果（勝者・クロック数・最終状態）を導く。
+ *
+ * 対戦は決定的なので結果は最終フレームから一意に定まる＝観戦フレームを持っていれば対戦を二度回す必要はない。
+ */
+const resultOf = (frames: readonly BattleState[]): BattleResult => {
+  const finalState = frames[frames.length - 1];
+  return { winner: finalState.winner ?? "draw", clocks: finalState.clock, finalState };
+};
+
 /** 対戦を最後まで実行し、結果（勝者・クロック数・最終状態）を返す。 */
 export function runBattle(
   initial: BattleState,
@@ -29,9 +46,7 @@ export function runBattle(
   enemyProgram: Program,
   options?: { maxClocks?: number; params?: BattleParams },
 ): BattleResult {
-  const frames = recordBattle(initial, allyProgram, enemyProgram, options);
-  const finalState = frames[frames.length - 1];
-  return { winner: finalState.winner ?? "draw", clocks: finalState.clock, finalState };
+  return resultOf(recordBattle(initial, allyProgram, enemyProgram, options));
 }
 
 /**
@@ -98,6 +113,22 @@ export function recordBattle(
   }
 
   return frames;
+}
+
+/**
+ * 対戦を実行し、観戦フレーム列と結果をまとめて返す。
+ *
+ * recordBattle（フレーム）と runBattle（結果）の両方を一度の実行で束ねる＝対戦を二度回さない。
+ * ステージ対戦・試運転とも、この1本を入力（盤面・プログラム・オプション）だけ替えて呼ぶ。
+ */
+export function recordRun(
+  initial: BattleState,
+  allyProgram: Program,
+  enemyProgram: Program,
+  options?: { maxClocks?: number; params?: BattleParams; ignoreWinner?: boolean },
+): BattleRun {
+  const frames = recordBattle(initial, allyProgram, enemyProgram, options);
+  return { frames, result: resultOf(frames) };
 }
 
 // 膠着検出用の状態シグネチャ（clock は含めない）。

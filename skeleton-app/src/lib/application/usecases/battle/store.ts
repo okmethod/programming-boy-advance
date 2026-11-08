@@ -11,10 +11,9 @@
  */
 
 import { derived, get, readonly, writable } from "svelte/store";
-import { recordBattle, hashProgram, flatLines } from "$lib/domain";
-import type { FlatLine, Program } from "$lib/domain";
+import { recordRun, hashProgram, flatLines } from "$lib/domain";
+import type { BattleRun, FlatLine, Program } from "$lib/domain";
 import type { Stage } from "$lib/application/ports/stageRepository";
-import type { BattleRun } from "./facade";
 import { buildActionLog, type ActionLogRow } from "./actionLog";
 
 /** 観戦セッションの所有 state。stage=このセッションの舞台、deployed*=出撃した ally の実体。 */
@@ -51,10 +50,7 @@ export const storeWriter = {
 /** 対戦結果（観戦フレーム列＋勝敗）＝所有 state の投影。未デプロイ／未セッションは null。 */
 export const battleRun = derived(sessionStore, (session): BattleRun | null => {
   if (session.stage === null || session.deployedImage === null) return null;
-  const frames = recordBattle(session.stage.initial, session.deployedImage, session.stage.enemy);
-  // 決定的なので結果は最終フレームから一意に導ける（対戦を二度回さない）。
-  const finalState = frames[frames.length - 1];
-  return { frames, result: { winner: finalState.winner ?? "draw", clocks: finalState.clock, finalState } };
+  return recordRun(session.stage.initial, session.deployedImage, session.stage.enemy);
 });
 
 /** ally（デプロイ済み）の擬似コード行＝ProgramViewer に渡す View Model。 */

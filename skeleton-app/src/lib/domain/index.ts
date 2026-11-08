@@ -29,11 +29,15 @@ export {
   baseImageFamilies,
   baseImageSupports,
 } from "./baseimage/baseImage";
+
 export { usedCapabilities } from "./program/capabilities";
-export { runBattle, recordBattle } from "./battle/runBattle";
-export { run } from "./interpreter/run";
-export { applyAction, advanceClock, commandToAction, exprValue, sensorValue } from "./battle/engine";
-export { BATTLE_PARAMS, type BattleParams } from "./battle/params";
 export { programCost } from "./program/cost";
 export { hashProgram, areProgramsEqual } from "./program/hash";
 export { flatLines, nodeIdMap, type FlatLine } from "./program/nodes";
+
+export { run } from "./interpreter/run";
+
+export type { BattleRun } from "./battle/runBattle";
+export { BATTLE_PARAMS, type BattleParams } from "./battle/params";
+export { applyAction, advanceClock, commandToAction, exprValue, sensorValue } from "./battle/engine";
+export { runBattle, recordBattle, recordRun } from "./battle/runBattle";
