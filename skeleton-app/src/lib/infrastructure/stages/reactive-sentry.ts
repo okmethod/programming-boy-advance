@@ -38,7 +38,8 @@ export const REACTIVE_SENTRY_STAGE: Stage = {
   initial: {
     grid: { width: 8, height: 8, walls: [] },
     automatons: [
-      { id: "ally", pos: { x: 0, y: 4 }, dir: "right", hp: 3, bp: 0, freezeRemaining: 0, priority: 1 },
+      // ally の hp=0 はデプロイ前の表示（未出撃＝空バー）用。対戦時は capacity から配分した個体値で上書きされる。
+      { id: "ally", pos: { x: 0, y: 4 }, dir: "right", hp: 0, bp: 0, freezeRemaining: 0, priority: 1 },
       { id: "enemy", pos: { x: 7, y: 4 }, dir: "left", hp: 3, bp: 0, freezeRemaining: 0, priority: 0 },
     ],
     clock: 0,

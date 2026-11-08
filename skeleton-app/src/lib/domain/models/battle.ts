@@ -64,6 +64,16 @@ export interface BattleState {
   readonly active?: Partial<Record<AutomatonId, NodeId>>;
 }
 
+/**
+ * ally の初期 HP を差し替えた盤面を返す（他の自動機・盤面は不変で温存）。
+ * ally の HP はステージ固有値ではなく、デプロイ時にプレイヤーがメモリ総量から配分する個体値。
+ * 差し替え元（ステージ初期盤面）はプレビューと対戦の双方が共有するため、この純変換に一本化する。
+ */
+export const withAllyInitialHp = (state: BattleState, hp: number): BattleState => ({
+  ...state,
+  automatons: state.automatons.map((a) => (a.id === "ally" ? { ...a, hp } : a)),
+});
+
 /** 対戦の結果。 */
 export interface BattleResult {
   readonly winner: Winner;

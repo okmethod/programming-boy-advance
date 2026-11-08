@@ -3,23 +3,10 @@
   // 位置づけ＝起動時パラメータ（コンテナの docker run --memory/--cpus 相当）。イメージには焼かれず、
   // 起動（デプロイ）時に供給される自動機の属性なので、ヘッダーのマニフェスト（イメージタイル横）に常時出す。
   // HP（ヒープ）と同じメモリのメタファーなのでバーの見た目を HP に揃える（色は予算＝黄・超過＝赤。docs/design/ui-screen-design.md）。
-  // 射程は見た目＋CP 上限まで。HP 側の配分は表示だけで、実際の戦闘 HP にはまだ効かない。
-  // TODO: 配分確定値（cpAllocated／HP 側）を親へ lift し、デプロイ時に自動機の個体値
-  //       （初期 HP・CP 予算）として供給する。反映の配線はアプリ層のデプロイ境界が担う。
-  //       ステージ構成・数値バランス確定後に着手（docs/game-rules/base-images.md）。
-  // 読み取り専用の CP 表示が要るようになったら editable prop を足す（YAGNI）。
+  // 射程は見た目＋CP 上限まで。HP 側の配分（memoryTotal − cpAllocated）は親へ bind され、デプロイ時に ally の初期 HP になる。
   import { untrack } from "svelte";
   import Icon from "@iconify/svelte";
   import FractionReadout from "$lib/presentation/components/shared/FractionReadout.svelte";
-
-  interface CapacityAllocatorProps {
-    // 現在のプログラムが消費する CP（組んだブロック数）。
-    cpUsed: number;
-    // 総メモリ＝HP↔CP 配分の原資（プレイ面=stage.capacity／レジストリ管理=既定容量）。
-    memoryTotal: number;
-  }
-
-  let { cpUsed, memoryTotal }: CapacityAllocatorProps = $props();
 
   // 配分スライダは STEP（8）刻みの目盛り。total=32 なら 0/8/16/24/32 の5目盛りを軌道に見せる。
   // ただし両端（CP0/HP全 と 全CP/HP0）は選ばせない＝可動域は [STEP, total-STEP]=[8,24]（中央16/16）。
@@ -28,10 +15,27 @@
   // TODO: STEP も memoryTotal と同様いずれステージ定義から渡す（今は既定 8 固定）。
   const STEP = 8;
   const CP_MIN = STEP;
+  // 使用ブロック数を次の目盛り（STEP 境界）へ切り上げる（端数は内部フラグメント）。bindable 既定値でも使うので props の前に置く。
+  const stepUp = (value: number) => Math.ceil(value / STEP) * STEP;
+
+  interface CapacityAllocatorProps {
+    // 現在のプログラムが消費する CP（組んだブロック数）。
+    cpUsed: number;
+    // 総メモリ＝HP↔CP 配分の原資（プレイ面=stage.capacity／レジストリ管理=既定容量）。
+    memoryTotal: number;
+    // 確定済みの CP 割り当て（＝バーの上限）。親が bind して HP 側（memoryTotal − cpAllocated）をデプロイへ運ぶ。
+    cpAllocated?: number;
+  }
+
+  let {
+    cpUsed,
+    memoryTotal,
+    // 既定＝使用ブロック数を含む最小目盛りを可動域 [STEP, total-STEP] にクランプ（clampCp は props 後の定義なのでここは同義でインライン）。
+    cpAllocated = $bindable(Math.min(memoryTotal - STEP, Math.max(CP_MIN, stepUp(cpUsed)))),
+  }: CapacityAllocatorProps = $props();
+
   const cpMax = $derived(memoryTotal - STEP);
   const clampCp = (value: number) => Math.min(cpMax, Math.max(CP_MIN, value));
-  // 使用ブロック数を次の目盛り（STEP 境界）へ切り上げる（端数は内部フラグメント）。
-  const stepUp = (value: number) => Math.ceil(value / STEP) * STEP;
 
   // 追従モードでの CP 上限＝使用ブロック数を含む最小の目盛り（切り上げ）。可動域にクランプする。
   const followedCp = $derived(clampCp(stepUp(cpUsed)));
@@ -46,8 +50,7 @@
   // （両側 ≥1チャンク）になるため、HP=0 回避のために追従を既定 ON にする必要はもう無い。
   let follow = $state(false);
 
-  // 確定済みの CP 割り当て＝バーの上限。追従 ON の間は followedCp に追従する（下の $effect）。
-  let cpAllocated = $state(untrack(() => clampCp(stepUp(cpUsed))));
+  // 確定済みの CP 割り当て（cpAllocated＝bindable prop）に対する超過フラグ。追従 ON の間は followedCp に追従する（下の $effect）。
   const over = $derived(cpUsed > cpAllocated);
 
   // 配分パネルの開閉と、スライダが触る下書き値。決定するまでゲージ（cpAllocated）には反映しない。

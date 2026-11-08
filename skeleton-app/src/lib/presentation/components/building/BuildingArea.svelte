@@ -42,7 +42,8 @@
     showDeploy?: boolean;
     // デプロイ押下＝ビルド済みイメージを対戦に反映する。親（プレイ面）が対戦に流す。
     // 観戦側のイメージタイルが同じ表示名・素質を出せるよう、イメージと一緒にローカル名・素質も渡す。
-    onDeploy?: (image: Program, name: string, baseImage: BaseImage) => void;
+    // allyHp＝HP 配分（memoryTotal − CP 割り当て）＝起動時に供給する ally の初期 HP。配分は構築側が所有するのでここで添える。
+    onDeploy?: (image: Program, name: string, baseImage: BaseImage, allyHp: number) => void;
     // エディタ/レジストリ面パネルの背景クラス。このエリアを置く親の背景に合わせる。
     panelClass?: string;
   }
@@ -58,6 +59,11 @@
   // 編集中ドラフト＝アプリ層のワークベンチ store（サンドボックス⇄プレイ面で共有・画面跨ぎで保持）。
   // program／builtImage／builtAt／imageName／baseImage はこの1つの断面として持ち運ぶ。
   const draft = $derived($workbenchDraft);
+
+  // CP 割り当て（確定値）は CapacityAllocator が所有し bind で受ける（未確定の間は子の既定が逆流して入る）。
+  // HP 側＝総メモリ − CP 割り当て。デプロイ時にこの値を ally の初期 HP として親（プレイ面）へ渡す。
+  let cpAllocated = $state<number>();
+  const allyHp = $derived(memoryTotal - (cpAllocated ?? 0));
 
   // メイン領域の表示切替。ブロック編集 / エディタ編集（生成コード表示）/ レジストリ。
   type MainView = "edit" | "code" | "registry";
@@ -160,13 +166,13 @@
       {/if}
       <!-- 資源配分（CP/HP）＝起動時パラメータ（docker run 相当）。イメージには焼かれず起動時に供給される属性なので、
            イメージタイルと並べてマニフェストとして常時出す（ブロック/エディタ/レジストリ問わず・サンドボックスでも）。 -->
-      <CapacityAllocator cpUsed={$cpUsed} {memoryTotal} />
+      <CapacityAllocator cpUsed={$cpUsed} {memoryTotal} bind:cpAllocated />
       {#if showDeploy}
         <!-- デプロイ＝ビルド済みイメージを対戦に反映（タイルの直右＝操作対象の真横）。未ビルドは押せない。
              副作用のある命令なのでビルドと同じ強調色（action-btn-strong）で揃える。 -->
         <button
           class="action-btn-strong disabled:opacity-40"
-          onclick={() => draft.builtImage && onDeploy?.(draft.builtImage, builtName, draft.baseImage)}
+          onclick={() => draft.builtImage && onDeploy?.(draft.builtImage, builtName, draft.baseImage, allyHp)}
           disabled={current.notBuilt}
           title={current.notBuilt ? "先にビルド" : "ビルド済みイメージを対戦に反映"}
         >

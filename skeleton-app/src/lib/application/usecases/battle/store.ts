@@ -11,7 +11,7 @@
  */
 
 import { derived, get, readonly, writable } from "svelte/store";
-import { recordRun, resolveBattleParams, hashProgram, flatLines } from "$lib/domain";
+import { recordRun, resolveBattleParams, hashProgram, flatLines, withAllyInitialHp } from "$lib/domain";
 import type { BaseImage, BattleParams, BattleRun, FlatLine, Program } from "$lib/domain";
 import type { Stage } from "$lib/application/ports/stageRepository";
 import { buildActionLog, type ActionLogRow } from "./actionLog";
@@ -26,6 +26,8 @@ export interface DeployedImage {
   readonly name: string;
   // 土台にした素質（系統×版）。イメージタイルの表示土台。
   readonly baseImage: BaseImage;
+  // 初期 HP＝デプロイ時にメモリ総量（stage.capacity）から配分した個体値。ステージ固有値ではなく出撃ごとに決まる。
+  readonly allyHp: number;
   // 出撃時刻（復元点の目印・ドリフト表示の起点）。
   readonly deployedAt: number;
 }
@@ -71,7 +73,9 @@ export const battleParams = derived(sessionStore, (session): BattleParams =>
 /** 対戦結果（観戦フレーム列＋勝敗）＝所有 state の投影。未デプロイ／未セッションは null。 */
 export const battleRun = derived([sessionStore, battleParams], ([session, params]): BattleRun | null => {
   if (session.stage === null || session.deployed === null) return null;
-  return recordRun(session.stage.initial, session.deployed.program, session.stage.enemy, { params });
+  // ally の初期 HP はステージ固有値ではなく配分の個体値＝初期盤面へデプロイ値を差し込んでから回す。
+  const initial = withAllyInitialHp(session.stage.initial, session.deployed.allyHp);
+  return recordRun(initial, session.deployed.program, session.stage.enemy, { params });
 });
 
 /** ally（デプロイ済み）の擬似コード行＝ProgramViewer に渡す View Model。 */

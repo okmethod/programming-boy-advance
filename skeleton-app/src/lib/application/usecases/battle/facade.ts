@@ -24,8 +24,8 @@ export interface BattleFacade {
   listStages(): readonly Stage[];
   /** 観戦セッションを開く＝舞台（stage）を据えてデプロイをリセットする（ステージ切替の起点）。 */
   openSession(stage: Stage): void;
-  /** デプロイ＝ビルド済みイメージ（素質込み）を対戦に出す（観戦セッションの ally を差し替える）。 */
-  deploy(image: Program, name: string, baseImage: BaseImage): void;
+  /** デプロイ＝ビルド済みイメージ（素質込み）を対戦に出す（観戦セッションの ally を差し替える）。allyHp＝配分で決めた初期 HP。 */
+  deploy(image: Program, name: string, baseImage: BaseImage, allyHp: number): void;
   /** 試運転：相手なし／stub 相手でプログラムを単体実行し、観戦フレーム列を返す（勝敗なし）。 */
   runSandbox(program: Program, target: SandboxTarget): BattleRun;
 }
@@ -38,10 +38,10 @@ export const createBattleFacade = (stages: StageRepository): BattleFacade => {
   }
 
   // 別イメージ（新ハッシュ）を出したら必ず先頭から＝再生リセットはプレゼン（再生状態の所有者）が畳む。
-  function deploy(image: Program, name: string, baseImage: BaseImage): void {
+  function deploy(image: Program, name: string, baseImage: BaseImage, allyHp: number): void {
     storeWriter.update((session) => ({
       ...session,
-      deployed: { program: image, name, baseImage, deployedAt: Date.now() },
+      deployed: { program: image, name, baseImage, allyHp, deployedAt: Date.now() },
     }));
   }
 

@@ -47,17 +47,19 @@
   const stageId = $derived(data.stageId);
   const stage = $derived(facade.getStage(stageId));
 
-  // HP バーの満タン基準＝初期 HP。選択ステージの初期配置から id → 初期 HP を引く。
-  const maxHpById = $derived<Record<string, number>>(
-    Object.fromEntries(stage.initial.automatons.map((a) => [a.id, a.hp])),
-  );
-
-  // BP 波形の天井＝このセッションで確定した bpMax（store が既定へステージ上書きを重ねた投影）。
-  const bpMax = $derived($battleParams.bpMax);
-
   // デプロイ済みイメージ（出撃した実体・未デプロイは null）は battle store の所有 state を購読する。
   // program・表示名・素質・時刻は一体の集合体で、未デプロイは丸ごと null（表示メタだけ欠ける状態は起きない）。
   const deployed = $derived($battleSession.deployed);
+
+  // HP バーの満タン基準。enemy はステージ初期配置の HP、ally は出撃時に焼いた個体値（deployed.allyHp）。
+  // 未デプロイは配分未確定なので満タン基準を総メモリ（上限）に置く＝盤面の ally hp=0 と合わせ空バー表示。
+  const maxHpById = $derived<Record<string, number>>({
+    ...Object.fromEntries(stage.initial.automatons.map((a) => [a.id, a.hp])),
+    ally: deployed?.allyHp ?? stage.capacity,
+  });
+
+  // BP 波形の天井＝このセッションで確定した bpMax（store が既定へステージ上書きを重ねた投影）。
+  const bpMax = $derived($battleParams.bpMax);
 
   // デプロイ時刻ラベル（表示整形はプレゼン）。
   const deployedAtLabel = $derived(
@@ -123,8 +125,9 @@
   // デプロイ＝ビルド済みイメージを対戦に出す（battle store が ally を差し替える）。別のイメージを出したら
   // 必ず先頭・実行前へ＝「deploy で再生リセット」を再生状態の所有者（プレゼン）が畳む。
   // 名前は構築エリアのカレントイメージ名を受け取り、観戦側タイルで同じ表示名を出す。
-  function deployImage(image: Program, name: string, baseImage: BaseImage) {
-    facade.deploy(image, name, baseImage);
+  // allyHp＝構築エリアで配分した初期 HP（HP 側＝総メモリ − CP 割り当て）。所有は構築側なので onDeploy で受け取る。
+  function deployImage(image: Program, name: string, baseImage: BaseImage, allyHp: number) {
+    facade.deploy(image, name, baseImage, allyHp);
     frameIndex = 0;
     playing = false;
     started = false;
