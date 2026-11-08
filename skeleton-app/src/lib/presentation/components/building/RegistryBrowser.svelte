@@ -4,7 +4,7 @@
   // ワークベンチ（workbenchDraft）とレジストリ（registryImages）を直接購読して自己完結する。
   // 唯一の継ぎ目は pull 時の Blockly 流し込み＝編集の SSoT は親の BlocklyEditor なので onPull で親に委ねる。
   import Icon from "@iconify/svelte";
-  import { baseImageTag, type BaseImage, type Program } from "$lib/domain";
+  import type { Program } from "$lib/domain";
   import {
     registryImages,
     workbenchFacade,
@@ -15,6 +15,7 @@
   } from "$lib/application";
   import { registryFacade } from "$lib/presentation/composition";
   import { hhmm } from "$lib/presentation/utils/labels";
+  import BaseImageChip from "$lib/presentation/components/shared/BaseImageChip.svelte";
 
   interface RegistryBrowserProps {
     // パネルの背景クラス。このエリアを置く親の背景に合わせる。
@@ -97,14 +98,6 @@
   }
 </script>
 
-<!-- 素質チップ＝イメージの土台（系統×版）をアイコン＋タグで示す。レジストリ各行で使い回す。 -->
-{#snippet baseImageChip(base: BaseImage)}
-  <span class="inline-flex shrink-0 items-center gap-1 text-xs text-surface-500" title="ベースイメージ（素質）">
-    <Icon icon={base.icon} class="size-3.5 text-success-700" />
-    <span class="font-mono opacity-70">{baseImageTag(base)}</span>
-  </span>
-{/snippet}
-
 <!-- レジストリ管理面（フル領域）。上＝保管済み一覧（pull/リネーム/削除）／破線／下＝カレント行（push）。
      下→上 push・上→下 pull で矢印の向きと空間が一致。永続化・版管理は未着手（store 側に集約）。 -->
 <div class="absolute inset-0 flex flex-col gap-3 overflow-hidden rounded border border-surface-300 {panelClass} p-3">
@@ -125,7 +118,7 @@
           <!-- 並び＝ハッシュ（中身の指紋）／素質（土台）／名前（タグ）／時刻 or sample。 -->
           <div class="flex min-w-0 items-center gap-2">
             <span class="font-mono text-xs opacity-60">{image.hash}</span>
-            {@render baseImageChip(image.baseImage)}
+            <BaseImageChip base={image.baseImage} cRoot="shrink-0 text-xs text-surface-500" />
             {#if renamingId === image.id}
               <!-- インライン編集：Enter/blur で確定、Escape で取消。 -->
               <input
@@ -195,7 +188,7 @@
           <Icon icon="mdi:cube" class="size-4 opacity-70" aria-label="カレント" />
           <span class="font-mono text-xs opacity-60">{current.hash}</span>
           <!-- カレントは編集中のビルド断面＝選択中の素質を土台にビルドしたもの。 -->
-          {@render baseImageChip(draft.baseImage)}
+          <BaseImageChip base={draft.baseImage} cRoot="shrink-0 text-xs text-surface-500" />
           {#if tileRenaming}
             <!-- インライン改名：Enter/blur で確定・Escape で取消。 -->
             <input

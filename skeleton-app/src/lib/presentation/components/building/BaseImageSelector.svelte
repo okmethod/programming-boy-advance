@@ -10,6 +10,7 @@
   import { baseImageFamilies, baseImageTag, versionTag, baseImageSupports, type BaseImage } from "$lib/domain";
   import { workbenchDraft, workbenchFacade } from "$lib/application";
   import { commandLabel, sensorLabel, controlLabel } from "$lib/presentation/utils/labels";
+  import BaseImageChip from "$lib/presentation/components/shared/BaseImageChip.svelte";
 
   interface BaseImageSelectorProps {
     // 非互換（使用中ブロックが残ると不整合）な切替のとき、編集中プログラムを空にする。
@@ -77,8 +78,7 @@
   class="inline-flex items-center gap-1.5 rounded border border-surface-300 bg-surface-50/95 px-2 py-1 text-xs text-surface-700 shadow-sm hover:bg-surface-100"
   title="ベースイメージ（素質）を選ぶ"
 >
-  <Icon icon={draft.baseImage.icon} class="size-4 text-success-700" aria-label="素質" />
-  <span class="font-mono opacity-70">{baseImageTag(draft.baseImage)}</span>
+  <BaseImageChip base={draft.baseImage} cIcon="size-4 text-success-700" />
   <Icon icon="mdi:chevron-down" class="size-4 opacity-50" />
 </button>
 
