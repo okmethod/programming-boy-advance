@@ -36,7 +36,7 @@
   const duplicate = $derived(draft.builtImage ? imageOf($registryImages, draft.builtImage) : undefined);
   const alreadyPushed = $derived(duplicate !== undefined);
   // タイルに出す表示名。ローカル名（draft.imageName）> 同一内容の既存イメージのラベル > プレースホルダ の順で解決する。
-  const builtName = $derived(draft.imageName || duplicate?.label || "未保存イメージ");
+  const builtName = $derived(draft.imageName || duplicate?.label || "未保存");
 
   // 最終ビルド時刻ラベル（HH:MM）。ビルドの実在を体感させる（復元点の目印）。
   const builtAtLabel = $derived(draft.builtAt === null ? null : hhmm(draft.builtAt));

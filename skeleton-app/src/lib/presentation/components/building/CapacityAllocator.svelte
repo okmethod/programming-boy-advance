@@ -1,5 +1,7 @@
 <script lang="ts">
   // 総メモリ(memoryTotal)を HP↔CP に配分する。CP は戦闘に登場しない「作成予算」で、割り当てた cpAllocated がバーの上限になる。
+  // 位置づけ＝起動時パラメータ（コンテナの docker run --memory/--cpus 相当）。イメージには焼かれず、
+  // 起動（デプロイ）時に供給される自動機の属性なので、ヘッダーのマニフェスト（イメージタイル横）に常時出す。
   // HP（ヒープ）と同じメモリのメタファーなのでバーの見た目を HP に揃える（色は予算＝黄・超過＝赤。docs/design/ui-screen-design.md）。
   // 射程は見た目＋CP 上限まで。HP 側の配分はまだ表示だけで、実際の戦闘 HP には効かない。
   // TODO: 配分値を戦闘パラメータ（domain/battle/params.ts の BATTLE_PARAMS）へ反映する。ステージ構成・数値バランス確定後に着手（docs/game-rules/base-images.md）。
@@ -33,7 +35,9 @@
   const followedCp = $derived(clampCp(stepUp(cpUsed)));
 
   // 配分パネルの枚数＝総メモリを STEP で割ったチャンク数（total=32, STEP=8 → 4枚）。
-  const chunkCount = $derived(memoryTotal / STEP);
+  // memoryTotal は STEP の倍数である前提（automatonCapacity.ts の invariant）。倍数でないステージ
+  // 容量が渡っても {#each Array()} が非整数長で落ちないよう ceil で整数に丸める（可動域は clampCp 側が担保）。
+  const chunkCount = $derived(Math.ceil(memoryTotal / STEP));
 
   // ブロック数への自動追従トグル。ON の間は CP 上限が使用ブロック数に貼り付く（スライダ・増減は無効）。
   // 既定 OFF＝手動配分を最初から触れるようにする。初期値はアライメントのクランプで必ず妥当な分割
@@ -73,10 +77,11 @@
   }
 </script>
 
-<!-- 淡色チップ：エディタ編集面の暗地でも読めるよう半透明の明地に載せる。配分パネルは浮かせず同じチップ内に罫線で仕切る。 -->
-<div class="rounded border border-surface-300 bg-surface-50/95 px-2 py-0.5 shadow-sm">
-  <!-- 上段：CP ゲージ＋配分トグル（歯車）。 -->
-  <div class="flex items-center gap-1.5">
+<!-- 常時表示チップ＋配分ポップオーバー。チップはゲージ＋歯車に絞り、配分パネルは
+     高さ固定のヘッダー（マニフェスト）を押し広げないよう chip 直下へ絶対配置でポップする。 -->
+<div class="relative">
+  <!-- 常時表示チップ：CP ゲージ＋配分トグル（歯車）。半透明の明地で暗背景でも読める。 -->
+  <div class="flex items-center gap-1.5 rounded border border-surface-300 bg-surface-50/95 px-2 py-0.5 shadow-sm">
     <div class="flex items-center gap-2">
       <span class="shrink-0 text-xs font-bold text-surface-500">CP</span>
       <!-- 等幅セグメント。明るい（surface）背景で読めるよう、溝=surface-300／未消費=surface-50。
@@ -111,8 +116,10 @@
   </div>
 
   {#if open}
-    <!-- 下段：同じチップ内で罫線 1 本仕切るだけ（浮遊パネルにしない）。即時反映せずキャンセル/決定で確定する。 -->
-    <div class="mt-1.5 border-t border-surface-300 pt-1.5 text-xs">
+    <!-- 配分ポップオーバー：チップ直下へ絶対配置（ヘッダー高さを変えない）。即時反映せずキャンセル/決定で確定する。 -->
+    <div
+      class="absolute right-0 top-full z-40 mt-1 w-72 rounded border border-surface-300 bg-surface-50 p-2 text-xs shadow-lg"
+    >
       <!-- 見出しと追従トグルを同列に。追従 ON の間は下の手動配分（ボタン/スライダ/決定）を無効化する。
            超過表示はここに出すと横幅が広がるため、下段（ボタン左）の空きスロットへ逃がす。 -->
       <div class="mb-2 flex items-center justify-between gap-2">

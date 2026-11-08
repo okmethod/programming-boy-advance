@@ -7,7 +7,7 @@
   //   - カレントイメージタイル＝現在のビルド断面（ハッシュ-名前-時刻／レジストリ行と同体裁・ダーティーに依らず一定・表示専用）→ ヘッダー行の右（ビュー切替タブとレール側タブの間の空きに右寄せ）
   //   - デプロイ＝イメージを対戦へ → イメージタイルの直右（プレイ面のみ＝showDeploy）
   //   - プッシュ/リネーム/削除＝カレントイメージの保管・改名・破棄 → レジストリタブのカレント行（破線の下・保管済み行と対称）
-  //   - CP ゲージ＝編集予算 → 枠内ヘッダー帯の中央オーバーレイ（ブロック/エディタ編集で同位置・レジストリでは隠す）
+  //   - CP/HP 配分＝起動時パラメータ（docker run 相当・イメージ非埋め込み） → ヘッダー右（イメージタイル＝マニフェスト属性と並べ常時表示・レジストリでも出す）
   // プレイ面の構築ドロワーとサンドボックスで共有し、ステージ依存・画面依存の差分は props（memoryTotal/showDeploy 等）で吸収する。
   // 2画面の見た目差は「イメージタイル直右のデプロイ1個」だけ＝サンドボックスは showDeploy=false で消える。
   import { tick } from "svelte";
@@ -79,7 +79,7 @@
   // 名前＝ローカル名（draft.imageName）> 同一内容の既存イメージのラベル > プレースホルダ の順で解決する。
   // 同一内容ラベルの引き当ては registry スライスのセレクタ（labelOf）に委ね、反応性は $registryImages の購読で担う。
   const builtName = $derived(
-    draft.imageName || (draft.builtImage ? labelOf($registryImages, draft.builtImage) : undefined) || "未保存イメージ",
+    draft.imageName || (draft.builtImage ? labelOf($registryImages, draft.builtImage) : undefined) || "未保存",
   );
 
   // 最終ビルド時刻ラベル。ビルドが「いつの断面か」を示し、ビルドの実在を体感させる（復元点の目印）。
@@ -118,9 +118,9 @@
 
 <!-- 構築エリア全体：ヘッダー（タブ＋ゲージ）＋メイン領域を縦に積む。 -->
 <div class="flex min-h-0 flex-1 flex-col gap-3">
-  <!-- ヘッダー行：高さは右レールのヘッダーと揃える。
-       左＝ビュー切替タブ（副作用なしのナビ＝セグメントタブ）／右＝カレントイメージタイル＋デプロイ。
-       タイルはビュー切替タブとレール側タブの間の空きに ml-auto で右寄せし、ビルドの鮮度を畳み込む。 -->
+  <!-- ヘッダー行＝自動機のマニフェスト。高さは右レールのヘッダーと揃える。
+       左＝ビュー切替タブ（副作用なしのナビ＝セグメントタブ）／右＝イメージタイル＋資源配分（属性）＋デプロイ（起動）。
+       右群は ml-auto で寄せ、イメージ（成果物）→配分（起動時パラメータ）→デプロイ（起動）の順に並べる。 -->
   <div class="flex h-9 shrink-0 items-center gap-3">
     <SegmentedTabs value={mainView} items={mainTabs} onChange={(v) => (mainView = v as MainView)} />
     <div class="ml-auto flex items-center gap-2">
@@ -128,22 +128,24 @@
            ダーティーに依らず一定。改名・プッシュ・削除はレジストリタブのカレント行に集約する。 -->
       {#if current.notBuilt}
         <span
-          class="inline-flex items-center gap-1.5 rounded border border-dashed border-surface-300 px-2 py-1 text-xs text-surface-400"
+          class="inline-flex items-center gap-1.5 rounded border border-dashed border-surface-300 px-2 py-1 w-36 text-xs text-surface-400"
         >
           <Icon icon="mdi:cube-outline" class="size-4" aria-label="未ビルド" />
           未ビルド
         </span>
       {:else}
         <span
-          class="inline-flex items-center gap-1.5 rounded border border-surface-300 bg-surface-50 px-2 py-1 text-xs text-surface-700"
+          class="inline-flex items-center gap-1.5 rounded border border-surface-300 bg-surface-50 px-2 py-1 w-36 text-xs text-surface-700"
         >
           <Icon icon="mdi:cube" class="size-4" aria-label="カレントイメージ" />
-          <span class="font-mono opacity-60">{current.hash}</span>
           <!-- 名前は表示専用。改名はレジストリタブのカレント行に一本化する。 -->
           <span class="max-w-[8rem] truncate font-medium">{builtName}</span>
           <span class="opacity-70">{builtAtLabel}</span>
         </span>
       {/if}
+      <!-- 資源配分（CP/HP）＝起動時パラメータ（docker run 相当）。イメージには焼かれず起動時に供給される属性なので、
+           イメージタイルと並べてマニフェストとして常時出す（ブロック/エディタ/レジストリ問わず・サンドボックスでも）。 -->
+      <CapacityAllocator cpUsed={$cpUsed} {memoryTotal} />
       {#if showDeploy}
         <!-- デプロイ＝ビルド済みイメージを対戦に反映（タイルの直右＝操作対象の真横）。未ビルドは押せない。
              副作用のある命令なのでビルドと同じ強調色（action-btn-strong）で揃える。 -->
@@ -173,9 +175,9 @@
       />
     </div>
 
-    <!-- 編集文脈のオーバーレイ群＝編集内容に紐づく操作なので枠内に重ねる。
-         ブロック/エディタ編集でだけ出し、レジストリ（保管の文脈）では一括で隠す
-         （ビルド/素質/CP すべて非表示・操作はカレント行に集約）。
+    <!-- 編集文脈のオーバーレイ群＝編集内容に紐づく操作（ビルド/素質切替）なので枠内に重ねる。
+         これらは draft を変える「アクション」なのでブロック/エディタ編集でだけ出し、レジストリ（保管の文脈）では隠す。
+         一方 CP/HP 配分は draft の「属性」なのでヘッダー（マニフェスト）に常時出す＝ここには含めない。
          配置は親（BuildingArea）の責務・各中身はそれぞれの子に閉じる。 -->
     {#if mainView !== "registry"}
       <!-- 素質セレクタ＝ビルドの入力「何から作るか」。上部中央（ビルドボタンの左）に置く。
@@ -202,13 +204,6 @@
         <button class="action-btn-strong" onclick={build}>
           <Icon icon="mdi:wrench" class="size-4" /> ビルド
         </button>
-      </div>
-
-      <!-- CP ゲージ＝編集中プログラムの作成予算。ビルドボタンのやや下・右揃え（同じ right）でオーバーレイする。
-           エディタ編集面のコードは暗地（gray-900）なので、淡色チップに載せてどちらの面でも読めるようにする。
-           配置は親の責務・チップ本体と配分操作は CapacityAllocator に閉じる。 -->
-      <div class="absolute right-5 top-15 z-20">
-        <CapacityAllocator cpUsed={$cpUsed} {memoryTotal} />
       </div>
     {/if}
 
