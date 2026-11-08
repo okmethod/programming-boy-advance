@@ -31,7 +31,8 @@ export const REACTIVE_SENTRY_STAGE: Stage = {
   goal: "近づくと攻撃してくる敵を、間合いを読んで先に倒そう",
   enemy: SENTRY,
   enemyLabel: "番人",
-  capacity: 25,
+  capacity: 24, // STEP=8 の倍数（CapacityAllocator の invariant）
+
   initial: {
     grid: { width: 8, height: 8, walls: [] },
     automatons: [

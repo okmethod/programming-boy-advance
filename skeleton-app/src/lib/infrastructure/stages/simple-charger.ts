@@ -18,7 +18,8 @@ export const SIMPLE_CHARGER_STAGE: Stage = {
   goal: "まっすぐ突進してくる敵を、近づいたら攻撃して倒そう",
   enemy: CHARGER,
   enemyLabel: "突進",
-  capacity: 20,
+  capacity: 16, // STEP=8 の倍数（CapacityAllocator の invariant）
+
   initial: {
     grid: { width: 7, height: 3, walls: [] },
     automatons: [

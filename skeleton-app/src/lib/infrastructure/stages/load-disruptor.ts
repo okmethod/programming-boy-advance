@@ -31,7 +31,8 @@ export const LOAD_DISRUPTOR_STAGE: Stage = {
   goal: "負荷攻撃でこちらをフリーズさせてくる敵を、過負荷になる前に倒そう",
   enemy: DISRUPTOR,
   enemyLabel: "妨害",
-  capacity: 15,
+  capacity: 16, // STEP=8 の倍数（CapacityAllocator の invariant）
+
   initial: {
     grid: { width: 4, height: 6, walls: [] },
     automatons: [
