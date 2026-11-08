@@ -20,19 +20,12 @@
     memoryTotal: number;
     // 配分の刻み幅＝目盛り間隔（プレイ面=stage.memoryGrain／サンドボックス=画面ローカル既定）。memoryTotal はこの倍数である前提。
     memoryGrain: number;
-    // 確定済みの CP 割り当て（＝バーの上限）。親が bind して HP 側（memoryTotal − cpAllocated）をデプロイへ運ぶ。
-    cpAllocated?: number;
+    // 確定済みの CP 割り当て（＝バーの上限）。親が所有し bind で渡す（初期値も親が確定済み）。
+    // HP 側（memoryTotal − cpAllocated）を親がデプロイへ運ぶ。
+    cpAllocated: number;
   }
 
-  let {
-    cpUsed,
-    memoryTotal,
-    memoryGrain,
-    // 既定＝使用ブロック数を含む最小目盛りを可動域 [grain, total-grain] にクランプ（helper は props 後の定義なので同義でインライン）。
-    cpAllocated = $bindable(
-      Math.min(memoryTotal - memoryGrain, Math.max(memoryGrain, Math.ceil(cpUsed / memoryGrain) * memoryGrain)),
-    ),
-  }: CapacityAllocatorProps = $props();
+  let { cpUsed, memoryTotal, memoryGrain, cpAllocated = $bindable() }: CapacityAllocatorProps = $props();
 
   // 可動域の下限＝1 目盛り（CP0 を作らせない）。memoryGrain は reactive prop なので derived で追従する。
   const CP_MIN = $derived(memoryGrain);

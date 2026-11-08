@@ -10,7 +10,7 @@
   //   - CP/HP 配分＝起動時パラメータ（docker run 相当・イメージ非埋め込み） → ヘッダー右（イメージタイル＝マニフェスト属性と並べ常時表示・レジストリでも出す）
   // プレイ面の構築ドロワーとサンドボックスで共有し、ステージ依存・画面依存の差分は props（memoryTotal/showDeploy 等）で吸収する。
   // 2画面の見た目差は「イメージタイル直右のデプロイ1個」だけ＝サンドボックスは showDeploy=false で消える。
-  import { tick } from "svelte";
+  import { tick, untrack } from "svelte";
   import Icon from "@iconify/svelte";
   import {
     registryImages,
@@ -63,10 +63,16 @@
   // program／builtImage／builtAt／imageName／baseImage はこの1つの断面として持ち運ぶ。
   const draft = $derived($workbenchDraft);
 
-  // CP 割り当て（確定値）は CapacityAllocator が所有し bind で受ける（未確定の間は子の既定が逆流して入る）。
+  // CP 割り当て（確定値）＝HP↔CP 配分の確定。親が所有し CapacityAllocator へ bind で渡す（スライダ操作で更新される）。
+  // bind 先は undefined を取れない（子の bindable 既定と衝突する）ため、ここで初期値を確定しておく：
+  // 使用ブロック数を含む最小目盛りを可動域 [grain, total-grain] へクランプ（子の既定と同じ式）。
   // HP 側＝総メモリ − CP 割り当て。デプロイ時にこの値を ally の初期 HP として親（プレイ面）へ渡す。
-  let cpAllocated = $state<number>();
-  const allyHp = $derived(memoryTotal - (cpAllocated ?? 0));
+  let cpAllocated = $state(
+    untrack(() =>
+      Math.min(memoryTotal - memoryGrain, Math.max(memoryGrain, Math.ceil($cpUsed / memoryGrain) * memoryGrain)),
+    ),
+  );
+  const allyHp = $derived(memoryTotal - cpAllocated);
 
   // メイン領域の表示切替。ブロック編集 / エディタ編集（生成コード表示）/ レジストリ。
   type MainView = "edit" | "code" | "registry";
