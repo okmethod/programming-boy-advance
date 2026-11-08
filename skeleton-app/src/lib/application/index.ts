@@ -10,6 +10,17 @@ export type { BattleFacade, BattleRun } from "./usecases/battle/facade";
 export type { SandboxTarget } from "./usecases/battle/sandbox";
 export { buildActionLog } from "./usecases/battle/actionLog";
 export type { ActionLogRow } from "./usecases/battle/actionLog";
+export {
+  battleSession,
+  battleRun,
+  allyLines,
+  enemyLines,
+  allyLog,
+  enemyLog,
+  deployedHash,
+  enemyHash,
+} from "./usecases/battle/store";
+export type { BattleSession } from "./usecases/battle/store";
 export type { Stage, StageRepository } from "./ports/stageRepository";
 
 export { createRegistryFacade } from "./usecases/registry/facade";

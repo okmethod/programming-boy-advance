@@ -2,16 +2,29 @@
   // 観戦（スペクテイター）PoC。
   // 固定ステージに対し、プレイヤーの ally プログラムを「外部供給」して対戦させ、
   // 決定的なフレーム列を再生する。ally は F1 からブロックUI（Blockly）で組む。
-  // 対戦実行はアプリ層ファサード runStage() 経由。設計は docs/design/execution-model.md を参照。
+  // 観戦セッション（出撃した ally＝deployedImage ＋ 舞台）はアプリ層 battle store が所有する。
+  // route は URL から stage を解決して openSession で渡し、deploy は facade コマンド、
+  // run/行/ログ/hash は store の読み投影を購読する。
+  // 再生位置（frameIndex/playing）は観戦 UI の状態なので route が持つ。
   // 構築エリア（左）・試運転レール（右）はレジストリ管理ページと共有する部品に切り出した。
   // ally の編集中ドラフト（program／builtImage）はアプリ層のワークベンチ store が持つ。
-  // 構築エリア内の Blockly を編集の SSoT とし、store の断面はサンドボックス画面とも共有・画面跨ぎで保持する。
   import Icon from "@iconify/svelte";
-  import { battleFacade, registryFacade } from "$lib/presentation/composition";
-  import { workbenchDraft, differsFromBuilt, buildActionLog } from "$lib/application";
+  import { battleFacade } from "$lib/presentation/composition";
+  import {
+    workbenchDraft,
+    differsFromBuilt,
+    battleSession,
+    battleRun,
+    allyLines,
+    enemyLines,
+    allyLog,
+    enemyLog,
+    deployedHash,
+    enemyHash,
+  } from "$lib/application";
   import type { PageData } from "./$types";
   import type { Program } from "$lib/domain";
-  import { DEFAULT_BASE_IMAGE, flatLines } from "$lib/domain";
+  import { DEFAULT_BASE_IMAGE } from "$lib/domain";
   import BuildingArea from "$lib/presentation/components/building/BuildingArea.svelte";
   import BattlePodViewer from "$lib/presentation/components/spectating/BattlePodViewer.svelte";
   import PlaybackController from "$lib/presentation/components/spectating/PlaybackController.svelte";
@@ -38,37 +51,22 @@
     Object.fromEntries(stage.initial.automatons.map((a) => [a.id, a.hp])),
   );
 
-  // デプロイ済みイメージ＝対戦に出ている実体（未デプロイは null）。生の編集ではなく、
-  // build→deploy の儀式を経たイメージが盤面で戦う。
-  let deployedImage = $state<Program | null>(null);
-  // デプロイ済みイメージの表示メタ（イメージタイル用）。名前は構築エリアから、時刻はデプロイ操作から受け取る。
-  let deployedName = $state("");
-  let deployedAt = $state<number | null>(null);
+  // デプロイ済みイメージ（出撃した実体・未デプロイは null）と表示メタは battle store の所有 state を購読する。
+  const deployedImage = $derived($battleSession.deployedImage);
+  const deployedName = $derived($battleSession.deployedName);
+  const deployedAt = $derived($battleSession.deployedAt);
 
-  // 観戦側イメージタイルの表示値。ハッシュはイメージ本体から算出し、構築エリアのカレントタイルと同じ指紋を見せる。
-  const deployedHash = $derived(deployedImage === null ? null : registryFacade.hashOf(deployedImage));
+  // デプロイ時刻ラベル（表示整形はプレゼン）。
   const deployedAtLabel = $derived(
     deployedAt === null
       ? null
       : new Date(deployedAt).toLocaleTimeString("ja-JP", { hour: "2-digit", minute: "2-digit" }),
   );
   // デプロイ済みと編集側の最新ビルドがズレているか＝「要再デプロイ」（dirty と対称）。
-  // 内容等価判定はアプリ層セレクタに閉じ、ルーターはドメインへ直接依存しない（P→A のみ）。
+  // workbench × battle のクロススライス join なのでプレゼンで解決する（内容等価はアプリ層セレクタに閉じる）。
   const deployDrift = $derived(differsFromBuilt($workbenchDraft, deployedImage));
-  // 敵イメージの指紋（ステージ固定・不変）。Ally と同体裁のタイルを対称に出すため算出する。
-  const enemyHash = $derived(registryFacade.hashOf(stage.enemy));
 
-  // 観戦に出す擬似コード行（ProgramViewer に渡す View Model）。
-  // TODO(Stage2): deployedImage を battle-session へ持ち上げたら、この行投影も battle の読みモデルへ移す
-  //   （今は deployedImage が route-local のためここで flatLines する）。
-  const allyLines = $derived(flatLines(deployedImage ?? []));
-  const enemyLines = $derived(flatLines(stage.enemy));
-
-  // 対戦はデプロイ済みイメージのみ。未デプロイ（null）なら走らせず、観戦は空状態にする。
-  const run = $derived(deployedImage ? facade.runStage(stageId, deployedImage) : null);
-  const frames = $derived(run?.frames ?? []);
-  const result = $derived(run?.result ?? null);
-
+  // 再生状態（観戦 UI の所有）。frameIndex/playing/started は route が持つ（battle には置かない）。
   let frameIndex = $state(0);
   let playing = $state(false);
   // デプロイ後に一度でも実行したか。
@@ -100,19 +98,15 @@
     { value: "log", icon: "mdi:table", label: "ログ" },
   ];
 
+  // 観戦フレーム（battle 投影 $battleRun）× 再生位置（route の frameIndex）／舞台（route の stage）の
+  // クロス join はプレゼンで解決する（4層の依存を単一スライスに閉じる）。
+  // displayFrames＝デプロイ前は route が持つ stage.initial の1フレーム、デプロイ後は実行フレーム列。
+  const frames = $derived($battleRun?.frames ?? []);
+  const result = $derived($battleRun?.result ?? null);
   const current = $derived(frames.length > 0 ? frames[Math.min(frameIndex, frames.length - 1)] : null);
   const lastIndex = $derived(Math.max(0, frames.length - 1));
-
-  // 盤面・ステータスは未デプロイでも初期配置を見せる（計画フェーズ＝敵と地形を読む）。
-  // デプロイ前は stage.initial の1フレーム、デプロイ後は実行フレーム列を使う。
-  // 差し替えるのは再生コントローラだけ（盤面・敵プログラムは隠さない）。
   const displayFrames = $derived(frames.length > 0 ? frames : [stage.initial]);
   const displayFrame = $derived(displayFrames[Math.min(frameIndex, displayFrames.length - 1)]);
-
-  // 観戦ログ（ActionLogViewer に渡す View Model）。畳み込みは app 層 buildActionLog が担う。
-  // TODO(Stage2): deployedImage を battle-session へ持ち上げたら ally 側はそこの読みモデルへ移す。
-  const allyLog = $derived(buildActionLog(displayFrames, deployedImage ?? [], "ally"));
-  const enemyLog = $derived(buildActionLog(displayFrames, stage.enemy, "enemy"));
 
   // 決着の表示は「観戦が決着フレームに到達したとき」に出す（結果を先にネタバレしない）。
   const decided = $derived(current?.winner != null);
@@ -123,13 +117,11 @@
     playing = false;
   }
 
-  // デプロイ＝ビルド済みイメージを対戦に出す。別のイメージ（新ハッシュ）を出したら必ず初期状態＝
-  // 実行前・先頭へ戻す。観戦の途中で中身をすげ替える“ハック”を防ぎ、毎回クリーンに実行させる。
+  // デプロイ＝ビルド済みイメージを対戦に出す（battle store が ally を差し替える）。別のイメージを出したら
+  // 必ず先頭・実行前へ＝「deploy で再生リセット」を再生状態の所有者（プレゼン）が畳む。
   // 名前は構築エリアのカレントイメージ名を受け取り、観戦側タイルで同じ表示名を出す。
   function deployImage(image: Program, name: string) {
-    deployedImage = image;
-    deployedName = name;
-    deployedAt = Date.now();
+    facade.deploy(image, name);
     frameIndex = 0;
     playing = false;
     started = false;
@@ -149,13 +141,12 @@
     playing = false;
   }
 
-  // ステージが変わったら前ステージのデプロイは無効（別ステージの対戦は成立しない）＝初期状態へ戻す。
-  // デプロイ時のリセットは deployImage() が担う（この effect はステージ切替の分だけ）。
+  // 観戦セッションを「今の舞台」で開く＝プレゼンが URL から解決した stage を openSession で渡す。
+  // openSession はデプロイを破棄（別ステージの対戦は成立しない）、再生状態はプレゼンの所有なのでここで初期へ。
+  // effect はマウント時＋ステージ切替時に走る（クライアントナビは再マウントしないため切替を effect で受ける）。
+  // CSR では effect が描画前にフラッシュされるため、敵表示（battle 投影）も初回から埋まる。
   $effect(() => {
-    void stageId;
-    deployedImage = null;
-    deployedName = "";
-    deployedAt = null;
+    facade.openSession(stage);
     frameIndex = 0;
     playing = false;
     started = false;
@@ -185,13 +176,13 @@
       <!-- ビュー本体（パネル下段・フル高。各ビューワーの黒地が親パネルと一体に見える）。 -->
       <div class="flex min-h-0 flex-1 flex-col p-3 pt-0">
         {#if allyView === "program"}
-          <ProgramViewer lines={allyLines} activeId={current?.active?.ally} fill showFollow />
+          <ProgramViewer lines={$allyLines} activeId={current?.active?.ally} fill showFollow />
         {:else if allyView === "log"}
-          <ActionLogViewer log={allyLog} {frameIndex} fill compact />
+          <ActionLogViewer log={$allyLog} {frameIndex} fill compact />
         {:else}
           <!-- イメージ＝デプロイ済みの正体。未デプロイは空表示、編集側の最新ビルドとズレたら「要再デプロイ」。 -->
           <ImageViewer
-            hash={deployedHash}
+            hash={$deployedHash}
             name={deployedName}
             baseImage={DEFAULT_BASE_IMAGE}
             timeLabel={deployedAtLabel}
@@ -245,12 +236,12 @@
       </div>
       <div class="flex min-h-0 flex-1 flex-col p-3 pt-0">
         {#if enemyView === "program"}
-          <ProgramViewer lines={enemyLines} activeId={current?.active?.enemy} fill showFollow />
+          <ProgramViewer lines={$enemyLines} activeId={current?.active?.enemy} fill showFollow />
         {:else if enemyView === "log"}
-          <ActionLogViewer log={enemyLog} {frameIndex} fill compact />
+          <ActionLogViewer log={$enemyLog} {frameIndex} fill compact />
         {:else}
           <!-- イメージ＝ステージ固定の敵の正体（Ally と同体裁で左右対称に）。時刻・ドリフトは持たない。 -->
-          <ImageViewer hash={enemyHash} name={stage.enemyLabel} baseImage={DEFAULT_BASE_IMAGE} fill />
+          <ImageViewer hash={$enemyHash} name={stage.enemyLabel} baseImage={DEFAULT_BASE_IMAGE} fill />
         {/if}
       </div>
     </div>
@@ -316,7 +307,7 @@
           <ProgramViewer
             title="敵プログラム"
             titleIcon={automatonIcon("enemy")}
-            lines={enemyLines}
+            lines={$enemyLines}
             activeId={undefined}
             fill
           />

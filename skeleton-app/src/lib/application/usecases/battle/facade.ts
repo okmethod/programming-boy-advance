@@ -4,13 +4,17 @@
  * プレゼン層とドメイン層の継ぎ目＝ UI からゲームロジックへの単一窓口。
  * ステージ取得は Port（StageRepository）経由に限り、供給元を UI から隠す。
  * 具体 Adapter は合成ルート（プレゼン層）で createBattleFacade に注入される。
- * stores/usecases のフル4層化は、次ステージ/モードが要求するまで延期する（YAGNI）。
+ *
+ * 観戦セッション（出撃した ally＝deployedImage ＋ 舞台＝stage）はアプリ層の store が所有する。
+ * 書き（openSession/deploy）はこの facade に集約し、読み（run/行/ログ/hash）は store の readonly 投影を購読する。
+ * ステージ定義の「どれを」はプレゼン（URL）が解決し、openSession で渡す（供給元の選択はプレゼンの役目）。
  */
 
 import { recordBattle } from "$lib/domain";
 import type { BattleResult, BattleState, Program } from "$lib/domain";
 import type { Stage, StageRepository } from "$lib/application/ports/stageRepository";
 import { sandboxInitial, SANDBOX_MAX_CLOCKS, type SandboxTarget } from "./sandbox";
+import { storeWriter } from "./store";
 
 export interface BattleRun {
   // 観戦・リプレイ用の各クロックの状態列（初期状態を含む）。
@@ -20,29 +24,28 @@ export interface BattleRun {
 
 /** UI が参照するゲームロジックの単一窓口。 */
 export interface BattleFacade {
-  /** ステージ定義を取得する（提示テキスト・初期盤面などの表示用）。 */
+  /** ステージ定義を取得する（提示テキスト・初期盤面などの表示用。openSession へ渡す元にも使う）。 */
   getStage(stageId: string): Stage;
   /** ステージ選択 UI 用に全ステージ定義を一覧する。 */
   listStages(): readonly Stage[];
-  /** 指定ステージでプレイヤーの ally プログラムを対戦させ、観戦フレーム列と結果を返す。 */
-  runStage(stageId: string, allyProgram: Program): BattleRun;
+  /** 観戦セッションを開く＝舞台（stage）を据えてデプロイをリセットする（ステージ切替の起点）。 */
+  openSession(stage: Stage): void;
+  /** デプロイ＝ビルド済みイメージを対戦に出す（観戦セッションの ally を差し替える）。 */
+  deploy(image: Program, name: string): void;
   /** 試運転：相手なし／stub 相手でプログラムを単体実行し、観戦フレーム列を返す（勝敗なし）。 */
   runSandbox(program: Program, target: SandboxTarget): BattleRun;
 }
 
 /** StageRepository を注入してファサードを組み立てる（合成ルートから呼ぶ）。 */
 export const createBattleFacade = (stages: StageRepository): BattleFacade => {
-  function runStage(stageId: string, allyProgram: Program): BattleRun {
-    const stage = stages.get(stageId);
-    const frames = recordBattle(stage.initial, allyProgram, stage.enemy);
-    // 決定的なので結果は最終フレームから一意に導ける（対戦を二度回さない）。
-    const finalState = frames[frames.length - 1];
-    const result: BattleResult = {
-      winner: finalState.winner ?? "draw",
-      clocks: finalState.clock,
-      finalState,
-    };
-    return { frames, result };
+  // 観戦を途中で中身すげ替えさせない：openSession は毎回デプロイを捨ててクリーンな舞台にする。
+  function openSession(stage: Stage): void {
+    storeWriter.update(() => ({ stage, deployedImage: null, deployedName: "", deployedAt: null }));
+  }
+
+  // 別イメージ（新ハッシュ）を出したら必ず先頭から＝再生リセットはプレゼン（再生状態の所有者）が畳む。
+  function deploy(image: Program, name: string): void {
+    storeWriter.update((session) => ({ ...session, deployedImage: image, deployedName: name, deployedAt: Date.now() }));
   }
 
   function runSandbox(program: Program, target: SandboxTarget): BattleRun {
@@ -59,7 +62,8 @@ export const createBattleFacade = (stages: StageRepository): BattleFacade => {
   return {
     getStage: (stageId) => stages.get(stageId),
     listStages: () => stages.list(),
-    runStage,
+    openSession,
+    deploy,
     runSandbox,
   };
 };
