@@ -9,16 +9,17 @@
   import BuildingArea from "$lib/presentation/components/building/BuildingArea.svelte";
   import SandboxRail from "$lib/presentation/components/spectating/SandboxRail.svelte";
 
-  // ステージを選ばない独立画面なので stage.capacity が無い。CP/メモリ総量はこのページ固有の既定値で代替する。
-  // CapacityAllocator の刻み(STEP=8)と噛み合う 32＝目盛り 0/8/16/24/32 の5段階（中央 16/16）。
+  // ステージを選ばない独立画面なので stage.memoryTotal/memoryGrain が無い。メモリ総量と刻み幅はこのページ固有の既定値で代替する。
+  // 刻み幅 8 と噛み合う総量 32＝目盛り 0/8/16/24/32 の5段階（中央 16/16）。総量は刻み幅の倍数であること。
   const SANDBOX_MEMORY_TOTAL = 32;
+  const SANDBOX_MEMORY_GRAIN = 8;
 </script>
 
 <!-- 一画面（iPad 横向き前提・スクロール無し）：ヘッダーの残り高を埋め、はみ出しは内側で吸収。 -->
 <div class="mx-auto flex h-full max-w-7xl flex-col gap-3 overflow-hidden p-3">
   <!-- 2カラム：左＝構築エリア／右＝試運転レール（固定幅）。プレイ面ドロワーの骨格を踏襲。 -->
   <div class="flex min-h-0 flex-1 gap-4">
-    <BuildingArea memoryTotal={SANDBOX_MEMORY_TOTAL} active panelClass="bg-white" />
+    <BuildingArea memoryTotal={SANDBOX_MEMORY_TOTAL} memoryGrain={SANDBOX_MEMORY_GRAIN} active panelClass="bg-white" />
 
     <!-- 試運転レール：プレイ面のレールと同じ枠線で囲う。独立ページなので白地に馴染ませる。 -->
     <div class="flex min-h-0 w-[26rem] shrink-0 flex-col">

@@ -26,7 +26,7 @@ export interface DeployedImage {
   readonly name: string;
   // 土台にした素質（系統×版）。イメージタイルの表示土台。
   readonly baseImage: BaseImage;
-  // 初期 HP＝デプロイ時にメモリ総量（stage.capacity）から配分した個体値。ステージ固有値ではなく出撃ごとに決まる。
+  // 初期 HP＝デプロイ時にメモリ総量（stage.memoryTotal）から配分した個体値。ステージ固有値ではなく出撃ごとに決まる。
   readonly allyHp: number;
   // 出撃時刻（復元点の目印・ドリフト表示の起点）。
   readonly deployedAt: number;

@@ -33,13 +33,14 @@ export const LOAD_DISRUPTOR_STAGE: Stage = {
   enemy: DISRUPTOR,
   enemyLabel: "妨害",
   enemyBaseImage: TURTLOGO_V2,
-  capacity: 16, // STEP=8 の倍数（CapacityAllocator の invariant）
+  memoryTotal: 16, // memoryGrain の倍数であること（CapacityAllocator の invariant）
+  memoryGrain: 8, // total=grain*2 ＝ 配分は一択（導入用）
 
   initial: {
     grid: { width: 4, height: 6, walls: [] },
     automatons: [
       // 縦長盤面なので上下で対面する。ally=上(下向き)／enemy=下(上向き)。
-      // ally の hp=0 はデプロイ前の表示（未出撃＝空バー）用。対戦時は capacity から配分した個体値で上書きされる。
+      // ally の hp=0 はデプロイ前の表示（未出撃＝空バー）用。対戦時は memoryTotal から配分した個体値で上書きされる。
       { id: "ally", pos: { x: 2, y: 0 }, dir: "down", hp: 0, bp: 0, freezeRemaining: 0, priority: 1 },
       { id: "enemy", pos: { x: 2, y: 5 }, dir: "up", hp: 3, bp: 0, freezeRemaining: 0, priority: 0 },
     ],

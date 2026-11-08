@@ -33,12 +33,13 @@ export const REACTIVE_SENTRY_STAGE: Stage = {
   enemy: SENTRY,
   enemyLabel: "番人",
   enemyBaseImage: TURTLOGO_V2,
-  capacity: 24, // STEP=8 の倍数（CapacityAllocator の invariant）
+  memoryTotal: 24, // memoryGrain の倍数であること（CapacityAllocator の invariant）
+  memoryGrain: 8,
 
   initial: {
     grid: { width: 8, height: 8, walls: [] },
     automatons: [
-      // ally の hp=0 はデプロイ前の表示（未出撃＝空バー）用。対戦時は capacity から配分した個体値で上書きされる。
+      // ally の hp=0 はデプロイ前の表示（未出撃＝空バー）用。対戦時は memoryTotal から配分した個体値で上書きされる。
       { id: "ally", pos: { x: 0, y: 4 }, dir: "right", hp: 0, bp: 0, freezeRemaining: 0, priority: 1 },
       { id: "enemy", pos: { x: 7, y: 4 }, dir: "left", hp: 3, bp: 0, freezeRemaining: 0, priority: 0 },
     ],

@@ -8,21 +8,18 @@
   import Icon from "@iconify/svelte";
   import FractionReadout from "$lib/presentation/components/shared/FractionReadout.svelte";
 
-  // 配分スライダは STEP（8）刻みの目盛り。total=32 なら 0/8/16/24/32 の5目盛りを軌道に見せる。
-  // ただし両端（CP0/HP全 と 全CP/HP0）は選ばせない＝可動域は [STEP, total-STEP]=[8,24]（中央16/16）。
+  // 配分スライダは memoryGrain 刻みの目盛り。total=32・grain=8 なら 0/8/16/24/32 の5目盛りを軌道に見せる。
+  // ただし両端（CP0/HP全 と 全CP/HP0）は選ばせない＝可動域は [grain, total-grain]=[8,24]（中央16/16）。
   // 端へ寄せても clampCp が value を内側の目盛りへ丸めるので、両端はスライダ上で素通りする。
-  // total を STEP*2（=16）に絞ったステージは一択＝自由度ゼロ（導入ステージ用）。
-  // TODO: STEP も memoryTotal と同様いずれステージ定義から渡す（今は既定 8 固定）。
-  const STEP = 8;
-  const CP_MIN = STEP;
-  // 使用ブロック数を次の目盛り（STEP 境界）へ切り上げる（端数は内部フラグメント）。bindable 既定値でも使うので props の前に置く。
-  const stepUp = (value: number) => Math.ceil(value / STEP) * STEP;
+  // total を grain*2（=16）に絞ったステージは一択＝自由度ゼロ（導入ステージ用）。
 
   interface CapacityAllocatorProps {
     // 現在のプログラムが消費する CP（組んだブロック数）。
     cpUsed: number;
-    // 総メモリ＝HP↔CP 配分の原資（プレイ面=stage.capacity／レジストリ管理=既定容量）。
+    // メモリ総量＝HP↔CP 配分の原資（プレイ面=stage.memoryTotal／サンドボックス=画面ローカル既定）。
     memoryTotal: number;
+    // 配分の刻み幅＝目盛り間隔（プレイ面=stage.memoryGrain／サンドボックス=画面ローカル既定）。memoryTotal はこの倍数である前提。
+    memoryGrain: number;
     // 確定済みの CP 割り当て（＝バーの上限）。親が bind して HP 側（memoryTotal − cpAllocated）をデプロイへ運ぶ。
     cpAllocated?: number;
   }
@@ -30,20 +27,27 @@
   let {
     cpUsed,
     memoryTotal,
-    // 既定＝使用ブロック数を含む最小目盛りを可動域 [STEP, total-STEP] にクランプ（clampCp は props 後の定義なのでここは同義でインライン）。
-    cpAllocated = $bindable(Math.min(memoryTotal - STEP, Math.max(CP_MIN, stepUp(cpUsed)))),
+    memoryGrain,
+    // 既定＝使用ブロック数を含む最小目盛りを可動域 [grain, total-grain] にクランプ（helper は props 後の定義なので同義でインライン）。
+    cpAllocated = $bindable(
+      Math.min(memoryTotal - memoryGrain, Math.max(memoryGrain, Math.ceil(cpUsed / memoryGrain) * memoryGrain)),
+    ),
   }: CapacityAllocatorProps = $props();
 
-  const cpMax = $derived(memoryTotal - STEP);
+  // 可動域の下限＝1 目盛り（CP0 を作らせない）。memoryGrain は reactive prop なので derived で追従する。
+  const CP_MIN = $derived(memoryGrain);
+  // 使用ブロック数を次の目盛り（grain 境界）へ切り上げる（端数は内部フラグメント）。
+  const ceilToGrain = (value: number) => Math.ceil(value / memoryGrain) * memoryGrain;
+  const cpMax = $derived(memoryTotal - memoryGrain);
   const clampCp = (value: number) => Math.min(cpMax, Math.max(CP_MIN, value));
 
   // 追従モードでの CP 上限＝使用ブロック数を含む最小の目盛り（切り上げ）。可動域にクランプする。
-  const followedCp = $derived(clampCp(stepUp(cpUsed)));
+  const followedCp = $derived(clampCp(ceilToGrain(cpUsed)));
 
-  // 配分パネルの枚数＝総メモリを STEP で割ったチャンク数（total=32, STEP=8 → 4枚）。
-  // memoryTotal は STEP の倍数である前提（automatonCapacity.ts の invariant）。倍数でないステージ
+  // 配分パネルの枚数＝総メモリを grain で割ったチャンク数（total=32・grain=8 → 4枚）。
+  // memoryTotal は memoryGrain の倍数である前提（stage.memoryGrain の invariant）。倍数でないステージ
   // 容量が渡っても {#each Array()} が非整数長で落ちないよう ceil で整数に丸める（可動域は clampCp 側が担保）。
-  const chunkCount = $derived(Math.ceil(memoryTotal / STEP));
+  const chunkCount = $derived(Math.ceil(memoryTotal / memoryGrain));
 
   // ブロック数への自動追従トグル。ON の間は CP 上限が使用ブロック数に貼り付く（スライダ・増減は無効）。
   // 既定 OFF＝手動配分を最初から触れるようにする。初期値はアライメントのクランプで必ず妥当な分割
@@ -55,7 +59,7 @@
 
   // 配分パネルの開閉と、スライダが触る下書き値。決定するまでゲージ（cpAllocated）には反映しない。
   let open = $state(false);
-  let draft = $state(untrack(() => clampCp(stepUp(cpUsed))));
+  let draft = $state(untrack(() => clampCp(ceilToGrain(cpUsed))));
   // 下書き基準の超過量（決定するとこれだけ上限を超える）。配分パネルの見出しに添えて即時フィードバックする。
   const draftOverflow = $derived(Math.max(0, cpUsed - draft));
 
@@ -76,9 +80,9 @@
     cpAllocated = draft;
     open = false;
   }
-  // 右で CP 増・HP 減（スライダと同じ向き）。1目盛り（STEP）単位で動かし可動域でクランプ。
+  // 右で CP 増・HP 減（スライダと同じ向き）。1目盛り（grain）単位で動かし可動域でクランプ。
   function adjustDraft(steps: number) {
-    draft = clampCp(draft + steps * STEP);
+    draft = clampCp(draft + steps * memoryGrain);
   }
 </script>
 
@@ -164,7 +168,7 @@
           >HP <span class="inline-block w-[2ch] text-right">{memoryTotal - draft}</span></span
         >
       </div>
-      <!-- 配分パネル：総メモリを STEP(8) チャンクの四角パネルで並べ、CP=アンバー／HP=緑で塗り分ける
+      <!-- 配分パネル：総メモリを grain チャンクの四角パネルで並べ、CP=アンバー／HP=緑で塗り分ける
            （色言語を踏襲：CP=ゲージの消費色アンバー／HP=戦闘 HP バーと同じ bg-green-500）。クリックした所まで CP に寄せる。
            CP は [8,24] にクランプされるので左端は必ず CP・右端は必ず HP＝両端（0/全量）は作れない。 -->
       <div
@@ -173,13 +177,13 @@
         aria-label="CP への割り当て量"
       >
         {#each Array(chunkCount) as _, i (i)}
-          {@const isCp = (i + 1) * STEP <= draft}
+          {@const isCp = (i + 1) * memoryGrain <= draft}
           <button
             type="button"
             class={isCp ? "flex-1 bg-amber-300 hover:bg-amber-400" : "flex-1 bg-green-500 hover:bg-green-600"}
             disabled={follow}
-            onclick={() => (draft = clampCp((i + 1) * STEP))}
-            aria-label={`CP を ${clampCp((i + 1) * STEP)} にする`}
+            onclick={() => (draft = clampCp((i + 1) * memoryGrain))}
+            aria-label={`CP を ${clampCp((i + 1) * memoryGrain)} にする`}
             aria-pressed={isCp}
           ></button>
         {/each}

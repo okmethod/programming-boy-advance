@@ -20,13 +20,14 @@ export const SIMPLE_CHARGER_STAGE: Stage = {
   enemy: CHARGER,
   enemyLabel: "突進",
   enemyBaseImage: TURTLOGO_V2,
-  capacity: 16, // STEP=8 の倍数（CapacityAllocator の invariant）
+  memoryTotal: 16, // memoryGrain の倍数であること（CapacityAllocator の invariant）
+  memoryGrain: 8, // total=grain*2 ＝ 配分は一択（導入用）
 
   initial: {
     grid: { width: 7, height: 3, walls: [] },
     automatons: [
       // priority はプレイヤー（ally）を高くして先手固定。bp/freezeRemaining は 0 から始まる。
-      // ally の hp=0 はデプロイ前の表示（未出撃＝空バー）用。対戦時は capacity から配分した個体値で上書きされる。
+      // ally の hp=0 はデプロイ前の表示（未出撃＝空バー）用。対戦時は memoryTotal から配分した個体値で上書きされる。
       { id: "ally", pos: { x: 0, y: 1 }, dir: "right", hp: 0, bp: 0, freezeRemaining: 0, priority: 1 },
       { id: "enemy", pos: { x: 6, y: 1 }, dir: "left", hp: 3, bp: 0, freezeRemaining: 0, priority: 0 },
     ],

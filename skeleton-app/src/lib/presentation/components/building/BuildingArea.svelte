@@ -32,9 +32,11 @@
   import ProgramViewer from "$lib/presentation/components/inspecting/ProgramViewer.svelte";
 
   interface BuildingAreaProps {
-    // 総メモリ＝HP↔CP 配分の原資。プレイ面=stage.capacity／レジストリ管理=既定容量。
+    // メモリ総量＝HP↔CP 配分の原資。プレイ面=stage.memoryTotal／サンドボックス=画面ローカル既定。
     // この総量をプレイヤーが HP と CP に振り分ける（CP 厚め＝複雑だが脆い）。配分は編集時のローカル状態で持つ。
     memoryTotal: number;
+    // メモリ配分の刻み幅＝目盛り間隔（プレイ面=stage.memoryGrain／サンドボックス=画面ローカル既定）。CapacityAllocator へ素通しする。
+    memoryGrain: number;
     // 表示中か。transform で開くドロワーは ResizeObserver が発火しないため、
     // active かつブロック編集面のとき tick 後に Blockly を明示 resize する。
     active: boolean;
@@ -50,6 +52,7 @@
 
   let {
     memoryTotal,
+    memoryGrain,
     active,
     showDeploy = false,
     onDeploy,
@@ -166,7 +169,7 @@
       {/if}
       <!-- 資源配分（CP/HP）＝起動時パラメータ（docker run 相当）。イメージには焼かれず起動時に供給される属性なので、
            イメージタイルと並べてマニフェストとして常時出す（ブロック/エディタ/レジストリ問わず・サンドボックスでも）。 -->
-      <CapacityAllocator cpUsed={$cpUsed} {memoryTotal} bind:cpAllocated />
+      <CapacityAllocator cpUsed={$cpUsed} {memoryTotal} {memoryGrain} bind:cpAllocated />
       {#if showDeploy}
         <!-- デプロイ＝ビルド済みイメージを対戦に反映（タイルの直右＝操作対象の真横）。未ビルドは押せない。
              副作用のある命令なのでビルドと同じ強調色（action-btn-strong）で揃える。 -->

@@ -23,8 +23,12 @@ export interface Stage {
   // 敵の素質（系統×版）。表示（アイコン＋系統名）の土台。敵は player カタログの包含検査対象外。
   readonly enemyBaseImage: BaseImage;
   readonly initial: BattleState;
-  // CP（キャパシティ）上限＝このステージで組めるブロック数の予算。
-  readonly capacity: number;
+  // メモリ総量＝デプロイ時に自動機へ供給する起動時メモリ（docker run --memory 相当）。
+  // プレイヤーはこの総量を HP（ヒープ）と CP（コード予算）へ配分する。CP 自体はここでは決めない。
+  readonly memoryTotal: number;
+  // メモリ配分（HP↔CP）の刻み幅＝目盛り間隔。memoryTotal はこの倍数であること（CapacityAllocator の invariant）。
+  // 小さくすると配分の自由度が上がり、memoryTotal=memoryGrain*2 のステージは一択＝自由度ゼロ（導入用）。
+  readonly memoryGrain: number;
   // 戦闘チューニングのステージ固有上書き（未指定 knob は既定 BATTLE_PARAMS が効く）。
   // ここを足場に「全バランス調整がステージ側で成り立つ」を担保する。
   readonly params?: Partial<BattleParams>;

@@ -55,7 +55,7 @@
   // 未デプロイは配分未確定なので満タン基準を総メモリ（上限）に置く＝盤面の ally hp=0 と合わせ空バー表示。
   const maxHpById = $derived<Record<string, number>>({
     ...Object.fromEntries(stage.initial.automatons.map((a) => [a.id, a.hp])),
-    ally: deployed?.allyHp ?? stage.capacity,
+    ally: deployed?.allyHp ?? stage.memoryTotal,
   });
 
   // BP 波形の天井＝このセッションで確定した bpMax（store が既定へステージ上書きを重ねた投影）。
@@ -280,7 +280,8 @@
     <!-- 構築エリア：タブ（ブロック編集/エディタ編集/レジストリ）＋CPゲージ＋Blockly 等を内包。
          ドロワーは transform で開くため active にドロワー開閉を渡して開いた後に resize させる。 -->
     <BuildingArea
-      memoryTotal={stage.capacity}
+      memoryTotal={stage.memoryTotal}
+      memoryGrain={stage.memoryGrain}
       active={drawerOpen}
       showDeploy
       onDeploy={deployImage}
