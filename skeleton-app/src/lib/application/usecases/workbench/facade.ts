@@ -34,6 +34,12 @@ export interface WorkbenchFacade {
   setProgramFromText(text: string): ParseResult;
   /** ビルド＝現在の編集を凍結してイメージ化する（生編集から切り離した不変スナップショット）。 */
   build(): void;
+  /**
+   * 前回ビルド断面へ戻す＝編集中 program をビルドイメージで上書きする（復元点として使う）。
+   * 未ビルドは no-op。ビルドと対称に clone し、program↔builtImage のエイリアスを断つ。
+   * ビューの追従（Blockly 再ロード／テキスト欄の種貼り直し）はプレゼン側の責務でここには含めない。
+   */
+  revertToBuilt(): void;
   /** カレントイメージを破棄＝未ビルドに戻す（編集中の program はそのまま）。 */
   clearBuilt(): void;
   /** カレントイメージのローカル名を付け替える。 */
@@ -62,6 +68,11 @@ export const workbenchFacade: WorkbenchFacade = {
       builtImage: structuredClone(draft.program),
       builtAt: Date.now(),
     }));
+  },
+  revertToBuilt() {
+    storeWriter.update((draft) =>
+      draft.builtImage === null ? draft : { ...draft, program: structuredClone(draft.builtImage) },
+    );
   },
   clearBuilt() {
     storeWriter.update((draft) => ({ ...draft, builtImage: null, builtAt: null, imageName: "" }));

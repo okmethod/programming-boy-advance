@@ -2,7 +2,7 @@
   // 構築エリア＝作業台の左側。
   // タブ（ブロック編集/エディタ編集/レジストリ）＋Blockly（編集の SSoT・常時マウント）＋エディタ編集面＋レジストリ一覧を内包する。
   // アクションは「紐づく先」に置く（ライフサイクル 編集→[ビルド]→イメージ→[デプロイ/プッシュ]→ 対戦/保管）:
-  //   - ビルド＋同期状態＋ロールバック＝編集内容に紐づく → 枠内右上オーバーレイ（ブロック/エディタ編集タブの時だけ。レジストリタブは非表示）
+  //   - ビルド＋同期状態＋ロールバック＝編集内容に紐づく → 枠内右上オーバーレイ（ブロック/エディタ編集タブの両面で出す。レジストリタブは非表示）
   //     （同期状態は「前回ビルド時に戻す」の有無で示す＝出ている＝ダーティー／無い＝✓ビルド済み）
   //   - カレントイメージタイル＝現在のビルド断面（ハッシュ-名前-時刻／レジストリ行と同体裁・ダーティーに依らず一定・表示専用）→ ヘッダー行の右（ビュー切替タブとレール側タブの間の空きに右寄せ）
   //   - デプロイ＝イメージを対戦へ → イメージタイルの直右（プレイ面のみ＝showDeploy）
@@ -133,10 +133,22 @@
     workbenchFacade.build();
   }
 
+  // エディタ編集面を種から貼り直すための nonce。ProgramEditor はテキストを初期値限りで取り以後ローカル保持するため、
+  // ロールバックのような「意図した破棄」では remount して現在の $draftText（＝戻した断面）を種に取り直させる。
+  let codeSeedNonce = $state(0);
+
   // 最新ビルドに戻す＝編集中の変更を破棄してビルド断面へ復帰（ビルドを復元点として使う）。
-  // Blockly が編集の SSoT なので load() で流し込み、program が順方向で戻る。
+  // 状態遷移（program ← builtImage）はアプリ層の操作なので、ビューの追従だけをここで権威別に担う：
+  //  - ブロック編集：Blockly が SSoT。load() で流し込むと onProgramChange が順方向で同じ戻しを起こす（facade は呼ばない＝二重 write 回避）。
+  //  - エディタ編集：テキスト欄は dumb leaf で順方向に流せない。facade で store を戻し、エラーを払って ProgramEditor を種から貼り直す。
   function revertToBuilt() {
     if (draft.builtImage === null) return;
+    if (mainView === "code") {
+      workbenchFacade.revertToBuilt();
+      codeErrors = [];
+      codeSeedNonce++;
+      return;
+    }
     editor?.load(draft.builtImage);
   }
 
@@ -252,19 +264,20 @@
          ＝戻すが無い（＝編集とビルド断面が一致）＝「ビルド済み（最新）」を✓で示す。 -->
     {#if mainView !== "registry"}
       <div class="absolute right-5 top-2 z-20 flex items-center gap-2">
-        {#if mainView === "edit"}
-          <!-- 同期状態＆ロールバックは Blockly 権威の編集面だけ。code モードではテキストが権威なので出さない。 -->
-          {#if current.dirty}
-            <!-- ロールバック＝編集を捨てて前回ビルド時へ戻す。この表示自体がダーティーの合図。破壊寄りなので淡色。 -->
-            <button class="action-btn" onclick={revertToBuilt} title="編集を捨てて前回ビルド時に戻す">
-              <Icon icon="mdi:history" class="size-4" /> 前回ビルドに戻す
-            </button>
-          {:else if !current.notBuilt}
-            <!-- 戻すが無い＝編集とビルド断面が一致＝ビルド済み（最新）。 -->
-            <span class="inline-flex items-center gap-1 text-xs text-success-700">
-              <Icon icon="mdi:check-circle" class="size-4" /> ビルド済み
-            </span>
-          {/if}
+        <!-- 同期状態＆ロールバックはブロック/エディタ編集の両面で出す（戻し方は revertToBuilt が権威に応じて分岐）。
+             ダーティー判定は program↔builtImage の純投影なので、テキスト権威の code モードでも applyCodeText 反映ぶんで効く。
+             ただし code モードで構文エラー中は program が「直近の有効断面」で止まり dirty が false になり得る
+             （壊れたテキストは BuildingArea から見えない）。戻し動線が一番要る瞬間なので codeHasErrors でも出す。 -->
+        {#if current.dirty || (mainView === "code" && codeHasErrors && !current.notBuilt)}
+          <!-- ロールバック＝編集を捨てて前回ビルド時へ戻す。この表示自体がダーティーの合図。破壊寄りなので淡色。 -->
+          <button class="action-btn" onclick={revertToBuilt} title="編集を捨てて前回ビルド時に戻す">
+            <Icon icon="mdi:history" class="size-4" /> 前回ビルドに戻す
+          </button>
+        {:else if !current.notBuilt}
+          <!-- 戻すが無い＝編集とビルド断面が一致＝ビルド済み（最新）。 -->
+          <span class="inline-flex items-center gap-1 text-xs text-success-700">
+            <Icon icon="mdi:check-circle" class="size-4" /> ビルド済み
+          </span>
         {/if}
         <!-- ビルドは両編集面で可。code モードは構文エラーがある間だけ押せない（確定をブロック）。 -->
         <button
@@ -286,7 +299,10 @@
            構文エラーは codeErrors に受けてタブ切替・ビルドの確定をブロックする。 -->
       <div class="absolute inset-0 flex flex-col overflow-hidden rounded border border-surface-300 {panelClass}">
         <div class="flex min-h-0 flex-1 flex-col {HEADER_RESERVE_Y}">
-          <ProgramEditor initialText={$draftText} onInput={applyCodeText} errors={codeErrors} />
+          <!-- ロールバック時は codeSeedNonce を変えて remount し、戻した断面の $draftText を種に取り直させる。 -->
+          {#key codeSeedNonce}
+            <ProgramEditor initialText={$draftText} onInput={applyCodeText} errors={codeErrors} />
+          {/key}
         </div>
       </div>
     {/if}
