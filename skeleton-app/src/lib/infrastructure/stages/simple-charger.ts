@@ -6,6 +6,7 @@
 
 import type { Stage } from "$lib/application";
 import type { Program } from "$lib/domain";
+import { TURTLOGO_V2 } from "$lib/domain";
 
 // まっすぐ突進し続けるだけの敵（攻撃しない）。
 const CHARGER: Program = [{ kind: "repeat", count: 100, body: [{ kind: "call", cmd: "stepForward" }] }];
@@ -18,6 +19,7 @@ export const SIMPLE_CHARGER_STAGE: Stage = {
   goal: "まっすぐ突進してくる敵を、近づいたら攻撃して倒そう",
   enemy: CHARGER,
   enemyLabel: "突進",
+  enemyBaseImage: TURTLOGO_V2,
   capacity: 16, // STEP=8 の倍数（CapacityAllocator の invariant）
 
   initial: {

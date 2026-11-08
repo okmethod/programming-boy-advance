@@ -7,6 +7,7 @@
 
 import type { Stage } from "$lib/application";
 import type { Program } from "$lib/domain";
+import { TURTLOGO_V2 } from "$lib/domain";
 
 // 目の前に相手がいれば攻撃、いなければ前進し続ける反応型の敵。
 const SENTRY: Program = [
@@ -31,6 +32,7 @@ export const REACTIVE_SENTRY_STAGE: Stage = {
   goal: "近づくと攻撃してくる敵を、間合いを読んで先に倒そう",
   enemy: SENTRY,
   enemyLabel: "番人",
+  enemyBaseImage: TURTLOGO_V2,
   capacity: 24, // STEP=8 の倍数（CapacityAllocator の invariant）
 
   initial: {

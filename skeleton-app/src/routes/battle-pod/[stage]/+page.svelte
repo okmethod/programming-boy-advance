@@ -22,8 +22,8 @@
     deployedHash,
     enemyHash,
     battleParams,
-    DEFAULT_BASE_IMAGE,
     type Program,
+    type BaseImage,
   } from "$lib/application";
   import type { PageData } from "./$types";
   import BuildingArea from "$lib/presentation/components/building/BuildingArea.svelte";
@@ -55,20 +55,19 @@
   // BP 波形の天井＝このセッションで確定した bpMax（store が既定へステージ上書きを重ねた投影）。
   const bpMax = $derived($battleParams.bpMax);
 
-  // デプロイ済みイメージ（出撃した実体・未デプロイは null）と表示メタは battle store の所有 state を購読する。
-  const deployedImage = $derived($battleSession.deployedImage);
-  const deployedName = $derived($battleSession.deployedName);
-  const deployedAt = $derived($battleSession.deployedAt);
+  // デプロイ済みイメージ（出撃した実体・未デプロイは null）は battle store の所有 state を購読する。
+  // program・表示名・素質・時刻は一体の集合体で、未デプロイは丸ごと null（表示メタだけ欠ける状態は起きない）。
+  const deployed = $derived($battleSession.deployed);
 
   // デプロイ時刻ラベル（表示整形はプレゼン）。
   const deployedAtLabel = $derived(
-    deployedAt === null
+    deployed === null
       ? null
-      : new Date(deployedAt).toLocaleTimeString("ja-JP", { hour: "2-digit", minute: "2-digit" }),
+      : new Date(deployed.deployedAt).toLocaleTimeString("ja-JP", { hour: "2-digit", minute: "2-digit" }),
   );
   // デプロイ済みと編集側の最新ビルドがズレているか＝「要再デプロイ」（dirty と対称）。
   // workbench × battle のクロススライス join なのでプレゼンで解決する（内容等価はアプリ層セレクタに閉じる）。
-  const deployDrift = $derived(differsFromBuilt($workbenchDraft, deployedImage));
+  const deployDrift = $derived(differsFromBuilt($workbenchDraft, deployed?.program ?? null));
 
   // 再生状態（観戦 UI の所有）。frameIndex/playing/started は route が持つ（battle には置かない）。
   let frameIndex = $state(0);
@@ -124,8 +123,8 @@
   // デプロイ＝ビルド済みイメージを対戦に出す（battle store が ally を差し替える）。別のイメージを出したら
   // 必ず先頭・実行前へ＝「deploy で再生リセット」を再生状態の所有者（プレゼン）が畳む。
   // 名前は構築エリアのカレントイメージ名を受け取り、観戦側タイルで同じ表示名を出す。
-  function deployImage(image: Program, name: string) {
-    facade.deploy(image, name);
+  function deployImage(image: Program, name: string, baseImage: BaseImage) {
+    facade.deploy(image, name, baseImage);
     frameIndex = 0;
     playing = false;
     started = false;
@@ -187,8 +186,8 @@
           <!-- イメージ＝デプロイ済みの正体。未デプロイは空表示、編集側の最新ビルドとズレたら「要再デプロイ」。 -->
           <ImageViewer
             hash={$deployedHash}
-            name={deployedName}
-            baseImage={DEFAULT_BASE_IMAGE}
+            name={deployed?.name ?? ""}
+            baseImage={deployed?.baseImage}
             timeLabel={deployedAtLabel}
             drift={deployDrift}
             emptyLabel="未デプロイ"
@@ -204,12 +203,12 @@
       <!-- 盤面エリア（残り高を埋める。決着時は結果オーバーレイを重ねる） -->
       <div class="relative min-h-0 w-full flex-1">
         <!-- 非活性はデプロイ前のみ（まだ自機が出ていない）。デプロイ後は実行前でも活性で描く。 -->
-        <BattlePodViewer state={displayFrame} allyInactive={deployedImage === null} />
+        <BattlePodViewer state={displayFrame} allyInactive={deployed === null} />
         {#if decided && result}
           <ResultOverlay winner={result.winner} onReplay={replay} />
         {/if}
       </div>
-      {#if !deployedImage}
+      {#if !deployed}
         <!-- 未デプロイ：再生する対戦がまだ無いので、コントローラの位置にデプロイ促しを置く。 -->
         <div class="flex h-9 items-center justify-center gap-1.5 text-xs text-surface-500">
           <Icon icon="mdi:rocket-launch-outline" class="size-4" /> オートマトンをデプロイして対戦
@@ -245,7 +244,7 @@
           <ActionLogViewer log={$enemyLog} {frameIndex} fill compact />
         {:else}
           <!-- イメージ＝ステージ固定の敵の正体（Ally と同体裁で左右対称に）。時刻・ドリフトは持たない。 -->
-          <ImageViewer hash={$enemyHash} name={stage.enemyLabel} baseImage={DEFAULT_BASE_IMAGE} fill />
+          <ImageViewer hash={$enemyHash} name={stage.enemyLabel} baseImage={stage.enemyBaseImage} fill />
         {/if}
       </div>
     </div>

@@ -7,6 +7,7 @@
 
 import type { Stage } from "$lib/application";
 import type { Program } from "$lib/domain";
+import { TURTLOGO_V2 } from "$lib/domain";
 
 // 目の前に相手がいれば負荷攻撃で過負荷を狙い、いなければ前進する妨害型の敵。
 const DISRUPTOR: Program = [
@@ -31,6 +32,7 @@ export const LOAD_DISRUPTOR_STAGE: Stage = {
   goal: "負荷攻撃でこちらをフリーズさせてくる敵を、過負荷になる前に倒そう",
   enemy: DISRUPTOR,
   enemyLabel: "妨害",
+  enemyBaseImage: TURTLOGO_V2,
   capacity: 16, // STEP=8 の倍数（CapacityAllocator の invariant）
 
   initial: {

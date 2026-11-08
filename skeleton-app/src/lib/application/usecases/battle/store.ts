@@ -12,19 +12,32 @@
 
 import { derived, get, readonly, writable } from "svelte/store";
 import { recordRun, resolveBattleParams, hashProgram, flatLines } from "$lib/domain";
-import type { BattleParams, BattleRun, FlatLine, Program } from "$lib/domain";
+import type { BaseImage, BattleParams, BattleRun, FlatLine, Program } from "$lib/domain";
 import type { Stage } from "$lib/application/ports/stageRepository";
 import { buildActionLog, type ActionLogRow } from "./actionLog";
 
-/** 観戦セッションの所有 state。stage=このセッションの舞台、deployed*=出撃した ally の実体。 */
-export interface BattleSession {
-  readonly stage: Stage | null;
-  readonly deployedImage: Program | null;
-  readonly deployedName: string;
-  readonly deployedAt: number | null;
+/**
+ * デプロイ済みイメージ＝出撃した ally の実体。
+ * プログラム・表示名・素質・出撃時刻は一体で、別々に欠けることはない（未デプロイは集合体ごと null）。
+ */
+export interface DeployedImage {
+  readonly program: Program;
+  // 表示名（タグ）。観戦側イメージタイルに出す。
+  readonly name: string;
+  // 土台にした素質（系統×版）。イメージタイルの表示土台。
+  readonly baseImage: BaseImage;
+  // 出撃時刻（復元点の目印・ドリフト表示の起点）。
+  readonly deployedAt: number;
 }
 
-const INITIAL_SESSION: BattleSession = { stage: null, deployedImage: null, deployedName: "", deployedAt: null };
+/** 観戦セッションの所有 state。stage=このセッションの舞台、deployed=出撃した ally の実体。 */
+export interface BattleSession {
+  readonly stage: Stage | null;
+  // 出撃した ally の実体（未デプロイは null）。
+  readonly deployed: DeployedImage | null;
+}
+
+const INITIAL_SESSION: BattleSession = { stage: null, deployed: null };
 
 // 内部の可変セッション。writable を外に晒さず、読みは readonly、書きは storeWriter 経由に限る。
 const sessionStore = writable<BattleSession>(INITIAL_SESSION);
@@ -57,19 +70,19 @@ export const battleParams = derived(sessionStore, (session): BattleParams =>
 
 /** 対戦結果（観戦フレーム列＋勝敗）＝所有 state の投影。未デプロイ／未セッションは null。 */
 export const battleRun = derived([sessionStore, battleParams], ([session, params]): BattleRun | null => {
-  if (session.stage === null || session.deployedImage === null) return null;
-  return recordRun(session.stage.initial, session.deployedImage, session.stage.enemy, { params });
+  if (session.stage === null || session.deployed === null) return null;
+  return recordRun(session.stage.initial, session.deployed.program, session.stage.enemy, { params });
 });
 
 /** ally（デプロイ済み）の擬似コード行＝ProgramViewer に渡す View Model。 */
-export const allyLines = derived(sessionStore, (session): FlatLine[] => flatLines(session.deployedImage ?? []));
+export const allyLines = derived(sessionStore, (session): FlatLine[] => flatLines(session.deployed?.program ?? []));
 
 /** enemy（ステージ固定）の擬似コード行。 */
 export const enemyLines = derived(sessionStore, (session): FlatLine[] => flatLines(session.stage?.enemy ?? []));
 
 /** ally の行動ログ（全長）＝ActionLogViewer に渡す View Model。run 前は空。 */
 export const allyLog = derived([battleRun, sessionStore], ([run, session]): ActionLogRow[] =>
-  buildActionLog(run?.frames ?? [], session.deployedImage ?? [], "ally"),
+  buildActionLog(run?.frames ?? [], session.deployed?.program ?? [], "ally"),
 );
 
 /** enemy の行動ログ（全長）。run 前は空。 */
@@ -79,7 +92,7 @@ export const enemyLog = derived([battleRun, sessionStore], ([run, session]): Act
 
 /** ally（デプロイ済み）イメージの指紋。未デプロイは null。 */
 export const deployedHash = derived(sessionStore, (session): string | null =>
-  session.deployedImage === null ? null : hashProgram(session.deployedImage),
+  session.deployed === null ? null : hashProgram(session.deployed.program),
 );
 
 /** enemy（ステージ固定）イメージの指紋。未セッションは null。 */

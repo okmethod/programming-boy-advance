@@ -11,7 +11,7 @@
  */
 
 import { recordRun } from "$lib/domain";
-import type { BattleRun, Program } from "$lib/domain";
+import type { BaseImage, BattleRun, Program } from "$lib/domain";
 import type { Stage, StageRepository } from "$lib/application/ports/stageRepository";
 import { sandboxInitial, SANDBOX_MAX_CLOCKS, type SandboxTarget } from "./sandbox";
 import { storeWriter } from "./store";
@@ -24,8 +24,8 @@ export interface BattleFacade {
   listStages(): readonly Stage[];
   /** 観戦セッションを開く＝舞台（stage）を据えてデプロイをリセットする（ステージ切替の起点）。 */
   openSession(stage: Stage): void;
-  /** デプロイ＝ビルド済みイメージを対戦に出す（観戦セッションの ally を差し替える）。 */
-  deploy(image: Program, name: string): void;
+  /** デプロイ＝ビルド済みイメージ（素質込み）を対戦に出す（観戦セッションの ally を差し替える）。 */
+  deploy(image: Program, name: string, baseImage: BaseImage): void;
   /** 試運転：相手なし／stub 相手でプログラムを単体実行し、観戦フレーム列を返す（勝敗なし）。 */
   runSandbox(program: Program, target: SandboxTarget): BattleRun;
 }
@@ -34,12 +34,15 @@ export interface BattleFacade {
 export const createBattleFacade = (stages: StageRepository): BattleFacade => {
   // 観戦を途中で中身すげ替えさせない：openSession は毎回デプロイを捨ててクリーンな舞台にする。
   function openSession(stage: Stage): void {
-    storeWriter.update(() => ({ stage, deployedImage: null, deployedName: "", deployedAt: null }));
+    storeWriter.update(() => ({ stage, deployed: null }));
   }
 
   // 別イメージ（新ハッシュ）を出したら必ず先頭から＝再生リセットはプレゼン（再生状態の所有者）が畳む。
-  function deploy(image: Program, name: string): void {
-    storeWriter.update((session) => ({ ...session, deployedImage: image, deployedName: name, deployedAt: Date.now() }));
+  function deploy(image: Program, name: string, baseImage: BaseImage): void {
+    storeWriter.update((session) => ({
+      ...session,
+      deployed: { program: image, name, baseImage, deployedAt: Date.now() },
+    }));
   }
 
   function runSandbox(program: Program, target: SandboxTarget): BattleRun {

@@ -126,7 +126,18 @@ function compareVersion(a: string, b: string): number {
 }
 
 /**
- * 既定の素質。表示のフォールバック（プリセット／観戦の敵／カレント）に使う。
- * プリセット等は制御・クエリを使うため、フル機能の v2.0 を既定に据える。
+ * 解決不能な素質のセンチネル。永続復元で保存版がカタログから消えた等、素質を特定できないときに据える。
+ * 命令セットは空＝baseImageSupports が必ず false を返し「この素質では編集できない」を正しく示す。
+ * 「安易な既定」ではなく「不明」を表す明示的な値であり、実体を持てる箇所では各データの素質を渡すこと。
  */
-export const DEFAULT_BASE_IMAGE: BaseImage = TURTLOGO_V2;
+export const UNKNOWN_BASE_IMAGE: BaseImage = {
+  imageName: "unknown",
+  family: "不明",
+  // 表示は "unknown:v?"。カタログ外なので版の数値比較（compareVersion）経路には乗らない。
+  version: "?",
+  icon: "mdi:help-circle-outline",
+  summary: "素質が特定できません（カタログから消えた版）",
+  commands: [],
+  queries: [],
+  controls: [],
+};

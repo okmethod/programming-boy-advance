@@ -17,14 +17,7 @@
 
 import { derived, get, readonly, writable } from "svelte/store";
 import type { BaseImage, BaseImageFamily, Program } from "$lib/domain";
-import {
-  DEFAULT_BASE_IMAGE,
-  hashProgram,
-  areProgramsEqual,
-  programCost,
-  flatLines,
-  baseImageFamilies,
-} from "$lib/domain";
+import { TURTLOGO_V2, hashProgram, areProgramsEqual, programCost, flatLines, baseImageFamilies } from "$lib/domain";
 
 /** 編集中のドラフト断面。program＝Blockly からの最新、builtImage＝ビルドで凍結した断面。 */
 export interface WorkbenchDraft {
@@ -45,7 +38,8 @@ const INITIAL_DRAFT: WorkbenchDraft = {
   builtImage: null,
   builtAt: null,
   imageName: "",
-  baseImage: DEFAULT_BASE_IMAGE,
+  // 編集の出発点となる素質。現状はフル機能の v2.0 から始める（版切替UIでユーザが変更できる）。
+  baseImage: TURTLOGO_V2,
 };
 
 // 内部の可変ドラフト。writable を外に晒さず、読みは readonly、書きは storeWriter 経由に限る。

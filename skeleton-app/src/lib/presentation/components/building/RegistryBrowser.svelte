@@ -46,7 +46,7 @@
   // プッシュ＝ビルド済みイメージをレジストリに保存（ローカル名で保管）。生の編集ではなくビルド断面を積む。
   function pushImage() {
     if (draft.builtImage === null) return;
-    registryFacade.push(draft.builtImage, draft.imageName, draft.baseImage);
+    registryFacade.push(draft.builtImage, draft.baseImage, draft.imageName);
   }
 
   // プル＝レジストリのイメージをカレント（ビルド断面）に取り込む。改良の起点。

@@ -6,7 +6,7 @@
  * 設計の最新断面は docs/design/architecture.md を正とする。
  */
 
-import type { BattleParams, BattleState, Program } from "$lib/domain";
+import type { BaseImage, BattleParams, BattleState, Program } from "$lib/domain";
 
 /**
  * ステージ＝1 回の対戦の「お膳立て」。
@@ -20,6 +20,8 @@ export interface Stage {
   readonly goal: string;
   readonly enemy: Program;
   readonly enemyLabel: string;
+  // 敵の素質（系統×版）。表示（アイコン＋系統名）の土台。敵は player カタログの包含検査対象外。
+  readonly enemyBaseImage: BaseImage;
   readonly initial: BattleState;
   // CP（キャパシティ）上限＝このステージで組めるブロック数の予算。
   readonly capacity: number;

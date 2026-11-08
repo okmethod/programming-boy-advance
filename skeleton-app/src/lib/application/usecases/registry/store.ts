@@ -10,7 +10,7 @@
 
 import { get, readonly, writable } from "svelte/store";
 import type { BaseImage, Program } from "$lib/domain";
-import { DEFAULT_BASE_IMAGE, hashProgram, areProgramsEqual } from "$lib/domain";
+import { hashProgram, areProgramsEqual } from "$lib/domain";
 import { ALLY_PRESETS } from "./presets";
 
 /** レジストリに並ぶオートマトンイメージ（ビルド済みの保管単位）。 */
@@ -35,7 +35,7 @@ function seedImages(): RegistryImage[] {
     label: preset.label,
     program: preset.program,
     hash: hashProgram(preset.program),
-    baseImage: DEFAULT_BASE_IMAGE,
+    baseImage: preset.baseImage,
     source: "preset",
     pushedAt: null,
   }));

@@ -1,6 +1,6 @@
 import { beforeEach, describe, it, expect } from "vitest";
 import { get } from "svelte/store";
-import { DEFAULT_BASE_IMAGE, TURTLOGO_V1, hashProgram, type Program } from "$lib/domain";
+import { UNKNOWN_BASE_IMAGE, TURTLOGO_V1, hashProgram, type Program } from "$lib/domain";
 import type { PersistedRegistry, RegistryRepository } from "$lib/application";
 import { createRegistryFacade } from "./facade";
 import { registryImages, storeWriter } from "./store";
@@ -36,8 +36,8 @@ describe("registry facade", () => {
     const { repo } = fakeRepo();
     const facade = createRegistryFacade(repo);
 
-    facade.push(PROG_A);
-    facade.push(PROG_B);
+    facade.push(PROG_A, TURTLOGO_V1);
+    facade.push(PROG_B, TURTLOGO_V1);
 
     const images = get(registryImages);
     expect(images.length).toBe(presetCount + 2);
@@ -49,8 +49,8 @@ describe("registry facade", () => {
     const { repo } = fakeRepo();
     const facade = createRegistryFacade(repo);
 
-    facade.push(PROG_A);
-    facade.push(PROG_A); // 二度目は積まれない
+    facade.push(PROG_A, TURTLOGO_V1);
+    facade.push(PROG_A, TURTLOGO_V1); // 二度目は積まれない
 
     expect(get(registryImages).length).toBe(presetCount + 1);
   });
@@ -59,7 +59,7 @@ describe("registry facade", () => {
     const store = fakeRepo();
     const facade = createRegistryFacade(store.repo);
 
-    facade.push(PROG_A, "自作", TURTLOGO_V1);
+    facade.push(PROG_A, TURTLOGO_V1, "自作");
 
     expect(store.saved).toEqual({
       seq: 1,
@@ -105,12 +105,12 @@ describe("registry facade", () => {
     facade.restore();
 
     const restored = get(registryImages).at(-1)!;
-    expect(restored.baseImage).toEqual(DEFAULT_BASE_IMAGE); // 未知版は既定へフォールバック
+    expect(restored.baseImage).toEqual(UNKNOWN_BASE_IMAGE); // 未知版は UNKNOWN に落ちる
     expect(restored.hash).toBe(hashProgram(PROG_B)); // program から再計算
     expect(restored.source).toBe("user");
 
     // 以降の push は復元した seq の続きから採番される。
-    facade.push(PROG_A);
+    facade.push(PROG_A, TURTLOGO_V1);
     expect(get(registryImages).at(-1)!.id).toBe("user:6");
   });
 });

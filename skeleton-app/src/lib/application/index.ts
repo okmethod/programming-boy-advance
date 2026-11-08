@@ -30,7 +30,6 @@ export type {
   Winner,
   BattleRun,
 } from "$lib/domain";
-export { DEFAULT_BASE_IMAGE } from "$lib/domain";
 
 export { createBattleFacade } from "./usecases/battle/facade";
 export type { BattleFacade } from "./usecases/battle/facade";

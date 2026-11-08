@@ -11,15 +11,15 @@
  */
 
 import type { BaseImage, Program } from "$lib/domain";
-import { BASE_IMAGES, DEFAULT_BASE_IMAGE, hashProgram, areProgramsEqual } from "$lib/domain";
+import { BASE_IMAGES, UNKNOWN_BASE_IMAGE, hashProgram, areProgramsEqual } from "$lib/domain";
 import type { PersistedImage, PersistedRegistry, RegistryRepository } from "$lib/application/ports/registryRepository";
 import { storeWriter, type RegistryImage } from "./store";
 
 /** UI が参照する手持ちイメージ操作の単一窓口。 */
 export interface RegistryFacade {
-  /** プッシュ＝ビルド済みイメージを手持ちに保存する。
+  /** プッシュ＝ビルド済みイメージ（素質込み）を手持ちに保存する。
    *  label 省略時は自動名（イメージ N）。同一内容が既にあれば no-op（content-addressable）。 */
-  push(program: Program, label?: string, baseImage?: BaseImage): void;
+  push(program: Program, baseImage: BaseImage, label?: string): void;
   /** リネーム＝名前（タグ）の付け替え。中身は不変。お手本（preset）は対象外。 */
   rename(id: string, label: string): void;
   /** 削除。お手本（preset）は残し、手持ちのみ消せる。 */
@@ -32,11 +32,11 @@ export interface RegistryFacade {
   restore(): void;
 }
 
-// baseRef（系統×版）をカタログから実体に復元する。該当版が無ければ既定にフォールバックする
-// （カタログから版が消えても壊さない）。
+// baseRef（系統×版）をカタログから実体に復元する。該当版が無ければ UNKNOWN に落とす
+// （カタログから版が消えても壊さず、偽の素質を見せずに「不明」と正直に示す）。
 function resolveBaseImage(ref: PersistedImage["baseRef"]): BaseImage {
   return (
-    BASE_IMAGES.find((base) => base.imageName === ref.imageName && base.version === ref.version) ?? DEFAULT_BASE_IMAGE
+    BASE_IMAGES.find((base) => base.imageName === ref.imageName && base.version === ref.version) ?? UNKNOWN_BASE_IMAGE
   );
 }
 
@@ -79,7 +79,7 @@ export const createRegistryFacade = (repo: RegistryRepository): RegistryFacade =
     return storeWriter.snapshot().find((image) => areProgramsEqual(image.program, program));
   }
 
-  function push(program: Program, label?: string, baseImage: BaseImage = DEFAULT_BASE_IMAGE): void {
+  function push(program: Program, baseImage: BaseImage, label?: string): void {
     if (duplicateOf(program)) return; // 同じ中身は二重に積まない
     const n = storeWriter.nextSeq();
     const name = label?.trim() ? label.trim() : `イメージ ${n}`;

@@ -21,6 +21,7 @@
     draftLines,
     labelOf,
     type Program,
+    type BaseImage,
   } from "$lib/application";
   import { automatonIcon, hhmm } from "$lib/presentation/utils/labels";
   import BlocklyEditor from "./BlocklyEditor.svelte";
@@ -40,8 +41,8 @@
     // デプロイ（編集文脈の前進）を出すか（プレイ面=true／サンドボックス=false）。
     showDeploy?: boolean;
     // デプロイ押下＝ビルド済みイメージを対戦に反映する。親（プレイ面）が対戦に流す。
-    // 観戦側のイメージタイルが同じ表示名を出せるよう、イメージと一緒にローカル名も渡す。
-    onDeploy?: (image: Program, name: string) => void;
+    // 観戦側のイメージタイルが同じ表示名・素質を出せるよう、イメージと一緒にローカル名・素質も渡す。
+    onDeploy?: (image: Program, name: string, baseImage: BaseImage) => void;
     // エディタ/レジストリ面パネルの背景クラス。このエリアを置く親の背景に合わせる。
     panelClass?: string;
   }
@@ -165,7 +166,7 @@
              副作用のある命令なのでビルドと同じ強調色（action-btn-strong）で揃える。 -->
         <button
           class="action-btn-strong disabled:opacity-40"
-          onclick={() => draft.builtImage && onDeploy?.(draft.builtImage, builtName)}
+          onclick={() => draft.builtImage && onDeploy?.(draft.builtImage, builtName, draft.baseImage)}
           disabled={current.notBuilt}
           title={current.notBuilt ? "先にビルド" : "ビルド済みイメージを対戦に反映"}
         >
