@@ -7,16 +7,12 @@
   import { toaster } from "$lib/presentation/utils/toaster";
   import { navigateTo } from "$lib/presentation/utils/navigation";
   import { pageTitle } from "$lib/presentation/constants/routes";
-  import StageSelectModal from "$lib/presentation/components/progression/StageSelectModal.svelte";
+  import StageSelector from "$lib/presentation/components/progression/StageSelector.svelte";
 
   let { children }: { children: Snippet } = $props();
 
   // ヘッダー中央に出す現在ページ名。ルート id（base path 非依存）から引く。
   const currentPageTitle = $derived(pageTitle(page.route.id));
-
-  // ステージ選択モーダル。単純切替は器としてモーダルを使う。
-  // 現在ステージ名は画面中央上部に出るため、ここは固定ラベルにとどめる。
-  let stageSelectOpen = $state(false);
 </script>
 
 <svelte:head>
@@ -56,10 +52,8 @@
       {/if}
 
       <nav class="ml-auto flex items-center gap-1 text-sm">
-        <!-- ステージ選択モーダルを開く。選んだステージは URL（/battle-pod/[stage]）が SSoT。 -->
-        <button class="action-btn" onclick={() => (stageSelectOpen = true)}>
-          <Icon icon="mdi:map-marker-path" class="size-4" /> ステージ選択
-        </button>
+        <!-- ステージセレクタ（トリガ＋モーダルを自己所有）。選んだステージは URL（/battle-pod/[stage]）が SSoT。 -->
+        <StageSelector />
         <button class="action-btn">
           <Icon icon="mdi:book-open-variant" class="size-4" /> B面解説
         </button>
@@ -74,15 +68,3 @@
     {@render children()}
   </main>
 </div>
-
-<!-- ステージ選択モーダル（単純切替）。
-     選ぶと閉じてプレイ面（/battle-pod/[stage]）へ遷移する。ステージ id は URL が SSoT。 -->
-<StageSelectModal
-  open={stageSelectOpen}
-  selectedId={page.params.stage}
-  onClose={() => (stageSelectOpen = false)}
-  onSelect={(id) => {
-    stageSelectOpen = false;
-    navigateTo(`/battle-pod/${id}`);
-  }}
-/>
