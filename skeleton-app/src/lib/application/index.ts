@@ -29,6 +29,8 @@ export type {
   Direction,
   Winner,
   BattleRun,
+  ParseError,
+  ParseResult,
 } from "$lib/domain";
 
 export { createBattleFacade } from "./usecases/battle/facade";
@@ -63,6 +65,7 @@ export {
   currentImage,
   cpUsed,
   draftLines,
+  draftText,
   differsFromBuilt,
   baseImageCatalog,
   baseImageSupports,

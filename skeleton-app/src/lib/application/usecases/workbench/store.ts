@@ -17,7 +17,15 @@
 
 import { derived, get, readonly, writable } from "svelte/store";
 import type { BaseImage, BaseImageFamily, Program } from "$lib/domain";
-import { TURTLOGO_V2, hashProgram, areProgramsEqual, programCost, flatLines, baseImageFamilies } from "$lib/domain";
+import {
+  TURTLOGO_V2,
+  hashProgram,
+  areProgramsEqual,
+  programCost,
+  flatLines,
+  programToText,
+  baseImageFamilies,
+} from "$lib/domain";
 
 /** 編集中のドラフト断面。program＝Blockly からの最新、builtImage＝ビルドで凍結した断面。 */
 export interface WorkbenchDraft {
@@ -84,6 +92,12 @@ export const cpUsed = derived(draftStore, (draft) => programCost(draft.program))
  * 描画部品には Program ではなくこの View Model（FlatLine[]）を渡す＝葉を dumb に保つ。
  */
 export const draftLines = derived(draftStore, (draft) => flatLines(draft.program));
+
+/**
+ * 編集中プログラムの擬似コード全文（エディタ編集面のシード用の読み投影）。draft.program だけの純投影。
+ * テキスト化（programToText）はドメインに委ね、UI は入場時にこの値を種として受け取るだけにする。
+ */
+export const draftText = derived(draftStore, (draft) => programToText(draft.program));
 
 /**
  * 素質カタログ（静的・不変）＝素質選択UIの「系統 × 版ラダー」の供給源。

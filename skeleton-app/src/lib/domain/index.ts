@@ -37,6 +37,7 @@ export { usedCapabilities } from "./program/capabilities";
 export { programCost } from "./program/cost";
 export { hashProgram, areProgramsEqual } from "./program/hash";
 export { flatLines, nodeIdMap, type FlatLine } from "./program/nodes";
+export { parseProgram, programToText, type ParseError, type ParseResult } from "./program/parse";
 
 export { run } from "./interpreter/run";
 

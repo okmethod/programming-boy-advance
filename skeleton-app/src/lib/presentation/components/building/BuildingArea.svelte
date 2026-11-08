@@ -18,10 +18,11 @@
     workbenchDraft,
     currentImage,
     cpUsed,
-    draftLines,
+    draftText,
     labelOf,
     type Program,
     type BaseImage,
+    type ParseError,
   } from "$lib/application";
   import { automatonIcon, hhmm } from "$lib/presentation/utils/labels";
   import BlocklyEditor from "./BlocklyEditor.svelte";
@@ -29,7 +30,7 @@
   import CapacityAllocator from "./CapacityAllocator.svelte";
   import RegistryBrowser from "./RegistryBrowser.svelte";
   import SegmentedTabs from "$lib/presentation/components/shared/SegmentedTabs.svelte";
-  import ProgramViewer from "$lib/presentation/components/inspecting/ProgramViewer.svelte";
+  import ProgramEditor from "./ProgramEditor.svelte";
 
   interface BuildingAreaProps {
     // メモリ総量＝HP↔CP 配分の原資。プレイ面=stage.memoryTotal／サンドボックス=画面ローカル既定。
@@ -87,6 +88,18 @@
   // Blockly に流し込む（Blockly → Program の順方向で program が更新される）。
   let editor = $state<BlocklyEditor>();
 
+  // エディタ編集（code モード）中はテキスト側に「編集の SSoT」が移る（ブロック編集では Blockly が SSoT）。
+  // 構文エラーがある間は確定（タブ切替・ビルド）をブロックする＝有効な Program だけを下流に流す。
+  // 逆変換は workbench facade（setProgramFromText）に閉じ、ここは入力テキストを委ねて結果のエラーを受けるだけ。
+  let codeErrors = $state<readonly ParseError[]>([]);
+  const codeHasErrors = $derived(codeErrors.length > 0);
+
+  // テキスト入力を facade に委ねて program へ反映し、構文エラーの有無を手元に受ける（確定ブロック判断用）。
+  function applyCodeText(text: string) {
+    const result = workbenchFacade.setProgramFromText(text);
+    codeErrors = result.ok ? [] : result.errors;
+  }
+
   // CP 消費量（$cpUsed）・擬似コード行（$draftLines）は workbench の読み投影を購読する
   // ＝算出（programCost/flatLines＝ドメイン）はアプリ層に閉じ、ここは購読・受け渡しだけ。
   // カレントイメージの読みモデル（未ビルド/編集乖離/指紋）＝workbench state だけの純投影（アプリ層）。
@@ -127,6 +140,18 @@
     editor?.load(draft.builtImage);
   }
 
+  // ビュー切替。code モードを離れるときだけ 2 つ効く：
+  //  1) 構文エラーがある間は切替をブロック（＝不完全なテキストを確定させない）。
+  //  2) テキスト権威だった内容を Blockly に流し込み直し、編集の SSoT を Blockly へ戻す（順方向で store も整う）。
+  function changeMainView(target: MainView) {
+    if (mainView === "code" && target !== "code") {
+      if (codeHasErrors) return;
+      editor?.load(draft.program);
+    }
+    if (target === "code") codeErrors = []; // 入場時は有効な種から始まるのでクリーンに戻す
+    mainView = target;
+  }
+
   // 表示開始／編集面復帰で Blockly の表示領域が変わる。transform で開くと ResizeObserver が
   // 発火しないため、DOM 反映（tick）後に明示 resize してスクロールバーを正す。
   $effect(() => {
@@ -152,7 +177,7 @@
        左＝ビュー切替タブ（副作用なしのナビ＝セグメントタブ）／右＝イメージタイル＋資源配分（属性）＋デプロイ（起動）。
        右群は ml-auto で寄せ、イメージ（成果物）→配分（起動時パラメータ）→デプロイ（起動）の順に並べる。 -->
   <div class="flex h-9 shrink-0 items-center gap-3">
-    <SegmentedTabs value={mainView} items={mainTabs} onChange={(v) => (mainView = v as MainView)} />
+    <SegmentedTabs value={mainView} items={mainTabs} onChange={(v) => changeMainView(v as MainView)} />
     <div class="ml-auto flex items-center gap-2">
       <!-- カレントイメージタイル＝現在のビルド断面の表示（ハッシュ-名前-ビルド時刻／レジストリ行と同体裁・表示専用）。
            ダーティーに依らず一定。改名・プッシュ・削除はレジストリタブのカレント行に集約する。 -->
@@ -210,7 +235,9 @@
          これらは draft を変える「アクション」なのでブロック/エディタ編集でだけ出し、レジストリ（保管の文脈）では隠す。
          一方 CP/HP 配分は draft の「属性」なのでヘッダー（マニフェスト）に常時出す＝ここには含めない。
          配置は親（BuildingArea）の責務・各中身はそれぞれの子に閉じる。 -->
-    {#if mainView !== "registry"}
+    {#if mainView === "edit"}
+      <!-- 素質セレクタ＆ロールバックは program を直接書き換える編集アフォーダンス＝ブロック編集面でだけ出す。
+           code モードはテキストが権威なので、ここからの program 変更（＝テキストと乖離する変更）は出さない。 -->
       <!-- 素質セレクタ＝ビルドの入力「何から作るか」。右上のビルドボタン直下（旧 CP ゲージの位置）に置く。
            ビルドの入力なのでビルド動線（ビルドボタン）の近くに縦に並べる。
            選んだ素質が BlocklyEditor のパレット（出せるブロック）を切り替える＝コマンド解放の seam。
@@ -218,34 +245,48 @@
       <div class="absolute right-5 top-15 z-20">
         <BaseImageSelector onClear={() => editor?.load([])} />
       </div>
+    {/if}
 
-      <!-- ビルド＋同期操作：右上。ダーティー表示は専用ラベルを持たず、「前回ビルド時に戻す」が出ている事自体が
-           ダーティーの合図＝戻すが無い（＝編集とビルド断面が一致）＝「ビルド済み（最新）」を✓で示す。 -->
+    <!-- ビルド＋同期操作：右上。ブロック/エディタ編集で出す（レジストリ＝保管の文脈では隠す）。
+         ダーティー表示は専用ラベルを持たず、「前回ビルド時に戻す」が出ている事自体がダーティーの合図
+         ＝戻すが無い（＝編集とビルド断面が一致）＝「ビルド済み（最新）」を✓で示す。 -->
+    {#if mainView !== "registry"}
       <div class="absolute right-5 top-2 z-20 flex items-center gap-2">
-        {#if current.dirty}
-          <!-- ロールバック＝編集を捨てて前回ビルド時へ戻す。この表示自体がダーティーの合図。破壊寄りなので淡色。 -->
-          <button class="action-btn" onclick={revertToBuilt} title="編集を捨てて前回ビルド時に戻す">
-            <Icon icon="mdi:history" class="size-4" /> 前回ビルドに戻す
-          </button>
-        {:else if !current.notBuilt}
-          <!-- 戻すが無い＝編集とビルド断面が一致＝ビルド済み（最新）。 -->
-          <span class="inline-flex items-center gap-1 text-xs text-success-700">
-            <Icon icon="mdi:check-circle" class="size-4" /> ビルド済み
-          </span>
+        {#if mainView === "edit"}
+          <!-- 同期状態＆ロールバックは Blockly 権威の編集面だけ。code モードではテキストが権威なので出さない。 -->
+          {#if current.dirty}
+            <!-- ロールバック＝編集を捨てて前回ビルド時へ戻す。この表示自体がダーティーの合図。破壊寄りなので淡色。 -->
+            <button class="action-btn" onclick={revertToBuilt} title="編集を捨てて前回ビルド時に戻す">
+              <Icon icon="mdi:history" class="size-4" /> 前回ビルドに戻す
+            </button>
+          {:else if !current.notBuilt}
+            <!-- 戻すが無い＝編集とビルド断面が一致＝ビルド済み（最新）。 -->
+            <span class="inline-flex items-center gap-1 text-xs text-success-700">
+              <Icon icon="mdi:check-circle" class="size-4" /> ビルド済み
+            </span>
+          {/if}
         {/if}
-        <button class="action-btn-strong" onclick={build}>
+        <!-- ビルドは両編集面で可。code モードは構文エラーがある間だけ押せない（確定をブロック）。 -->
+        <button
+          class="action-btn-strong disabled:opacity-40"
+          onclick={build}
+          disabled={codeHasErrors}
+          title={codeHasErrors ? "構文エラーを直してからビルド" : "現在の編集をイメージ化"}
+        >
           <Icon icon="mdi:wrench" class="size-4" /> ビルド
         </button>
       </div>
     {/if}
 
     {#if mainView === "code"}
-      <!-- エディタ編集面（フル領域）：ブロックから生成したコードを表示（読み取り専用）。枠色は surface 系で揃える。
-           見出しは親が描く帯なので持たず、本体を pt-12 下げて上端をブロック編集のキャンバス上端に揃える。 -->
+      <!-- エディタ編集面（フル領域）：擬似コードをテキストで直接編集する。枠色は surface 系で揃える。
+           見出しは親が描く帯なので持たず、本体を pt-12 下げて上端をブロック編集のキャンバス上端に揃える。
+           入場時に現在の program を $draftText（読み投影）で種として渡し、以後はテキストが権威。
+           入力は applyCodeText 経由で facade に委ね（parse 成功で program 反映）、
+           構文エラーは codeErrors に受けてタブ切替・ビルドの確定をブロックする。 -->
       <div class="absolute inset-0 flex flex-col overflow-hidden rounded border border-surface-300 {panelClass}">
-        <!-- 本体：生成コード（読み取り専用）。fill を効かせるため親を flex コンテナにする。上端は帯のぶん下げる。 -->
         <div class="flex min-h-0 flex-1 flex-col {HEADER_RESERVE_Y}">
-          <ProgramViewer lines={$draftLines} activeId={undefined} fill />
+          <ProgramEditor initialText={$draftText} onInput={applyCodeText} errors={codeErrors} />
         </div>
       </div>
     {/if}

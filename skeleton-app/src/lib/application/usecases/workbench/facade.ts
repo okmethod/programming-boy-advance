@@ -10,7 +10,8 @@
  * current() は非追跡の一発読み（Blockly への hydrate 等、reactive でない参照用）。
  */
 
-import type { BaseImage, Program } from "$lib/domain";
+import type { BaseImage, Program, ParseResult } from "$lib/domain";
+import { parseProgram } from "$lib/domain";
 import { storeWriter, type WorkbenchDraft } from "./store";
 
 // プルで取り込む元イメージの最小形（RegistryImage の必要フィールドのみ）。
@@ -25,6 +26,12 @@ interface PullSource {
 export interface WorkbenchFacade {
   /** Blockly からの最新 Program を反映する（編集のたびに呼ばれる順方向の口）。 */
   setProgram(program: Program): void;
+  /**
+   * エディタ編集面のテキストを逆変換して反映する（code モードの順方向の口）。
+   * 逆変換（parseProgram）はこのユースケースに閉じ、成功時のみ program を反映する
+   * （失敗時は直近の有効 program を保つ）。結果（ok/errors）を返し、UI は確定ブロック等に使う。
+   */
+  setProgramFromText(text: string): ParseResult;
   /** ビルド＝現在の編集を凍結してイメージ化する（生編集から切り離した不変スナップショット）。 */
   build(): void;
   /** カレントイメージを破棄＝未ビルドに戻す（編集中の program はそのまま）。 */
@@ -43,6 +50,11 @@ export interface WorkbenchFacade {
 export const workbenchFacade: WorkbenchFacade = {
   setProgram(program) {
     storeWriter.update((draft) => ({ ...draft, program }));
+  },
+  setProgramFromText(text) {
+    const result = parseProgram(text);
+    if (result.ok) storeWriter.update((draft) => ({ ...draft, program: result.program }));
+    return result;
   },
   build() {
     storeWriter.update((draft) => ({
