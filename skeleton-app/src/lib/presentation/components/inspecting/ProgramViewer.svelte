@@ -3,8 +3,8 @@
   // 平坦化とノード id 採番はドメイン（flatLines）の責務なので、呼び出し元が投影した View Model を受け取る
   // ＝この部品は Program を知らない dumb view（採番はインタプリタ／flatLines と必ず一致する）。
   import { tick } from "svelte";
-  import Icon from "@iconify/svelte";
   import type { NodeId, FlatLine } from "$lib/domain";
+  import DarkViewerPanel from "./DarkViewerPanel.svelte";
 
   interface ProgramViewerProps {
     // 省略時はヘッダー（見出し）を描画しない。観戦列はステータス側に名前を出すため不要。
@@ -47,44 +47,27 @@
   });
 </script>
 
-<div class={fill ? "flex min-h-0 flex-1 flex-col" : ""}>
-  {#if title}
-    <h2 class="mb-1 inline-flex items-center gap-1 text-sm font-bold">
-      {#if titleIcon}<Icon icon={titleIcon} class="size-4" />{/if}
-      {title}
-    </h2>
-  {/if}
-  <div class="relative {fill ? 'min-h-0 flex-1' : ''} {bodyClass}">
+<DarkViewerPanel
+  {title}
+  {titleIcon}
+  {fill}
+  {bodyClass}
+  bind:scrollEl
+  scrollClass="py-1 font-mono text-xs leading-relaxed text-green-300"
+  empty={lines.length === 0}
+  emptyIcon="mdi:code-braces"
+  emptyLabel="プログラムがありません"
+>
+  {#each lines as line, i (i)}
+    {@const active = line.id !== null && line.id === activeId}
+    <!-- デバッガの現在行：左ボーダー＋淡い黄ハイライト、ガターに ▶。data-active は追従スクロールの目印。 -->
     <div
-      bind:this={scrollEl}
-      class="overflow-auto rounded bg-gray-900 py-1 font-mono text-xs leading-relaxed text-green-300 {fill
-        ? 'h-full'
-        : 'min-h-24'}"
+      data-active={active ? "" : undefined}
+      class="flex items-start {active ? 'border-yellow-400 bg-yellow-400/20' : 'border-transparent'} border-l-2"
     >
-      {#if lines.length === 0}
-        <!-- 空表示：ログビューと見た目を揃える（中央寄せ・淡色・アイコン付き）。 -->
-        <div
-          class="flex h-full min-h-24 flex-col items-center justify-center gap-1.5 p-4 text-center font-pixel text-gray-500"
-        >
-          <Icon icon="mdi:code-braces" class="size-6 opacity-40" />
-          <span>プログラムがありません</span>
-        </div>
-      {:else}
-        {#each lines as line, i (i)}
-          {@const active = line.id !== null && line.id === activeId}
-          <!-- デバッガの現在行：左ボーダー＋淡い黄ハイライト、ガターに ▶。data-active は追従スクロールの目印。 -->
-          <div
-            data-active={active ? "" : undefined}
-            class="flex items-start {active ? 'border-yellow-400 bg-yellow-400/20' : 'border-transparent'} border-l-2"
-          >
-            <span class="w-4 shrink-0 select-none text-center text-yellow-400">{active ? "▶" : ""}</span>
-            <span class="w-7 shrink-0 select-none pr-2 text-right text-gray-500">{i + 1}</span>
-            <span class="whitespace-pre pr-2 {active ? 'text-yellow-100' : ''}"
-              >{"  ".repeat(line.indent)}{line.text}</span
-            >
-          </div>
-        {/each}
-      {/if}
+      <span class="w-4 shrink-0 select-none text-center text-yellow-400">{active ? "▶" : ""}</span>
+      <span class="w-7 shrink-0 select-none pr-2 text-right text-gray-500">{i + 1}</span>
+      <span class="whitespace-pre pr-2 {active ? 'text-yellow-100' : ''}">{"  ".repeat(line.indent)}{line.text}</span>
     </div>
-  </div>
-</div>
+  {/each}
+</DarkViewerPanel>
