@@ -16,8 +16,15 @@
  */
 
 import { derived, get, readonly, writable } from "svelte/store";
-import type { BaseImage, Program } from "$lib/domain";
-import { DEFAULT_BASE_IMAGE, hashProgram, areProgramsEqual, programCost, flatLines } from "$lib/domain";
+import type { BaseImage, BaseImageFamily, Program } from "$lib/domain";
+import {
+  DEFAULT_BASE_IMAGE,
+  hashProgram,
+  areProgramsEqual,
+  programCost,
+  flatLines,
+  baseImageFamilies,
+} from "$lib/domain";
 
 /** 編集中のドラフト断面。program＝Blockly からの最新、builtImage＝ビルドで凍結した断面。 */
 export interface WorkbenchDraft {
@@ -83,6 +90,13 @@ export const cpUsed = derived(draftStore, (draft) => programCost(draft.program))
  * 描画部品には Program ではなくこの View Model（FlatLine[]）を渡す＝葉を dumb に保つ。
  */
 export const draftLines = derived(draftStore, (draft) => flatLines(draft.program));
+
+/**
+ * 素質カタログ（静的・不変）＝素質選択UIの「系統 × 版ラダー」の供給源。
+ * ドラフト状態ではなく BASE_IMAGES からの列挙なので、起動時に一度だけ材料化する。
+ * 選択中の素質そのものは draft.baseImage が持つ（ここは menu・draft が selection）。
+ */
+export const baseImageCatalog: readonly BaseImageFamily[] = baseImageFamilies();
 
 /**
  * 外部イメージが現在のビルド断面とズレているか（例: デプロイ済みの再デプロイ要否）。

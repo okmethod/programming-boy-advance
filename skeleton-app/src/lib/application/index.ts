@@ -23,13 +23,14 @@ export type {
   NodeId,
   FlatLine,
   BaseImage,
+  BaseImageFamily,
   BattleState,
   AutomatonId,
   Direction,
   Winner,
   BattleRun,
 } from "$lib/domain";
-export { baseImageFamilies, baseImageSupports, BATTLE_PARAMS, DEFAULT_BASE_IMAGE } from "$lib/domain";
+export { baseImageSupports, BATTLE_PARAMS, DEFAULT_BASE_IMAGE } from "$lib/domain";
 
 export { createBattleFacade } from "./usecases/battle/facade";
 export type { BattleFacade } from "./usecases/battle/facade";
@@ -57,5 +58,12 @@ export type { PersistedImage, PersistedRegistry, RegistryRepository } from "./po
 
 export { workbenchFacade } from "./usecases/workbench/facade";
 export type { WorkbenchFacade } from "./usecases/workbench/facade";
-export { workbenchDraft, currentImage, cpUsed, draftLines, differsFromBuilt } from "./usecases/workbench/store";
+export {
+  workbenchDraft,
+  currentImage,
+  cpUsed,
+  draftLines,
+  differsFromBuilt,
+  baseImageCatalog,
+} from "./usecases/workbench/store";
 export type { WorkbenchDraft, CurrentImage } from "./usecases/workbench/store";

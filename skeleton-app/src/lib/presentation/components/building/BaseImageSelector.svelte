@@ -7,7 +7,7 @@
   // 現在値（適用中の素質）と編集中プログラムは workbenchDraft を直接購読し、確定は workbenchFacade.setBaseImage で行う。
   import Icon from "@iconify/svelte";
   import {
-    baseImageFamilies,
+    baseImageCatalog,
     baseImageSupports,
     workbenchDraft,
     workbenchFacade,
@@ -31,7 +31,7 @@
   // 開閉状態（このセレクタが所有）。トリガで開き、確定／閉じるで閉じる。
   let open = $state(false);
 
-  const families = baseImageFamilies();
+  const families = baseImageCatalog;
 
   // プレビュー中の版（＝選択候補・下段の解放リストとラダーの強調対象）。
   // 既定は適用中（draft.baseImage）。開いた後にブラウズした分だけ override で上書きし、開くたび override を消す。
