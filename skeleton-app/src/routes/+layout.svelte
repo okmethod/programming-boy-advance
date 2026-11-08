@@ -4,7 +4,7 @@
   import { page } from "$app/state";
   import Icon from "@iconify/svelte";
   import { navigateTo } from "$lib/presentation/utils/navigation";
-  import { pageTitle } from "$lib/presentation/constants/routes";
+  import { pageTitle } from "$lib/presentation/utils/routes";
   import StageSelector from "$lib/presentation/components/progression/StageSelector.svelte";
   import ToastLayer from "$lib/presentation/components/shared/ToastLayer.svelte";
 

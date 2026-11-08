@@ -107,7 +107,6 @@ infrastructure/
 presentation/
 ├── components/    # UI 所掌ごとに分割（[ui-screen-design.md](./ui-screen-design.md)）
 ├── blockly/       # Program ⇄ Workspace 変換（Blockly 統合）
-├── constants/     # 画面定数（ルート名・プリセット等）
 ├── utils/         # 共通ユーティリティ
 └── composition.ts # 合成ルート（具体 Adapter → Facade の DI 配線。module singleton）
 ```
