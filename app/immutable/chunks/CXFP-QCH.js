@@ -1,0 +1,1 @@
+import{mt as m}from"./DRGMwyyA.js";m();

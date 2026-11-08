@@ -2,31 +2,44 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <link rel="icon" href="/programming-boy-advance/nintendo-game-boy.svg" />
+    <link rel="icon" href="/programming-boy-advance/gamepad-square.svg" />
     <meta name="viewport" content="width=device-width" />
-    
-		<link rel="modulepreload" href="/programming-boy-advance/app/immutable/entry/start.mAejBuMo.js">
-		<link rel="modulepreload" href="/programming-boy-advance/app/immutable/chunks/entry.CTW1m9hO.js">
-		<link rel="modulepreload" href="/programming-boy-advance/app/immutable/chunks/scheduler.Cp4pqcvj.js">
-		<link rel="modulepreload" href="/programming-boy-advance/app/immutable/chunks/index.CfmKxm0Z.js">
-		<link rel="modulepreload" href="/programming-boy-advance/app/immutable/entry/app.CD5wOI42.js">
-		<link rel="modulepreload" href="/programming-boy-advance/app/immutable/chunks/index.BnBan4aP.js">
+    <link href="/programming-boy-advance/app/immutable/entry/start.CaCn3RKR.js" rel="modulepreload">
+		<link href="/programming-boy-advance/app/immutable/entry/payload.BeGvdC57.js" rel="modulepreload">
+		<link href="/programming-boy-advance/app/immutable/chunks/Ck0A4US8.js" rel="modulepreload">
+		<link href="/programming-boy-advance/app/immutable/chunks/D3kTAtmp.js" rel="modulepreload">
+		<link href="/programming-boy-advance/app/immutable/chunks/dDQIddb-.js" rel="modulepreload">
+		<link href="/programming-boy-advance/app/immutable/chunks/DRGMwyyA.js" rel="modulepreload">
+		<link href="/programming-boy-advance/app/immutable/chunks/B5LYHSzy.js" rel="modulepreload">
+		<link href="/programming-boy-advance/app/immutable/chunks/BMHKmaWU.js" rel="modulepreload">
+		<link href="/programming-boy-advance/app/immutable/chunks/COnF_wor.js" rel="modulepreload">
+		<link href="/programming-boy-advance/app/immutable/entry/app.DB_tsqBt.js" rel="modulepreload">
+		<link href="/programming-boy-advance/app/immutable/nodes/0.DMq3pAzq.js" rel="modulepreload">
+		<link href="/programming-boy-advance/app/immutable/chunks/BODaLfCx.js" rel="modulepreload">
+		<link href="/programming-boy-advance/app/immutable/chunks/BwYrRqCi.js" rel="modulepreload">
+		<link href="/programming-boy-advance/app/immutable/chunks/DnjDevp1.js" rel="modulepreload">
+		<link href="/programming-boy-advance/app/immutable/chunks/Tv8SfUge.js" rel="modulepreload">
+		<link href="/programming-boy-advance/app/immutable/chunks/DgOo_fog.js" rel="modulepreload">
+		<link href="/programming-boy-advance/app/immutable/chunks/fhgxlrOT.js" rel="modulepreload">
+		<link href="/programming-boy-advance/app/immutable/chunks/CXFP-QCH.js" rel="modulepreload">
+		
+		<link href="/programming-boy-advance/app/immutable/assets/0.bIjW1WRB.css" rel="stylesheet">
   </head>
-  <body data-sveltekit-preload-data="hover" data-theme="custom">
+  <body data-sveltekit-preload-data="hover" data-theme="retro">
     <div style="display: contents" class="h-full overflow-hidden">
 			<script>
 				{
-					__sveltekit_1kzxf7h = {
+					__sveltekit_b9z4ok = {
 						base: "/programming-boy-advance",
+						version: "1794127901644",
 						assets: "/programming-boy-advance"
 					};
 
 					const element = document.currentScript.parentElement;
 
-					Promise.all([
-						import("/programming-boy-advance/app/immutable/entry/start.mAejBuMo.js"),
-						import("/programming-boy-advance/app/immutable/entry/app.CD5wOI42.js")
-					]).then(([kit, app]) => {
+					import("/programming-boy-advance/app/immutable/entry/start.CaCn3RKR.js").then(async (kit) => {
+						kit.init(__sveltekit_b9z4ok);
+						const app = await import("/programming-boy-advance/app/immutable/entry/app.DB_tsqBt.js");
 						kit.start(app, element);
 					});
 				}
