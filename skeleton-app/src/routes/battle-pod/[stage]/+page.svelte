@@ -8,7 +8,7 @@
   // 構築エリア内の Blockly を編集の SSoT とし、store の断面はサンドボックス画面とも共有・画面跨ぎで保持する。
   import Icon from "@iconify/svelte";
   import { battleFacade, registryFacade } from "$lib/presentation/composition";
-  import { workbenchDraft, differsFromBuilt } from "$lib/application";
+  import { workbenchDraft, differsFromBuilt, buildActionLog } from "$lib/application";
   import type { PageData } from "./$types";
   import type { Program } from "$lib/domain";
   import { DEFAULT_BASE_IMAGE, flatLines } from "$lib/domain";
@@ -109,6 +109,11 @@
   const displayFrames = $derived(frames.length > 0 ? frames : [stage.initial]);
   const displayFrame = $derived(displayFrames[Math.min(frameIndex, displayFrames.length - 1)]);
 
+  // 観戦ログ（ActionLogViewer に渡す View Model）。畳み込みは app 層 buildActionLog が担う。
+  // TODO(Stage2): deployedImage を battle-session へ持ち上げたら ally 側はそこの読みモデルへ移す。
+  const allyLog = $derived(buildActionLog(displayFrames, deployedImage ?? [], "ally"));
+  const enemyLog = $derived(buildActionLog(displayFrames, stage.enemy, "enemy"));
+
   // 決着の表示は「観戦が決着フレームに到達したとき」に出す（結果を先にネタバレしない）。
   const decided = $derived(current?.winner != null);
 
@@ -182,7 +187,7 @@
         {#if allyView === "program"}
           <ProgramViewer lines={allyLines} activeId={current?.active?.ally} fill showFollow />
         {:else if allyView === "log"}
-          <ActionLogViewer frames={displayFrames} {frameIndex} program={deployedImage ?? []} id="ally" fill compact />
+          <ActionLogViewer log={allyLog} {frameIndex} fill compact />
         {:else}
           <!-- イメージ＝デプロイ済みの正体。未デプロイは空表示、編集側の最新ビルドとズレたら「要再デプロイ」。 -->
           <ImageViewer
@@ -242,7 +247,7 @@
         {#if enemyView === "program"}
           <ProgramViewer lines={enemyLines} activeId={current?.active?.enemy} fill showFollow />
         {:else if enemyView === "log"}
-          <ActionLogViewer frames={displayFrames} {frameIndex} program={stage.enemy} id="enemy" fill compact />
+          <ActionLogViewer log={enemyLog} {frameIndex} fill compact />
         {:else}
           <!-- イメージ＝ステージ固定の敵の正体（Ally と同体裁で左右対称に）。時刻・ドリフトは持たない。 -->
           <ImageViewer hash={enemyHash} name={stage.enemyLabel} baseImage={DEFAULT_BASE_IMAGE} fill />

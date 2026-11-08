@@ -2,7 +2,7 @@
   // 試運転レール＝作業台の右側（試運転のみ）。相手なし／stub の固定盤で ally を単体実行し、
   // 「観る→直す→また観る」を本番対戦と切り離して回す。プレイ面のレールとレジストリ管理ページで共有する。
   import Icon from "@iconify/svelte";
-  import type { BattleFacade, SandboxTarget } from "$lib/application";
+  import { buildActionLog, type BattleFacade, type SandboxTarget } from "$lib/application";
   import type { Program } from "$lib/domain";
   import BattlePodViewer from "./BattlePodViewer.svelte";
   import PlaybackController from "./PlaybackController.svelte";
@@ -78,7 +78,13 @@
   <PlaybackController bind:frameIndex bind:playing {lastIndex} clock={current.clock} />
 
   <!-- ログ：先頭〜現在フレームまでの ally の行動を蓄積表示（残り領域を埋める）。再生で末尾へ自動スクロール。 -->
-  <ActionLogViewer title="ログ" titleIcon="mdi:console-line" {frames} {frameIndex} program={image} id="ally" fill />
+  <ActionLogViewer
+    title="ログ"
+    titleIcon="mdi:console-line"
+    log={buildActionLog(frames, image, "ally")}
+    {frameIndex}
+    fill
+  />
 {:else}
   <!-- 未ビルド：生の編集は食わない方針なので、ビルドを促して試運転は出さない。 -->
   <div class="flex flex-1 flex-col items-center justify-center gap-2 text-center text-surface-500">

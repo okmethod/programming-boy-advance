@@ -8,6 +8,8 @@
 export { createBattleFacade } from "./usecases/battle/facade";
 export type { BattleFacade, BattleRun } from "./usecases/battle/facade";
 export type { SandboxTarget } from "./usecases/battle/sandbox";
+export { buildActionLog } from "./usecases/battle/actionLog";
+export type { ActionLogRow } from "./usecases/battle/actionLog";
 export type { Stage, StageRepository } from "./ports/stageRepository";
 
 export { createRegistryFacade } from "./usecases/registry/facade";
