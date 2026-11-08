@@ -14,6 +14,7 @@
     type RegistryImage,
   } from "$lib/application";
   import { registryFacade } from "$lib/presentation/composition";
+  import { hhmm } from "$lib/presentation/utils/labels";
 
   interface RegistryBrowserProps {
     // パネルの背景クラス。このエリアを置く親の背景に合わせる。
@@ -37,11 +38,7 @@
   const builtName = $derived(draft.imageName || duplicate?.label || "未保存イメージ");
 
   // 最終ビルド時刻ラベル（HH:MM）。ビルドの実在を体感させる（復元点の目印）。
-  const builtAtLabel = $derived(
-    draft.builtAt === null
-      ? null
-      : new Date(draft.builtAt).toLocaleTimeString("ja-JP", { hour: "2-digit", minute: "2-digit" }),
-  );
+  const builtAtLabel = $derived(draft.builtAt === null ? null : hhmm(draft.builtAt));
 
   // プッシュ＝ビルド済みイメージをレジストリに保存（ローカル名で保管）。生の編集ではなくビルド断面を積む。
   function pushImage() {
@@ -98,11 +95,6 @@
     }
     tileRenaming = false;
   }
-
-  // プッシュ済みイメージの保存時刻ラベル（版メタデータ）。ビルド時刻と同じ HH:MM 表記。
-  function pushedAtLabel(pushedAt: number): string {
-    return new Date(pushedAt).toLocaleTimeString("ja-JP", { hour: "2-digit", minute: "2-digit" });
-  }
 </script>
 
 <!-- 素質チップ＝イメージの土台（系統×版）をアイコン＋タグで示す。レジストリ各行で使い回す。 -->
@@ -150,7 +142,7 @@
               <span class="truncate text-sm">{image.label}</span>
             {/if}
             <span class="shrink-0 text-xs opacity-50">
-              {image.source === "preset" ? "sample" : pushedAtLabel(image.pushedAt ?? 0)}
+              {image.source === "preset" ? "sample" : hhmm(image.pushedAt ?? 0)}
             </span>
           </div>
           <div class="flex shrink-0 gap-2">

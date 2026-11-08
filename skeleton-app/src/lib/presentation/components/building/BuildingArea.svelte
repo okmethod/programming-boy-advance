@@ -22,7 +22,7 @@
     draftLines,
     labelOf,
   } from "$lib/application";
-  import { automatonIcon } from "$lib/presentation/utils/labels";
+  import { automatonIcon, hhmm } from "$lib/presentation/utils/labels";
   import BlocklyEditor from "./BlocklyEditor.svelte";
   import BaseImageSelector from "./BaseImageSelector.svelte";
   import CapacityAllocator from "./CapacityAllocator.svelte";
@@ -83,11 +83,7 @@
   );
 
   // 最終ビルド時刻ラベル。ビルドが「いつの断面か」を示し、ビルドの実在を体感させる（復元点の目印）。
-  const builtAtLabel = $derived(
-    draft.builtAt === null
-      ? null
-      : new Date(draft.builtAt).toLocaleTimeString("ja-JP", { hour: "2-digit", minute: "2-digit" }),
-  );
+  const builtAtLabel = $derived(draft.builtAt === null ? null : hhmm(draft.builtAt));
 
   // ビルド＝現在の編集を凍結してイメージ化（試運転・デプロイの前提）。スナップショット化は facade が担う。
   function build() {

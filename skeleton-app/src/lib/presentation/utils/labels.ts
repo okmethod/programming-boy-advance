@@ -49,6 +49,10 @@ export const automatonIcon = (id: AutomatonId, defeated = false): string => {
 /** オートマトンの陣営名（ステータス見出し用の短いラベル）。 */
 export const automatonName = (id: AutomatonId): string => (id === "ally" ? "Ally" : "Enemy");
 
+/** エポック時刻を HH:MM のローカル表記に整形する（ビルド／プッシュ時刻の版ラベル。復元点の目印）。 */
+export const hhmm = (ts: number): string =>
+  new Date(ts).toLocaleTimeString("ja-JP", { hour: "2-digit", minute: "2-digit" });
+
 /** 勝敗を A面の表示文に変換する（盤面バッジと結果サマリで共有）。 */
 export const winnerText = (winner: BattleState["winner"]): string => {
   if (winner === "ally") return "自キャラの勝ち";
