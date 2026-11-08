@@ -18,5 +18,5 @@ export type { PersistedImage, PersistedRegistry, RegistryRepository } from "./po
 
 export { workbenchFacade } from "./usecases/workbench/facade";
 export type { WorkbenchFacade } from "./usecases/workbench/facade";
-export { workbenchDraft, currentImage, differsFromBuilt } from "./usecases/workbench/store";
+export { workbenchDraft, currentImage, cpUsed, draftLines, differsFromBuilt } from "./usecases/workbench/store";
 export type { WorkbenchDraft, CurrentImage } from "./usecases/workbench/store";

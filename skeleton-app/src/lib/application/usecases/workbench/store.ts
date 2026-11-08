@@ -17,7 +17,7 @@
 
 import { derived, get, readonly, writable } from "svelte/store";
 import type { BaseImage, Program } from "$lib/domain";
-import { DEFAULT_BASE_IMAGE, hashProgram, areProgramsEqual } from "$lib/domain";
+import { DEFAULT_BASE_IMAGE, hashProgram, areProgramsEqual, programCost, flatLines } from "$lib/domain";
 
 /** 編集中のドラフト断面。program＝Blockly からの最新、builtImage＝ビルドで凍結した断面。 */
 export interface WorkbenchDraft {
@@ -71,6 +71,18 @@ export const currentImage = derived(draftStore, (draft): CurrentImage => {
     hash: built === null ? null : hashProgram(built),
   };
 });
+
+/**
+ * 編集中プログラムの CP 消費量（作成予算の読み投影）。draft.program だけの純投影。
+ * 消費量の算出（ドメイン）をアプリ層に閉じ、UI は購読するだけにする。
+ */
+export const cpUsed = derived(draftStore, (draft) => programCost(draft.program));
+
+/**
+ * 編集中プログラムの擬似コード行（表示用の読み投影）。平坦化とノード id 採番はドメイン flatLines に委譲。
+ * 描画部品には Program ではなくこの View Model（FlatLine[]）を渡す＝葉を dumb に保つ。
+ */
+export const draftLines = derived(draftStore, (draft) => flatLines(draft.program));
 
 /**
  * 外部イメージが現在のビルド断面とズレているか（例: デプロイ済みの再デプロイ要否）。

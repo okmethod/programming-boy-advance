@@ -11,7 +11,7 @@
   import { workbenchDraft, differsFromBuilt } from "$lib/application";
   import type { PageData } from "./$types";
   import type { Program } from "$lib/domain";
-  import { DEFAULT_BASE_IMAGE } from "$lib/domain";
+  import { DEFAULT_BASE_IMAGE, flatLines } from "$lib/domain";
   import BuildingArea from "$lib/presentation/components/building/BuildingArea.svelte";
   import BattlePodViewer from "$lib/presentation/components/spectating/BattlePodViewer.svelte";
   import PlaybackController from "$lib/presentation/components/spectating/PlaybackController.svelte";
@@ -57,6 +57,12 @@
   const deployDrift = $derived(differsFromBuilt($workbenchDraft, deployedImage));
   // 敵イメージの指紋（ステージ固定・不変）。Ally と同体裁のタイルを対称に出すため算出する。
   const enemyHash = $derived(registryFacade.hashOf(stage.enemy));
+
+  // 観戦に出す擬似コード行（ProgramViewer に渡す View Model）。
+  // TODO(Stage2): deployedImage を battle-session へ持ち上げたら、この行投影も battle の読みモデルへ移す
+  //   （今は deployedImage が route-local のためここで flatLines する）。
+  const allyLines = $derived(flatLines(deployedImage ?? []));
+  const enemyLines = $derived(flatLines(stage.enemy));
 
   // 対戦はデプロイ済みイメージのみ。未デプロイ（null）なら走らせず、観戦は空状態にする。
   const run = $derived(deployedImage ? facade.runStage(stageId, deployedImage) : null);
@@ -174,7 +180,7 @@
       <!-- ビュー本体（パネル下段・フル高。各ビューワーの黒地が親パネルと一体に見える）。 -->
       <div class="flex min-h-0 flex-1 flex-col p-3 pt-0">
         {#if allyView === "program"}
-          <ProgramViewer program={deployedImage ?? []} activeId={current?.active?.ally} fill showFollow />
+          <ProgramViewer lines={allyLines} activeId={current?.active?.ally} fill showFollow />
         {:else if allyView === "log"}
           <ActionLogViewer frames={displayFrames} {frameIndex} program={deployedImage ?? []} id="ally" fill compact />
         {:else}
@@ -234,7 +240,7 @@
       </div>
       <div class="flex min-h-0 flex-1 flex-col p-3 pt-0">
         {#if enemyView === "program"}
-          <ProgramViewer program={stage.enemy} activeId={current?.active?.enemy} fill showFollow />
+          <ProgramViewer lines={enemyLines} activeId={current?.active?.enemy} fill showFollow />
         {:else if enemyView === "log"}
           <ActionLogViewer frames={displayFrames} {frameIndex} program={stage.enemy} id="enemy" fill compact />
         {:else}
@@ -305,7 +311,7 @@
           <ProgramViewer
             title="敵プログラム"
             titleIcon={automatonIcon("enemy")}
-            program={stage.enemy}
+            lines={enemyLines}
             activeId={undefined}
             fill
           />

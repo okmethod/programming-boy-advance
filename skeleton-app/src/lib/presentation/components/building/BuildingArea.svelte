@@ -12,8 +12,16 @@
   // 2画面の見た目差は「イメージタイル直右のデプロイ1個」だけ＝サンドボックスは showDeploy=false で消える。
   import { tick } from "svelte";
   import Icon from "@iconify/svelte";
-  import { programCost, type Program } from "$lib/domain";
-  import { registryImages, workbenchFacade, workbenchDraft, currentImage, labelOf } from "$lib/application";
+  import type { Program } from "$lib/domain";
+  import {
+    registryImages,
+    workbenchFacade,
+    workbenchDraft,
+    currentImage,
+    cpUsed,
+    draftLines,
+    labelOf,
+  } from "$lib/application";
   import { automatonIcon } from "$lib/presentation/utils/labels";
   import BlocklyEditor from "./BlocklyEditor.svelte";
   import BaseImageSelector from "./BaseImageSelector.svelte";
@@ -63,10 +71,8 @@
   // Blockly に流し込む（Blockly → Program の順方向で program が更新される）。
   let editor = $state<BlocklyEditor>();
 
-  // CP（作成予算）の消費量。組んだブロック数から算出する（戦闘状態とは独立）。
-  // メモリ配分（CP↔HP）と CP 上限は CapacityControl に閉じ込め、ここは消費量だけを渡す。
-  const cpUsed = $derived(programCost(draft.program));
-
+  // CP 消費量（$cpUsed）・擬似コード行（$draftLines）は workbench の読み投影を購読する
+  // ＝算出（programCost/flatLines＝ドメイン）はアプリ層に閉じ、ここは購読・受け渡しだけ。
   // カレントイメージの読みモデル（未ビルド/編集乖離/指紋）＝workbench state だけの純投影（アプリ層）。
   const current = $derived($currentImage);
 
@@ -206,7 +212,7 @@
            エディタ編集面のコードは暗地（gray-900）なので、淡色チップに載せてどちらの面でも読めるようにする。
            配置は親の責務・チップ本体と配分操作は CapacityAllocator に閉じる。 -->
       <div class="absolute right-5 top-15 z-20">
-        <CapacityAllocator {cpUsed} {memoryTotal} />
+        <CapacityAllocator cpUsed={$cpUsed} {memoryTotal} />
       </div>
     {/if}
 
@@ -221,7 +227,7 @@
         <ProgramViewer
           title="プログラム"
           titleIcon={automatonIcon("ally")}
-          program={draft.program}
+          lines={$draftLines}
           activeId={undefined}
           fill
           bodyClass="mt-3"

@@ -1,17 +1,18 @@
 <script lang="ts">
-  // 命令木（Program）を擬似コードで表示し、実行中の行を IDE のデバッガ風にハイライトする（表示専用）。
-  // 平坦化とノード id の採番はドメイン（flatLines）に委譲し、インタプリタの採番と必ず一致させる。
+  // 擬似コード行（FlatLine[]）を表示し、実行中の行を IDE のデバッガ風にハイライトする（表示専用）。
+  // 平坦化とノード id 採番はドメイン（flatLines）の責務なので、呼び出し元が投影した View Model を受け取る
+  // ＝この部品は Program を知らない dumb view（採番はインタプリタ／flatLines と必ず一致する）。
   import { tick } from "svelte";
   import Icon from "@iconify/svelte";
-  import type { NodeId, Program } from "$lib/domain";
-  import { flatLines } from "$lib/domain";
+  import type { NodeId, FlatLine } from "$lib/domain";
 
   interface ProgramViewerProps {
     // 省略時はヘッダー（見出し）を描画しない。観戦列はステータス側に名前を出すため不要。
     title?: string;
     // 見出し左に添える mdi アイコン名（陣営識別用）。title とセットで使う。
     titleIcon?: string;
-    program: Program;
+    // 表示する擬似コード行（呼び出し元が flatLines で投影した View Model）。
+    lines: FlatLine[];
     // 現在クロックで実行中の命令ノード id（無ければハイライトなし）。
     activeId?: NodeId;
     // true: 親の高さいっぱいに広げ、長ければ内側でスクロール（エディタ面用）。既定は内容ぴったり。
@@ -25,14 +26,12 @@
   let {
     title,
     titleIcon,
-    program,
+    lines,
     activeId,
     fill = false,
     showFollow = false,
     bodyClass = "",
   }: ProgramViewerProps = $props();
-
-  const lines = $derived(flatLines(program));
 
   let scrollEl = $state<HTMLElement>();
 
