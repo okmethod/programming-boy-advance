@@ -20,11 +20,13 @@
   interface RegistryBrowserProps {
     // パネルの背景クラス。このエリアを置く親の背景に合わせる。
     panelClass?: string;
+    // 親が重ねる見出し帯のぶん、本体上端を下げるクラス（縦のクリアランス）。寸法は親が決める。
+    headerReserve?: string;
     // プル時の Blockly（編集の SSoT）への流し込み。カレント断面の取り込みは facade がこの中で担う。
     onPull: (program: Program) => void;
   }
 
-  let { panelClass = "bg-surface-50", onPull }: RegistryBrowserProps = $props();
+  let { panelClass = "bg-surface-50", headerReserve = "", onPull }: RegistryBrowserProps = $props();
 
   const draft = $derived($workbenchDraft);
   // カレントイメージの読みモデル（未ビルド/指紋）＝workbench state だけの純投影（アプリ層）。
@@ -100,14 +102,10 @@
 
 <!-- レジストリ管理面（フル領域）。上＝保管済み一覧（pull/リネーム/削除）／破線／下＝カレント行（push）。
      下→上 push・上→下 pull で矢印の向きと空間が一致。永続化・版管理は未着手（store 側に集約）。 -->
-<div class="absolute inset-0 flex flex-col gap-3 overflow-hidden rounded border border-surface-300 {panelClass} p-3">
-  <!-- 見出し（プッシュは下のカレント行へ移設）。 -->
-  <div class="flex shrink-0 items-center gap-3">
-    <h3 class="inline-flex items-center gap-1 text-sm font-bold">
-      <Icon icon="mdi:package-variant" class="size-4" /> オートマトンイメージ
-    </h3>
-  </div>
-
+<!-- 見出し（オートマトンイメージ）は親(BuildingArea)が描く帯なので持たず、親が渡す headerReserve で本体を下げて場所を空ける。 -->
+<div
+  class="absolute inset-0 flex flex-col gap-3 overflow-hidden rounded border border-surface-300 {panelClass} px-3 pb-3 {headerReserve}"
+>
   <!-- レジストリ領域（保管済み）：小見出し＋一覧。残り高を占め、一覧だけ内側スクロール。下のカレント行は常に見える。 -->
   <div class="flex min-h-0 flex-1 flex-col gap-1">
     <span class="shrink-0 text-xs font-bold text-surface-500">レジストリ</span>

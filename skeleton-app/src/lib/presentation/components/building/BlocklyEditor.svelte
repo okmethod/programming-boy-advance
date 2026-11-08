@@ -20,9 +20,11 @@
     baseImage: BaseImage;
     // ワークスペース変更のたびに最新の Program を通知する。
     onProgramChange: (program: Program) => void;
+    // 親が重ねる見出し帯のぶん、パレットタブ行を右へ空けるクラス（横並びのクリアランス）。寸法は親が決める。
+    headerReserve?: string;
   }
 
-  let { baseImage, onProgramChange }: BlocklyEditorProps = $props();
+  let { baseImage, onProgramChange, headerReserve = "" }: BlocklyEditorProps = $props();
 
   let ws: Blockly.WorkspaceSvg | undefined;
 
@@ -145,8 +147,10 @@
 
 <!-- パレット上部タブ＋Blockly を1つの枠で囲む（タブ込みで上端を右の参照レールに揃える）。
      高さは配置先に委ねる（ドロワーでは余白いっぱいに広がる）。 -->
-<div class="flex h-full min-h-96 w-full flex-col overflow-hidden rounded border border-gray-300">
-  <div class="flex shrink-0 gap-1 border-b border-gray-200 bg-gray-50 p-2">
+<div class="flex h-full min-h-96 w-full flex-col overflow-hidden rounded border border-surface-300 bg-white">
+  <!-- パレット上部タブ行。左端の「プログラム」見出しは親(BuildingArea)が1枚だけ描く帯なので、
+       親が渡す headerReserve（横の空き）でその場所を空けてタブを横並びにする（見出しは単一要素で全タブ固定）。 -->
+  <div class="flex shrink-0 items-center gap-1 p-2 {headerReserve}">
     {#each blockCategories as category (category.id)}
       {@const style = TAB_STYLE[category.id]}
       <button

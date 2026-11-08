@@ -76,6 +76,20 @@
   // カレントイメージの読みモデル（未ビルド/編集乖離/指紋）＝workbench state だけの純投影（アプリ層）。
   const current = $derived($currentImage);
 
+  // メイン領域の見出し帯＝3面共通の唯一の見出し。親が1枚だけ描画し全タブで位置を固定し、
+  // 中身（アイコン＋文言）だけ面で差し替える（編集/コード＝プログラム・レジストリ＝イメージ）。
+  const header = $derived(
+    mainView === "registry"
+      ? { icon: "mdi:package-variant", label: "オートマトンイメージ" }
+      : { icon: automatonIcon("ally"), label: "プログラム" },
+  );
+
+  // 見出し帯のぶん各面に空ける余白＝帯を描く親の責務なので寸法もここで一元管理し、子へクラスで配る。
+  // 縦（本体を帯の高さだけ下げる）はコード/レジストリ面、横（ラベル幅ぶんタブを右へ）はブロック編集で使う。
+  // Tailwind スキャナ検出のためリテラルで持つ（子は class に差すだけ＝トークンはこの親ソースに存在する）。
+  const HEADER_RESERVE_Y = "pt-12";
+  const HEADER_RESERVE_X = "pl-32";
+
   // 名前＝ローカル名（draft.imageName）> 同一内容の既存イメージのラベル > プレースホルダ の順で解決する。
   // 同一内容ラベルの引き当ては registry スライスのセレクタ（labelOf）に委ね、反応性は $registryImages の購読で担う。
   const builtName = $derived(
@@ -172,6 +186,7 @@
         bind:this={editor}
         baseImage={draft.baseImage}
         onProgramChange={(p) => workbenchFacade.setProgram(p)}
+        headerReserve={HEADER_RESERVE_X}
       />
     </div>
 
@@ -180,10 +195,11 @@
          一方 CP/HP 配分は draft の「属性」なのでヘッダー（マニフェスト）に常時出す＝ここには含めない。
          配置は親（BuildingArea）の責務・各中身はそれぞれの子に閉じる。 -->
     {#if mainView !== "registry"}
-      <!-- 素質セレクタ＝ビルドの入力「何から作るか」。上部中央（ビルドボタンの左）に置く。
+      <!-- 素質セレクタ＝ビルドの入力「何から作るか」。右上のビルドボタン直下（旧 CP ゲージの位置）に置く。
+           ビルドの入力なのでビルド動線（ビルドボタン）の近くに縦に並べる。
            選んだ素質が BlocklyEditor のパレット（出せるブロック）を切り替える＝コマンド解放の seam。
            非互換切替のときだけ Blockly を空にする＝編集の SSoT はここの editor なので onClear で受ける。 -->
-      <div class="absolute left-1/2 top-2 z-20 -translate-x-1/2">
+      <div class="absolute right-5 top-15 z-20">
         <BaseImageSelector onClear={() => editor?.load([])} />
       </div>
 
@@ -208,28 +224,28 @@
     {/if}
 
     {#if mainView === "code"}
-      <!-- エディタ編集面（フル領域）：ブロックから生成したコードを表示（読み取り専用）。
-           ブロック⇄実コードの対応を見せる B面の芽。テキスト編集の配線は未対応（プレースホルダ）。 -->
-      <div
-        class="absolute inset-0 flex flex-col gap-2 overflow-hidden rounded border border-surface-300 {panelClass} p-3"
-      >
-        <!-- bodyClass の mt でコード枠だけ下げ、ブロック編集のキャンバス高さに合わせる（Ally 見出しは上のまま）。
-             ブロック編集はパレット行の分だけキャンバスが下がるので、ここの mt を増減して揃える。 -->
-        <ProgramViewer
-          title="プログラム"
-          titleIcon={automatonIcon("ally")}
-          lines={$draftLines}
-          activeId={undefined}
-          fill
-          bodyClass="mt-3"
-        />
+      <!-- エディタ編集面（フル領域）：ブロックから生成したコードを表示（読み取り専用）。枠色は surface 系で揃える。
+           見出しは親が描く帯なので持たず、本体を pt-12 下げて上端をブロック編集のキャンバス上端に揃える。 -->
+      <div class="absolute inset-0 flex flex-col overflow-hidden rounded border border-surface-300 {panelClass}">
+        <!-- 本体：生成コード（読み取り専用）。fill を効かせるため親を flex コンテナにする。上端は帯のぶん下げる。 -->
+        <div class="flex min-h-0 flex-1 flex-col {HEADER_RESERVE_Y}">
+          <ProgramViewer lines={$draftLines} activeId={undefined} fill />
+        </div>
       </div>
     {/if}
 
     {#if mainView === "registry"}
       <!-- レジストリ管理面（フル領域）。一覧/pull/rename/push は RegistryBrowser に閉じる。
            pull 時の Blockly 流し込みだけは編集の SSoT がここの editor なので onPull で受ける。 -->
-      <RegistryBrowser {panelClass} onPull={(program) => editor?.load(program)} />
+      <RegistryBrowser {panelClass} headerReserve={HEADER_RESERVE_Y} onPull={(program) => editor?.load(program)} />
     {/if}
+
+    <!-- メイン領域の見出し帯＝3面で位置を固定する唯一の見出し。各面の枠の上に1枚だけ重ねて描き、
+         中身だけ面で差し替える。ブロック編集ではパレット行の pl-28 が空けた場所に横並びで収まる。
+         クリックを吸わないよう pointer-events-none（タブ/操作ボタンは下層で生きる）。 -->
+    <span class="pointer-events-none absolute left-3 top-3 z-30 inline-flex items-center gap-1 text-sm font-bold">
+      <Icon icon={header.icon} class="size-4" />
+      {header.label}
+    </span>
   </div>
 </div>
