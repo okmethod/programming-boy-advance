@@ -17,6 +17,7 @@ export type {
   Direction,
   Grid,
   Position,
+  WallEdge,
   Winner,
 } from "./models/battle";
 export { withAllyInitialHp } from "./models/battle";
@@ -43,5 +44,13 @@ export { run } from "./interpreter/run";
 
 export type { BattleRun } from "./battle/runBattle";
 export { resolveBattleParams, type BattleParams } from "./battle/params";
-export { applyAction, advanceClock, commandToAction, exprValue, sensorValue } from "./battle/engine";
+export {
+  applyAction,
+  advanceClock,
+  commandToAction,
+  exprValue,
+  sensorValue,
+  wallBetween,
+  wallSide,
+} from "./battle/engine";
 export { runBattle, recordBattle, recordRun } from "./battle/runBattle";

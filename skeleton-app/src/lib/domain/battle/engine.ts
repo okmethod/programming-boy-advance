@@ -4,7 +4,16 @@
  * すべて決定的な純関数。乱数・時刻・DOM に依存しない。
  */
 
-import type { Automaton, AutomatonId, BattleState, Direction, Grid, Position, Winner } from "$lib/domain/models/battle";
+import type {
+  Automaton,
+  AutomatonId,
+  BattleState,
+  Direction,
+  Grid,
+  Position,
+  WallEdge,
+  Winner,
+} from "$lib/domain/models/battle";
 import type { Action, CommandName, Expr, SensorName } from "$lib/domain/models/program";
 import { BATTLE_PARAMS, type BattleParams } from "./params";
 
@@ -30,17 +39,28 @@ function frontCell(pos: Position, dir: Direction): Position {
   return add(pos, DIR_VECTORS[dir]);
 }
 
+/** 隣接2セル間の壁（辺）を作る。往来判定は対称なので格納順は問わない。 */
+export const wallBetween = (a: Position, b: Position): WallEdge => ({ a, b });
+
+/** 指定セルの指定方向の辺に壁を作る（ステージ記述用＝「このセルの〇側に壁」）。 */
+export const wallSide = (pos: Position, dir: Direction): WallEdge => ({ a: pos, b: frontCell(pos, dir) });
+
 function inBounds(grid: Grid, p: Position): boolean {
   return p.x >= 0 && p.y >= 0 && p.x < grid.width && p.y < grid.height;
 }
 
-// 場外は壁と同じく「進めない」扱いにする。
-function isWall(grid: Grid, p: Position): boolean {
-  return !inBounds(grid, p) || grid.walls.some((w) => w.x === p.x && w.y === p.y);
-}
-
 function samePos(a: Position, b: Position): boolean {
   return a.x === b.x && a.y === b.y;
+}
+
+// from↔to の辺に壁があるか。往来は対称なので両向きで一致を見る。
+function hasWallBetween(grid: Grid, from: Position, to: Position): boolean {
+  return grid.walls.some((w) => (samePos(w.a, from) && samePos(w.b, to)) || (samePos(w.a, to) && samePos(w.b, from)));
+}
+
+// from から to へ進めないか。場外は壁と同じく「進めない」扱い、加えて from↔to の辺に壁があれば塞がれる。
+function isBlocked(grid: Grid, from: Position, to: Position): boolean {
+  return !inBounds(grid, to) || hasWallBetween(grid, from, to);
 }
 
 /** コマンド名を、状態非依存のアクションに変換する。 */
@@ -87,7 +107,7 @@ export const sensorValue = (sensor: SensorName, state: BattleState, selfId: Auto
   const front = frontCell(self.pos, self.dir);
   switch (sensor) {
     case "wallAhead":
-      return isWall(state.grid, front);
+      return isBlocked(state.grid, self.pos, front);
     case "enemyAhead": {
       const other = state.automatons.find((e) => e.id !== selfId && samePos(e.pos, front));
       return other !== undefined;
@@ -145,7 +165,8 @@ export function applyAction(
   switch (action.kind) {
     case "move": {
       const t = frontCell(self.pos, self.dir);
-      const blocked = isWall(state.grid, t) || automatons.some((o) => o.id !== selfId && samePos(o.pos, t));
+      const blocked =
+        isBlocked(state.grid, self.pos, t) || automatons.some((o) => o.id !== selfId && samePos(o.pos, t));
       if (!blocked) {
         automatons = automatons.map((e) => (e.id === selfId ? { ...e, pos: t } : e));
       }

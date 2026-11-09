@@ -71,6 +71,25 @@
   function automatonAt(s: BattleState, x: number, y: number) {
     return s.automatons.find((e) => e.pos.x === x && e.pos.y === y);
   }
+
+  // セル(x,y)と隣接(nx,ny)の間に壁辺があるか。往来は対称なので両順で一致を見る。
+  function wallBetweenCells(x: number, y: number, nx: number, ny: number): boolean {
+    return state.grid.walls.some(
+      (w) =>
+        (w.a.x === x && w.a.y === y && w.b.x === nx && w.b.y === ny) ||
+        (w.a.x === nx && w.a.y === ny && w.b.x === x && w.b.y === y),
+    );
+  }
+
+  // セルの壁辺を太ボーダーで示すクラス。動的クラスは Tailwind スキャナー検出のためリテラルで連結する。
+  function wallClass(x: number, y: number): string {
+    const sides: string[] = [];
+    if (wallBetweenCells(x, y, x, y - 1)) sides.push("border-t-4 border-t-gray-700");
+    if (wallBetweenCells(x, y, x, y + 1)) sides.push("border-b-4 border-b-gray-700");
+    if (wallBetweenCells(x, y, x - 1, y)) sides.push("border-l-4 border-l-gray-700");
+    if (wallBetweenCells(x, y, x + 1, y)) sides.push("border-r-4 border-r-gray-700");
+    return sides.join(" ");
+  }
 </script>
 
 <!-- セル群（1枚のグリッドに row-major で並べる）。アイコン/シェブロンのサイズはセルに対する割合で渡し、
@@ -79,7 +98,7 @@
   {#each Array(rows) as _, y (y)}
     {#each Array(cols) as _, x (x)}
       {@const e = automatonAt(state, x, y)}
-      <div class="relative flex items-center justify-center rounded border border-gray-300 bg-white">
+      <div class="relative flex items-center justify-center rounded border border-gray-300 bg-white {wallClass(x, y)}">
         {#if e}
           <!-- スプライトは中央固定。向きシェブロンだけを向いている側の縁に絶対配置（向き＝位置＋形の二重表現）。 -->
           <!-- スプライトは重心がやや下。矢印（縦中央）との見た目のズレを埋めるため、スプライトを少し上へ寄せる。 -->

@@ -32,11 +32,21 @@ export interface Automaton {
   readonly priority: number;
 }
 
-/** 格子状のバトルポッド。壁マスは PoC では少数前提で配列で保持する。 */
+/**
+ * 壁＝セルとセルの間の辺（境界）。隣接2セルの往来だけを塞ぎ、セル自体は通路として使える。
+ * セル単位の壁ブロックだと迷路で盤面が倍々に膨らむため、辺で持つ（docs/game-rules/overview.md の「辺」定義に一致）。
+ * a/b は隣接（マンハッタン距離1）前提。往来判定は対称なので格納順は問わない（wallBetween/wallSide で生成）。
+ */
+export interface WallEdge {
+  readonly a: Position;
+  readonly b: Position;
+}
+
+/** 格子状のバトルポッド。壁は辺（セル間）で持つ。PoC では少数前提で配列で保持する。 */
 export interface Grid {
   readonly width: number;
   readonly height: number;
-  readonly walls: readonly Position[];
+  readonly walls: readonly WallEdge[];
 }
 
 export type Winner = AutomatonId | "draw";

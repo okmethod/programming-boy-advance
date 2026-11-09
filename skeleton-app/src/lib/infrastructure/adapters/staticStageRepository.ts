@@ -9,11 +9,13 @@ import type { Stage, StageRepository } from "$lib/application";
 import { SIMPLE_CHARGER_STAGE } from "$lib/infrastructure/stages/simple-charger";
 import { REACTIVE_SENTRY_STAGE } from "$lib/infrastructure/stages/reactive-sentry";
 import { LOAD_DISRUPTOR_STAGE } from "$lib/infrastructure/stages/load-disruptor";
+import { WINDING_PATH_STAGE } from "$lib/infrastructure/stages/winding-path";
 
 const STAGES: Record<string, Stage> = {
   [SIMPLE_CHARGER_STAGE.id]: SIMPLE_CHARGER_STAGE,
   [REACTIVE_SENTRY_STAGE.id]: REACTIVE_SENTRY_STAGE,
   [LOAD_DISRUPTOR_STAGE.id]: LOAD_DISRUPTOR_STAGE,
+  [WINDING_PATH_STAGE.id]: WINDING_PATH_STAGE,
 };
 
 export const staticStageRepository: StageRepository = {
