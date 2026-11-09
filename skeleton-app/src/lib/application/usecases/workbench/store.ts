@@ -94,6 +94,13 @@ export const cpUsed = derived(draftStore, (draft) => programCost(draft.program))
 export const draftLines = derived(draftStore, (draft) => flatLines(draft.program));
 
 /**
+ * ビルド断面（凍結済み）の擬似コード行（試運転の観戦表示用の読み投影）。未ビルドは空配列。
+ * 試運転が走るのは builtImage なので、実行行ハイライトはこの行割り（＝nodeIdMap と同採番）に合わせる
+ * ＝編集中テキスト（draftText）ではなく走っている断面を正として光らせる。
+ */
+export const builtLines = derived(draftStore, (draft) => (draft.builtImage ? flatLines(draft.builtImage) : []));
+
+/**
  * 編集中プログラムの擬似コード全文（エディタ編集面のシード用の読み投影）。draft.program だけの純投影。
  * テキスト化（programToText）はドメインに委ね、UI は入場時にこの値を種として受け取るだけにする。
  */

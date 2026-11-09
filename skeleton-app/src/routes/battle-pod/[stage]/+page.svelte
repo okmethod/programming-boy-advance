@@ -24,6 +24,7 @@
     battleParams,
     type Program,
     type BaseImage,
+    type NodeId,
   } from "$lib/application";
   import type { PageData } from "./$types";
   import BuildingArea from "$lib/presentation/components/building/BuildingArea.svelte";
@@ -89,6 +90,11 @@
     { value: "reference", icon: "mdi:map-marker-outline", label: "ステージ情報" },
     { value: "sandbox", icon: "mdi:flask-outline", label: "試運転" },
   ];
+
+  // 試運転の再生状態・実行中ノードを右レール（SandboxRail）から受け、左の構築エリア（BuildingArea）の編集面へ渡す。
+  // 兄弟パネル間の受け渡しは共通の親（このページ）で解決する。
+  let sandboxPlaying = $state(false);
+  let sandboxActiveId = $state<NodeId | undefined>(undefined);
 
   // 観戦ビュー下段の表示切替：プログラム（擬似コード）／ログ（行動履歴）／イメージ（正体＝ハッシュ-名前-時刻）。
   // 自/敵で独立して切り替える。トグルはビューワー右上にオーバーレイする。
@@ -286,6 +292,8 @@
       showDeploy
       onDeploy={deployImage}
       panelClass="bg-white"
+      {sandboxPlaying}
+      {sandboxActiveId}
     />
 
     <!-- 参照レール列：ヘッダー（参照⇄試運転タブ＋閉じる）＋本体（参照は inline／試運転は SandboxRail）。 -->
@@ -319,7 +327,12 @@
             fill
           />
         {:else}
-          <SandboxRail image={$workbenchDraft.builtImage} {facade} />
+          <SandboxRail
+            image={$workbenchDraft.builtImage}
+            {facade}
+            bind:playing={sandboxPlaying}
+            onActiveChange={(id) => (sandboxActiveId = id)}
+          />
         {/if}
       </div>
     </div>

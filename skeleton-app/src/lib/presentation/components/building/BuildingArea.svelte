@@ -19,10 +19,12 @@
     currentImage,
     cpUsed,
     draftText,
+    builtLines,
     labelOf,
     type Program,
     type BaseImage,
     type ParseError,
+    type NodeId,
   } from "$lib/application";
   import { automatonIcon, hhmm } from "$lib/presentation/utils/labels";
   import BlocklyEditor from "./BlocklyEditor.svelte";
@@ -31,6 +33,7 @@
   import RegistryBrowser from "./RegistryBrowser.svelte";
   import SegmentedTabs from "$lib/presentation/components/shared/SegmentedTabs.svelte";
   import ProgramEditor from "./ProgramEditor.svelte";
+  import ProgramViewer from "$lib/presentation/components/inspecting/ProgramViewer.svelte";
 
   interface BuildingAreaProps {
     // メモリ総量＝HP↔CP 配分の原資。プレイ面=stage.memoryTotal／サンドボックス=画面ローカル既定。
@@ -49,6 +52,10 @@
     onDeploy?: (image: Program, name: string, baseImage: BaseImage, allyHp: number) => void;
     // エディタ/レジストリ面パネルの背景クラス。このエリアを置く親の背景に合わせる。
     panelClass?: string;
+    // 試運転が再生中か（親＝ページが SandboxRail から中継）。再生開始でコード面を観戦表示へ切り替えるトリガー。
+    sandboxPlaying?: boolean;
+    // 試運転で ally が実行中の命令ノード id（親が中継）。コード面の観戦オーバーレイのハイライトに素通しする。
+    sandboxActiveId?: NodeId;
   }
 
   let {
@@ -58,6 +65,8 @@
     showDeploy = false,
     onDeploy,
     panelClass = "bg-surface-50", // 既定: 薄緑地
+    sandboxPlaying = false,
+    sandboxActiveId,
   }: BuildingAreaProps = $props();
 
   // 編集中ドラフト＝アプリ層のワークベンチ store（サンドボックス⇄プレイ面で共有・画面跨ぎで保持）。
@@ -93,6 +102,19 @@
   // 逆変換は workbench facade（setProgramFromText）に閉じ、ここは入力テキストを委ねて結果のエラーを受けるだけ。
   let codeErrors = $state<readonly ParseError[]>([]);
   const codeHasErrors = $derived(codeErrors.length > 0);
+
+  // エディタ編集面を「試運転の観戦（ビルド断面＋実行行ハイライト）」に切り替えているか。
+  // 試運転が走るのはビルド断面なので、観戦中は編集テキストではなく builtLines を正として見せる。
+  // 切替規則は非対称：再生が始まったら自動で観戦へ入り、戻るのは明示（「編集を再開」ボタン）＝勝手に編集へ戻らない。
+  let codeViewing = $state(false);
+  // 再生開始（false→true）の立ち上がりだけを拾う。保持変数は追跡不要なので $state にしない（自己再発火を避ける）。
+  let wasSandboxPlaying = false;
+  $effect(() => {
+    const playing = sandboxPlaying;
+    // コード面にいる時だけ観戦へ切り替える（ブロック編集は別機構＝対象外）。
+    if (playing && !wasSandboxPlaying && mainView === "code") codeViewing = true;
+    wasSandboxPlaying = playing;
+  });
 
   // code 面に流れた最新テキストの控え。テキストは ProgramEditor のローカルが権威で親は持たないため、
   // 素質変更時に「現テキストを新素質で再検証」する材料としてここに写す（入場・リシードで種を入れる）。
@@ -169,6 +191,7 @@
     if (target === "code") {
       codeErrors = []; // 入場時は有効な種から始まるのでクリーンに戻す
       lastCodeText = $draftText; // ProgramEditor が種に取る値を再検証の種にも据える（素質変更時の再検証用）。
+      codeViewing = false; // 入場は編集から（前回の観戦表示を持ち越さない）。
     }
     mainView = target;
   }
@@ -278,6 +301,13 @@
          ＝戻すが無い（＝編集とビルド断面が一致）＝「ビルド済み（最新）」を✓で示す。 -->
     {#if mainView !== "registry"}
       <div class="absolute right-5 top-2 z-20 flex items-center gap-2">
+        <!-- 編集を再開＝試運転の観戦オーバーレイを外して編集へ戻る（再生で自動的に観戦へ入るのに対し、戻るのは明示操作）。
+             「前回ビルドに戻す」の左隣に置き、観戦中だけ出す。編集テキストはオーバーレイ下に保全されている。 -->
+        {#if codeViewing}
+          <button class="action-btn" onclick={() => (codeViewing = false)} title="試運転の表示を閉じて編集に戻る">
+            <Icon icon="mdi:pencil" class="size-4" /> 編集を再開
+          </button>
+        {/if}
         <!-- 同期状態＆ロールバックはブロック/エディタ編集の両面で出す（戻し方は revertToBuilt が権威に応じて分岐）。
              ダーティー判定は program↔builtImage の純投影なので、テキスト権威の code モードでも applyCodeText 反映ぶんで効く。
              ただし code モードで構文エラー中は program が「直近の有効断面」で止まり dirty が false になり得る
@@ -319,6 +349,17 @@
           {/key}
         </div>
       </div>
+
+      <!-- 試運転の観戦オーバーレイ：再生中はビルド断面（builtLines）を実行行ハイライト付きで見せる（観戦面と同じ ProgramViewer）。
+           下の ProgramEditor は unmount せず重ねるだけ＝未確定（構文エラー中含む）の編集テキストを保全する。
+           「編集を再開」で外す。右上の操作群（z-20）はこの上に出るのでボタンに手が届く。 -->
+      {#if codeViewing}
+        <div class="absolute inset-0 z-10 flex flex-col overflow-hidden rounded border border-surface-300 {panelClass}">
+          <div class="flex min-h-0 flex-1 flex-col {HEADER_RESERVE_Y}">
+            <ProgramViewer lines={$builtLines} activeId={sandboxActiveId} fill showFollow />
+          </div>
+        </div>
+      {/if}
     {/if}
 
     {#if mainView === "registry"}

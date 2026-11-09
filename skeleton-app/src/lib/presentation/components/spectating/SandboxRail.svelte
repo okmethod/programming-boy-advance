@@ -2,7 +2,7 @@
   // 試運転レール＝作業台の右側（試運転のみ）。相手なし／stub の固定盤で ally を単体実行し、
   // 「観る→直す→また観る」を本番対戦と切り離して回す。プレイ面のレールとレジストリ管理ページで共有する。
   import Icon from "@iconify/svelte";
-  import { buildActionLog, type BattleFacade, type SandboxTarget, type Program } from "$lib/application";
+  import { buildActionLog, type BattleFacade, type SandboxTarget, type Program, type NodeId } from "$lib/application";
   import BattlePodViewer from "./BattlePodViewer.svelte";
   import PlaybackController from "./PlaybackController.svelte";
   import ActionLogViewer from "$lib/presentation/components/inspecting/ActionLogViewer.svelte";
@@ -12,21 +12,29 @@
     image: Program | null;
     // ゲームロジックの単一窓口（runSandbox を呼ぶ）。
     facade: BattleFacade;
+    // 再生中か（上へ報告）。再生は PlaybackController が両方向で持つため bindable。親はこれを観て編集面の観戦切替に使う。
+    playing?: boolean;
+    // 現在フレームで ally が実行中の命令ノード id を親へ報告する（子→親の一方向なのでコールバック）。
+    onActiveChange?: (id: NodeId | undefined) => void;
   }
 
-  let { image, facade }: SandboxRailProps = $props();
+  let { image, facade, playing = $bindable(false), onActiveChange }: SandboxRailProps = $props();
 
   // 試運転の的：none=何もいない（移動・制御フローの確認）／stub=攻撃できる的（enemyAhead を
   // 発火させ攻撃反応まで確認）。棚＝ビルド済みイメージだけを共有する方針なので共有ストアに載せない。
   let sandboxTarget = $state<SandboxTarget>("stub");
   let frameIndex = $state(0);
-  let playing = $state(false);
 
   // 未ビルド（image=null）のときは実行しない。ビルドして初めて試運転できる。
   const run = $derived(image ? facade.runSandbox(image, sandboxTarget) : null);
   const frames = $derived(run?.frames ?? []);
   const current = $derived(frames.length > 0 ? frames[Math.min(frameIndex, frames.length - 1)] : null);
   const lastIndex = $derived(Math.max(0, frames.length - 1));
+
+  // 現在フレームの ally 実行中ノードを親へ報告する（編集面ハイライトの素通し口）。
+  $effect(() => {
+    onActiveChange?.(current?.active?.ally);
+  });
 
   // イメージ／的が変わったら先頭に戻す（直前の試運転を持ち越さない）。
   $effect(() => {

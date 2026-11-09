@@ -65,6 +65,7 @@ export {
   currentImage,
   cpUsed,
   draftLines,
+  builtLines,
   draftText,
   differsFromBuilt,
   baseImageCatalog,
