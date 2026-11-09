@@ -5,9 +5,14 @@
  * round-trip 不変条件: parseProgram(programToText(p)).program ≡ p（nodeIdMap ↔ flatLines と同種）。
  * 文法は小さい: `cmd()` / `repeat N:` / `while <cond>:` / `if <cond>:` / `else:`、
  * <cond> は sensor 名か `true`/`false`。インデントは 2 スペース = 1 段。
+ *
+ * 文法検証に加え、素質（granted）を渡すと「文法上妥当だが付与対象外の命令」を行つきで弾く。
+ * ブロック編集ではツールボックスが構造的にこれを防ぐが、テキスト直接編集には素質ガードの穴があるため、
+ * 認識点（＝行番号を持てる唯一の場所）でここに畳む（flatLines の連番ではなく元テキスト行を指すため）。
  */
 
 import type { CommandName, Expr, Program, SensorName, Stmt } from "$lib/domain/models/program";
+import type { UsedCapabilities } from "./capabilities";
 import { flatLines } from "./nodes";
 
 /** 構文エラー。line は 1 始まりの元テキスト行番号（空行を詰めず元位置を指す）。 */
@@ -46,10 +51,22 @@ interface SourceLine {
   readonly text: string; // trim 済みの中身
 }
 
-/** 擬似コードテキストを Program にパースする。エラーが 1 つでもあれば ok:false。 */
-export const parseProgram = (text: string): ParseResult => {
+/**
+ * 擬似コードテキストを Program にパースする。エラーが 1 つでもあれば ok:false。
+ * granted（素質の付与セット）を渡すと、付与対象外の命令も行つきエラーとして同じ errors に畳む
+ * （構文エラーと同列＝ビルド不可）。省略時は文法だけを見る（round-trip・ブロック編集は無影響）。
+ */
+export const parseProgram = (text: string, granted?: UsedCapabilities): ParseResult => {
   const errors: ParseError[] = [];
   const lines: SourceLine[] = [];
+
+  // 素質（granted）が与えられ、かつ pool に name が無ければ「この素質では使えない」エラーを行つきで push する。
+  // granted 省略時は pool が undefined になり素通し＝従来の文法検証だけになる。
+  const denyIfUngranted = <T extends string>(pool: readonly T[] | undefined, name: T, n: number, kind: string) => {
+    if (pool && !pool.includes(name)) {
+      errors.push({ line: n, message: `${kind} not available in this base image: ${name}` });
+    }
+  };
 
   // 字句: 空行は無視しつつ元行番号を保つ。インデントは 2 スペース単位に正規化する。
   text.split("\n").forEach((raw, idx) => {
@@ -68,7 +85,10 @@ export const parseProgram = (text: string): ParseResult => {
   const parseCond = (raw: string, n: number): Expr => {
     if (raw === "true") return { kind: "literal", value: true };
     if (raw === "false") return { kind: "literal", value: false };
-    if (raw in SENSOR_NAMES) return { kind: "sensor", sensor: raw as SensorName };
+    if (raw in SENSOR_NAMES) {
+      denyIfUngranted(granted?.queries, raw as SensorName, n, "Sensor");
+      return { kind: "sensor", sensor: raw as SensorName };
+    }
     errors.push({ line: n, message: `Unknown condition: ${raw}` });
     return { kind: "literal", value: false }; // ok:false なので値は使われない（型を満たすだけ）
   };
@@ -82,13 +102,17 @@ export const parseProgram = (text: string): ParseResult => {
     const callMatch = /^([a-zA-Z]+)\(\)$/.exec(t);
     if (callMatch) {
       const cmd = callMatch[1];
-      if (cmd in COMMAND_NAMES) return { kind: "call", cmd: cmd as CommandName };
+      if (cmd in COMMAND_NAMES) {
+        denyIfUngranted(granted?.commands, cmd as CommandName, line.n, "Command");
+        return { kind: "call", cmd: cmd as CommandName };
+      }
       errors.push({ line: line.n, message: `Unknown command: ${cmd}` });
       return null;
     }
 
     const repeatMatch = /^repeat\s+(\d+):$/.exec(t);
     if (repeatMatch) {
+      denyIfUngranted(granted?.controls, "repeat", line.n, "Control");
       const count = Number(repeatMatch[1]);
       if (count <= 0) errors.push({ line: line.n, message: "repeat count must be positive" });
       const body = parseBlock(level + 1);
@@ -97,6 +121,7 @@ export const parseProgram = (text: string): ParseResult => {
 
     const whileMatch = /^while\s+(.+):$/.exec(t);
     if (whileMatch) {
+      denyIfUngranted(granted?.controls, "while", line.n, "Control");
       const cond = parseCond(whileMatch[1].trim(), line.n);
       const body = parseBlock(level + 1);
       return { kind: "while", cond, body };
@@ -104,6 +129,7 @@ export const parseProgram = (text: string): ParseResult => {
 
     const ifMatch = /^if\s+(.+):$/.exec(t);
     if (ifMatch) {
+      denyIfUngranted(granted?.controls, "if", line.n, "Control");
       const cond = parseCond(ifMatch[1].trim(), line.n);
       const then = parseBlock(level + 1);
       // 同 level に続く else: だけを分岐として取り込む（else は Stmt ではなく区切り）。

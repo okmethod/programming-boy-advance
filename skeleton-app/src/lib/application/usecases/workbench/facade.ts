@@ -58,7 +58,11 @@ export const workbenchFacade: WorkbenchFacade = {
     storeWriter.update((draft) => ({ ...draft, program }));
   },
   setProgramFromText(text) {
-    const result = parseProgram(text);
+    // 現在の素質（baseImage）の付与セットを渡し、付与対象外の命令を parse 側で行つきに弾く
+    // ＝ブロック編集のツールボックスが構造的に担う素質ガードを、テキスト編集にも効かせる。
+    // BaseImage は commands/queries/controls を持つため UsedCapabilities として素通しできる。
+    const { baseImage } = storeWriter.snapshot();
+    const result = parseProgram(text, baseImage);
     if (result.ok) storeWriter.update((draft) => ({ ...draft, program: result.program }));
     return result;
   },

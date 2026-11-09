@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { parseProgram, programToText } from "./parse";
+import { TURTLOGO_V1, TURTLOGO_V2 } from "$lib/domain/baseimage/baseImage";
 import type { Program } from "$lib/domain/models/program";
 
 describe("parseProgram / programToText", () => {
@@ -51,5 +52,38 @@ describe("parseProgram / programToText", () => {
     const result = parseProgram("stepForward()\nelse:\n  attack()");
     expect(result.ok).toBe(false);
     if (!result.ok) expect(result.errors.some((e) => e.line === 2)).toBe(true);
+  });
+});
+
+describe("parseProgram（素質ガード）", () => {
+  it("granted 省略時は文法だけを見る（V1 で使えない if も通る）", () => {
+    const result = parseProgram("if enemyAhead:\n  attack()");
+    expect(result.ok).toBe(true);
+  });
+
+  it("付与セット内なら通る（V2 は制御・センサを許可）", () => {
+    const result = parseProgram("if enemyAhead:\n  attack()", TURTLOGO_V2);
+    expect(result.ok).toBe(true);
+  });
+
+  it("付与対象外の制御・センサを元テキスト行つきで弾く（V1）", () => {
+    // V1 は制御（if）もセンサ（enemyAhead）も未獲得＝2 行目の両方を弾く。1 行目の空白はそのまま行番号に効く。
+    const result = parseProgram("\nif enemyAhead:\n  attack()", TURTLOGO_V1);
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.errors).toContainEqual({ line: 2, message: "Control not available in this base image: if" });
+      expect(result.errors).toContainEqual({ line: 2, message: "Sensor not available in this base image: enemyAhead" });
+    }
+  });
+
+  it("付与対象外のコマンドを行つきで弾く（loadAttack はブロック未提供で V1/V2 とも非付与）", () => {
+    const result = parseProgram("stepForward()\nloadAttack()", TURTLOGO_V2);
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.errors).toContainEqual({
+        line: 2,
+        message: "Command not available in this base image: loadAttack",
+      });
+    }
   });
 });
