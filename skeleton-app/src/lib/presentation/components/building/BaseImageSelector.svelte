@@ -20,10 +20,16 @@
   interface BaseImageSelectorProps {
     // 非互換（使用中ブロックが残ると不整合）な切替のとき、編集中プログラムを空にする。
     // Blockly が編集の SSoT なので実際の load([]) は親に委ねる（破棄の同意はこの中の確認で取得済み）。
+    // discardOnIncompatible=false のときは呼ばれない（code 面＝テキストは破棄せずエラーで残すため）。
     onClear: () => void;
+    // 非互換切替でプログラムを破棄するか。ブロック編集は構造上そうせざるを得ないので true（既定）、
+    // エディタ編集（テキスト）は非互換命令を capability エラーで保持できるので false を渡し破棄しない。
+    discardOnIncompatible?: boolean;
+    // 素質を適用し終えた後に親へ通知する（テキスト権威の code 面が現テキストを新素質で再検証するための口）。
+    onApplied?: () => void;
   }
 
-  let { onClear }: BaseImageSelectorProps = $props();
+  let { onClear, discardOnIncompatible = true, onApplied }: BaseImageSelectorProps = $props();
 
   // 現在適用中の素質・編集中プログラムはドラフトを直接購読する（プレビュー初期値／互換性ガードの材料）。
   const draft = $derived($workbenchDraft);
@@ -62,15 +68,16 @@
     if (fam) pick(fam.versions[fam.versions.length - 1]);
   }
 
-  // 候補を確定して素質を乗り換える。非互換は編集を空に（親へ委譲）してから適用する。
+  // 候補を確定して素質を乗り換える。破棄モードの非互換は編集を空に（親へ委譲）してから適用する。
   function commit() {
-    if (!supported) onClear();
+    if (discardOnIncompatible && !supported) onClear();
     workbenchFacade.setBaseImage(focused);
+    onApplied?.();
     open = false;
   }
-  // 確定ボタン。互換なら即適用。非互換は一度確認を挟み、OK でプログラム破棄込みの切替を行う。
+  // 確定ボタン。互換 or 非破棄モードなら即適用。破棄モードの非互換だけ確認を挟み、OK で破棄込みの切替を行う。
   function apply() {
-    if (supported) commit();
+    if (supported || !discardOnIncompatible) commit();
     else if (!confirming) confirming = true;
     else commit();
   }
@@ -236,7 +243,8 @@
           <button class="action-btn-strong shrink-0 whitespace-nowrap disabled:opacity-40" disabled>
             <Icon icon="mdi:check" class="size-4" /> 使用中
           </button>
-        {:else if supported}
+        {:else if supported || !discardOnIncompatible}
+          <!-- 互換、または非破棄モード（code 面）。非破棄モードの非互換も破棄せず切替＝残った命令はエラーで示す。 -->
           <button class="action-btn-strong shrink-0 whitespace-nowrap" onclick={apply}>
             <Icon icon="mdi:swap-horizontal" class="size-4" />
             {versionTag(focused)} に切り替える

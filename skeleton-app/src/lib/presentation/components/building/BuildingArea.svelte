@@ -94,8 +94,13 @@
   let codeErrors = $state<readonly ParseError[]>([]);
   const codeHasErrors = $derived(codeErrors.length > 0);
 
-  // テキスト入力を facade に委ねて program へ反映し、構文エラーの有無を手元に受ける（確定ブロック判断用）。
+  // code 面に流れた最新テキストの控え。テキストは ProgramEditor のローカルが権威で親は持たないため、
+  // 素質変更時に「現テキストを新素質で再検証」する材料としてここに写す（入場・リシードで種を入れる）。
+  let lastCodeText = $state("");
+
+  // テキスト入力を facade に委ねて program へ反映し、構文エラー／素質外命令の有無を手元に受ける（確定ブロック判断用）。
   function applyCodeText(text: string) {
+    lastCodeText = text;
     const result = workbenchFacade.setProgramFromText(text);
     codeErrors = result.ok ? [] : result.errors;
   }
@@ -146,6 +151,7 @@
     if (mainView === "code") {
       workbenchFacade.revertToBuilt();
       codeErrors = [];
+      lastCodeText = $draftText; // 戻した断面を再検証の種に据え直す（ProgramEditor も同じ $draftText で貼り直す）。
       codeSeedNonce++;
       return;
     }
@@ -160,7 +166,10 @@
       if (codeHasErrors) return;
       editor?.load(draft.program);
     }
-    if (target === "code") codeErrors = []; // 入場時は有効な種から始まるのでクリーンに戻す
+    if (target === "code") {
+      codeErrors = []; // 入場時は有効な種から始まるのでクリーンに戻す
+      lastCodeText = $draftText; // ProgramEditor が種に取る値を再検証の種にも据える（素質変更時の再検証用）。
+    }
     mainView = target;
   }
 
@@ -247,15 +256,20 @@
          これらは draft を変える「アクション」なのでブロック/エディタ編集でだけ出し、レジストリ（保管の文脈）では隠す。
          一方 CP/HP 配分は draft の「属性」なのでヘッダー（マニフェスト）に常時出す＝ここには含めない。
          配置は親（BuildingArea）の責務・各中身はそれぞれの子に閉じる。 -->
-    {#if mainView === "edit"}
-      <!-- 素質セレクタ＆ロールバックは program を直接書き換える編集アフォーダンス＝ブロック編集面でだけ出す。
-           code モードはテキストが権威なので、ここからの program 変更（＝テキストと乖離する変更）は出さない。 -->
+    {#if mainView !== "registry"}
       <!-- 素質セレクタ＝ビルドの入力「何から作るか」。右上のビルドボタン直下（旧 CP ゲージの位置）に置く。
-           ビルドの入力なのでビルド動線（ビルドボタン）の近くに縦に並べる。
-           選んだ素質が BlocklyEditor のパレット（出せるブロック）を切り替える＝コマンド解放の seam。
-           非互換切替のときだけ Blockly を空にする＝編集の SSoT はここの editor なので onClear で受ける。 -->
+           ビルドの入力なのでビルド動線（ビルドボタン）の近くに縦に並べる。両編集面で出す（素質は capability の基準で、
+           ブロック編集はパレット、エディタ編集は capability 検証を切り替える＝どちらの編集にも効く入力）。
+           面で非互換切替の意味が変わる（配置・配線は親の責務、破棄可否は子へ prop で渡す）:
+            - ブロック編集：Blockly が SSoT。非互換はブロックを構造上保持できないので破棄（onClear で editor を空に）。
+            - エディタ編集：テキストが権威。非互換命令は capability エラーで残せるので破棄しない（discardOnIncompatible=false）。
+              切替後は現テキスト（lastCodeText）を新素質で再検証して表示エラーを更新する（onApplied）。 -->
       <div class="absolute right-5 top-15 z-20">
-        <BaseImageSelector onClear={() => editor?.load([])} />
+        <BaseImageSelector
+          onClear={() => editor?.load([])}
+          discardOnIncompatible={mainView === "edit"}
+          onApplied={mainView === "code" ? () => applyCodeText(lastCodeText) : undefined}
+        />
       </div>
     {/if}
 
