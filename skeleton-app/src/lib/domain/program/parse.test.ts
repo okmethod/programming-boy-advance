@@ -38,7 +38,7 @@ describe("parseProgram / programToText", () => {
   it("未知コマンドはエラー行を返す", () => {
     const result = parseProgram("fly()");
     expect(result.ok).toBe(false);
-    if (!result.ok) expect(result.errors).toEqual([{ line: 1, message: "Unknown command: fly" }]);
+    if (!result.ok) expect(result.errors).toEqual([{ line: 1, message: "Unknown command: fly", kind: "syntax" }]);
   });
 
   it("奇数インデントはエラー行を返す", () => {
@@ -71,8 +71,16 @@ describe("parseProgram（素質ガード）", () => {
     const result = parseProgram("\nif enemyAhead:\n  attack()", TURTLOGO_V1);
     expect(result.ok).toBe(false);
     if (!result.ok) {
-      expect(result.errors).toContainEqual({ line: 2, message: "Control not available in this base image: if" });
-      expect(result.errors).toContainEqual({ line: 2, message: "Sensor not available in this base image: enemyAhead" });
+      expect(result.errors).toContainEqual({
+        line: 2,
+        message: "Control not available in this base image: if",
+        kind: "capability",
+      });
+      expect(result.errors).toContainEqual({
+        line: 2,
+        message: "Sensor not available in this base image: enemyAhead",
+        kind: "capability",
+      });
     }
   });
 
@@ -83,6 +91,7 @@ describe("parseProgram（素質ガード）", () => {
       expect(result.errors).toContainEqual({
         line: 2,
         message: "Command not available in this base image: loadAttack",
+        kind: "capability",
       });
     }
   });

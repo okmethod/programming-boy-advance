@@ -15,10 +15,15 @@ import type { CommandName, Expr, Program, SensorName, Stmt } from "$lib/domain/m
 import type { UsedCapabilities } from "./capabilities";
 import { flatLines } from "./nodes";
 
-/** 構文エラー。line は 1 始まりの元テキスト行番号（空行を詰めず元位置を指す）。 */
+/**
+ * パースが弾いた行。line は 1 始まりの元テキスト行番号（空行を詰めず元位置を指す）。
+ * kind で性質を分ける: syntax＝文法が壊れている（ビルド不可）、capability＝文法は妥当だが素質が未付与。
+ * 表示側はこの kind で色を変える（syntax=赤／capability=黄）。
+ */
 export interface ParseError {
   readonly line: number;
   readonly message: string;
+  readonly kind: "syntax" | "capability";
 }
 
 export type ParseResult =
@@ -60,11 +65,21 @@ export const parseProgram = (text: string, granted?: UsedCapabilities): ParseRes
   const errors: ParseError[] = [];
   const lines: SourceLine[] = [];
 
+  // 構文エラー（文法が壊れている＝ビルド不可）。capability エラーと kind で区別し表示側の色分けの根拠にする。
+  const addSyntax = (line: number, message: string) => {
+    errors.push({ line, message, kind: "syntax" });
+  };
+
   // 素質（granted）が与えられ、かつ pool に name が無ければ「この素質では使えない」エラーを行つきで push する。
-  // granted 省略時は pool が undefined になり素通し＝従来の文法検証だけになる。
-  const denyIfUngranted = <T extends string>(pool: readonly T[] | undefined, name: T, n: number, kind: string) => {
+  // granted 省略時は pool が undefined になり素通し＝従来の文法検証だけになる。category は命令の分類（Command/Sensor/Control）。
+  const denyIfUngranted = <T extends string>(
+    pool: readonly T[] | undefined,
+    name: T,
+    line: number,
+    category: string,
+  ) => {
     if (pool && !pool.includes(name)) {
-      errors.push({ line: n, message: `${kind} not available in this base image: ${name}` });
+      errors.push({ line, message: `${category} not available in this base image: ${name}`, kind: "capability" });
     }
   };
 
@@ -74,7 +89,7 @@ export const parseProgram = (text: string, granted?: UsedCapabilities): ParseRes
     if (raw.trim() === "") return;
     const spaces = raw.length - raw.trimStart().length;
     if (spaces % 2 !== 0) {
-      errors.push({ line: n, message: "Indent must be a multiple of 2 spaces" });
+      addSyntax(n, "Indent must be a multiple of 2 spaces");
     }
     lines.push({ n, indent: Math.floor(spaces / 2), text: raw.trim() });
   });
@@ -89,7 +104,7 @@ export const parseProgram = (text: string, granted?: UsedCapabilities): ParseRes
       denyIfUngranted(granted?.queries, raw as SensorName, n, "Sensor");
       return { kind: "sensor", sensor: raw as SensorName };
     }
-    errors.push({ line: n, message: `Unknown condition: ${raw}` });
+    addSyntax(n, `Unknown condition: ${raw}`);
     return { kind: "literal", value: false }; // ok:false なので値は使われない（型を満たすだけ）
   };
 
@@ -106,7 +121,7 @@ export const parseProgram = (text: string, granted?: UsedCapabilities): ParseRes
         denyIfUngranted(granted?.commands, cmd as CommandName, line.n, "Command");
         return { kind: "call", cmd: cmd as CommandName };
       }
-      errors.push({ line: line.n, message: `Unknown command: ${cmd}` });
+      addSyntax(line.n, `Unknown command: ${cmd}`);
       return null;
     }
 
@@ -114,7 +129,7 @@ export const parseProgram = (text: string, granted?: UsedCapabilities): ParseRes
     if (repeatMatch) {
       denyIfUngranted(granted?.controls, "repeat", line.n, "Control");
       const count = Number(repeatMatch[1]);
-      if (count <= 0) errors.push({ line: line.n, message: "repeat count must be positive" });
+      if (count <= 0) addSyntax(line.n, "repeat count must be positive");
       const body = parseBlock(level + 1);
       return { kind: "repeat", count, body };
     }
@@ -141,7 +156,7 @@ export const parseProgram = (text: string, granted?: UsedCapabilities): ParseRes
       return { kind: "if", cond, then };
     }
 
-    errors.push({ line: line.n, message: `Syntax error: ${t}` });
+    addSyntax(line.n, `Syntax error: ${t}`);
     return null;
   };
 
@@ -153,7 +168,7 @@ export const parseProgram = (text: string, granted?: UsedCapabilities): ParseRes
       if (line.indent < level) break;
       if (line.text === "else:") break; // 親の if が処理する合図
       if (line.indent > level) {
-        errors.push({ line: line.n, message: "Unexpected indentation" });
+        addSyntax(line.n, "Unexpected indentation");
         cursor++;
         continue;
       }
@@ -166,7 +181,7 @@ export const parseProgram = (text: string, granted?: UsedCapabilities): ParseRes
   const program = parseBlock(0);
   // トップで消費しきれなかった行（孤立した else: など）は構文エラーとして報告する。
   while (cursor < lines.length) {
-    errors.push({ line: lines[cursor].n, message: `Unexpected line: ${lines[cursor].text}` });
+    addSyntax(lines[cursor].n, `Unexpected line: ${lines[cursor].text}`);
     cursor++;
   }
 
