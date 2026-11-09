@@ -57,6 +57,26 @@
   // 候補へ切り替えても使用中ブロックが失われないか（互換性ガード）。
   const supported = $derived(baseImageSupports(focused, draft.program));
 
+  // 非互換確認の表示差分を面ごとにデータへ畳む（マークアップは共通化し、ここが文言・色・確定ラベルを供給する）。
+  //  - 破棄モード（ブロック編集）＝赤・プログラム破棄の同意。
+  //  - 非破棄モード（エディタ編集）＝黄・破棄せず切替だが非互換命令はエラーになる旨の警告。
+  // tone はリテラル文字列なので Tailwind スキャナが検出する。
+  const confirmView = $derived(
+    discardOnIncompatible
+      ? {
+          tone: "text-error-700",
+          message: "互換性がないためプログラムが破棄されます。よろしいですか？",
+          icon: "mdi:delete-alert",
+          label: "破棄して切替",
+        }
+      : {
+          tone: "text-warning-700",
+          message: "互換性のない命令はエラーになります。よろしいですか？",
+          icon: "mdi:swap-horizontal",
+          label: "切り替える",
+        },
+  );
+
   // 候補を切り替える。確認中フラグは候補が変わったら必ず解除する。
   function pick(base: BaseImage) {
     override = base;
@@ -75,9 +95,10 @@
     onApplied?.();
     open = false;
   }
-  // 確定ボタン。互換 or 非破棄モードなら即適用。破棄モードの非互換だけ確認を挟み、OK で破棄込みの切替を行う。
+  // 確定ボタン。互換なら即適用。非互換は両モードとも一度確認（警告）を挟み、OK で切替する。
+  // 切替の結果だけがモードで変わる（破棄モード＝プログラム破棄／非破棄モード＝破棄せず非互換命令はエラーで残す）。
   function apply() {
-    if (supported || !discardOnIncompatible) commit();
+    if (supported) commit();
     else if (!confirming) confirming = true;
     else commit();
   }
@@ -222,19 +243,21 @@
   </div>
 
   <!-- フッター：選択（候補）を確定して切り替える単一ボタン。状態で意味が変わる（選択と確定を分離した標準パターン）。
-       現適用と同じ＝無効「使用中」／互換＝「v◯ に切り替える」／非互換＝警告ボタン→確認を挟んでプログラム破棄込み切替。 -->
+       現適用と同じ＝無効「使用中」／互換＝「v◯ に切り替える」／非互換＝警告ボタン→確認を挟んで切替。
+       非互換の確認は両モードで出す。結果だけがモードで変わる（破棄モード＝プログラム破棄／非破棄モード＝破棄せず切替）。 -->
   {#snippet footer()}
     <div class="flex shrink-0 items-center justify-end gap-2 border-t border-gray-200 pt-3">
       {#if confirming}
-        <!-- 非互換の確認：使用中ブロックが失われるため、プログラム破棄の同意を取る。
+        <!-- 非互換の確認（両モード共通マークアップ）。文言・色・確定ラベルは confirmView が面ごとに供給する。
                メッセージ側で幅を吸収し、ボタンは折り返さない（shrink-0 + nowrap）。 -->
-        <span class="mr-auto inline-flex min-w-0 items-start gap-1 text-sm text-error-700">
+        <span class="mr-auto inline-flex min-w-0 items-start gap-1 text-sm {confirmView.tone}">
           <Icon icon="mdi:alert" class="mt-0.5 size-4 shrink-0" />
-          <span>互換性がないため<wbr />プログラムが破棄されます。よろしいですか？</span>
+          <span>{confirmView.message}</span>
         </span>
         <button class="action-btn shrink-0 whitespace-nowrap" onclick={() => (confirming = false)}>キャンセル</button>
         <button class="action-btn-strong shrink-0 whitespace-nowrap" onclick={apply}>
-          <Icon icon="mdi:delete-alert" class="size-4" /> 破棄して切替
+          <Icon icon={confirmView.icon} class="size-4" />
+          {confirmView.label}
         </button>
       {:else}
         <button class="action-btn shrink-0 whitespace-nowrap" onclick={() => (open = false)}>閉じる</button>
@@ -243,18 +266,18 @@
           <button class="action-btn-strong shrink-0 whitespace-nowrap disabled:opacity-40" disabled>
             <Icon icon="mdi:check" class="size-4" /> 使用中
           </button>
-        {:else if supported || !discardOnIncompatible}
-          <!-- 互換、または非破棄モード（code 面）。非破棄モードの非互換も破棄せず切替＝残った命令はエラーで示す。 -->
+        {:else if supported}
+          <!-- 互換＝そのまま切替。 -->
           <button class="action-btn-strong shrink-0 whitespace-nowrap" onclick={apply}>
             <Icon icon="mdi:swap-horizontal" class="size-4" />
             {versionTag(focused)} に切り替える
           </button>
         {:else}
-          <!-- 非互換＝使えなくなるブロックがある。警告色で示し、押すと確認（上の confirming）へ。 -->
+          <!-- 非互換＝使えなくなる命令がある。両モードとも警告色で示し、押すと確認（上の confirming）へ。 -->
           <button
             class="action-btn-strong shrink-0 whitespace-nowrap"
             onclick={apply}
-            title="使用中のブロックが使えなくなります"
+            title="互換性のない命令があります"
           >
             <Icon icon="mdi:alert" class="size-4" />
             {versionTag(focused)} に切り替える
