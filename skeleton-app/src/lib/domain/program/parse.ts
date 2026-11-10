@@ -36,6 +36,7 @@ const COMMAND_NAMES = {
   turnLeft: true,
   attack: true,
   loadAttack: true,
+  brittleAttack: true,
   wait: true,
 } satisfies Record<CommandName, true>;
 

@@ -51,8 +51,8 @@ export const baseImageSupports = (base: BaseImage, program: Program): boolean =>
 /**
  * カメの歩み（turtlogo）1.0 ＝ 基本の行動のみ。
  *
- * コマンド（命令）族だけを付与し、クエリ・制御は未獲得。版を上げると開花する（→ v2.0）。
- * loadAttack はブロック未提供なので含めない。
+ * 移動・向き変え・待機だけを付与し、攻撃は持たない（攻撃は最後に v3.0 で開花）。クエリ・制御も未獲得。
+ * ＝Chap1 は攻撃不可で、敵の脆弱性を位置取りで突いて勝つ（[[chap1-design]]）。loadAttack はブロック未提供なので含めない。
  */
 export const TURTLOGO_V1: BaseImage = {
   imageName: "turtlogo",
@@ -60,7 +60,7 @@ export const TURTLOGO_V1: BaseImage = {
   version: "1.0",
   icon: "mdi:turtle",
   summary: "基本の行動だけ。決まった順に動く",
-  commands: ["stepForward", "turnRight", "turnLeft", "attack", "wait"],
+  commands: ["stepForward", "turnRight", "turnLeft", "wait"],
   queries: [],
   controls: [],
 };
@@ -68,8 +68,8 @@ export const TURTLOGO_V1: BaseImage = {
 /**
  * カメの歩み（turtlogo）2.0 ＝ 制御の獲得（メジャー開花）。
  *
- * v1.0 にクエリ（センサ）と制御構文（条件分岐・くりかえし）を足す。
- * 付与命令セットは現行ツールボックスの全ブロックに一致する（旧 toolbox と同一の見た目）。
+ * v1.0 の基本行動に、クエリ（センサ）と制御構文（条件分岐・くりかえし）を足す。
+ * まだ攻撃は持たない（攻撃は v3.0 で開花）＝制御・読解を攻撃抜きで学ぶ版。
  */
 export const TURTLOGO_V2: BaseImage = {
   ...TURTLOGO_V1,
@@ -79,8 +79,40 @@ export const TURTLOGO_V2: BaseImage = {
   controls: ["if", "repeat", "while"],
 };
 
-/** 素質カタログ（選択候補）。版が上がるほど使える命令が広がる（v1=基本行動 → v2=クエリ＋制御）。 */
-export const BASE_IMAGES: readonly BaseImage[] = [TURTLOGO_V1, TURTLOGO_V2];
+/**
+ * カメの歩み（turtlogo）3.0 ＝ 攻撃の獲得（最後の開花）。
+ *
+ * 移動（v1）・制御（v2）を経て、最後に攻撃を覚える。攻撃戦闘はこの版から。
+ * 移動系統に攻撃を足す当面の措置＝将来「攻撃系統」を分けるなら attack をそちらへ移す余地あり（YAGNI）。
+ */
+export const TURTLOGO_V3: BaseImage = {
+  ...TURTLOGO_V2,
+  version: "3.0",
+  summary: "攻撃を覚える。移動・制御に加えて戦える",
+  commands: [...TURTLOGO_V2.commands, "attack"],
+};
+
+/**
+ * 敵専用の素質＝brittleAttack だけを持つ初期型の敵（Chap1 の「脆弱性を突いて勝つ」敵）。
+ *
+ * brittleAttack は命中時に自分が自壊する暴発（→ engine）。敵は `while(true){ brittleAttack }` で
+ * 無心に振り続け、プレイヤーが正面に立った瞬間だけ自壊する。
+ * プレイヤーカタログ（BASE_IMAGES）には載せない＝ツールボックス/ブロックに漏れない。敵プログラム表示の土台。
+ * TODO: family/imageName/icon は暫定（命名規約での確定は別途。docs/game-rules/base-images.md 系統一覧へ追補）。
+ */
+export const BRITTLE_SENTRY: BaseImage = {
+  imageName: "brittle",
+  family: "こわれた見張り",
+  version: "1.0",
+  icon: "mdi:robot-angry",
+  summary: "正面に立たれると自壊する（攻撃に脆弱性がある）",
+  commands: ["brittleAttack"],
+  queries: [],
+  controls: ["while"],
+};
+
+/** 素質カタログ（プレイヤーの選択候補）。版が上がるほど使える命令が広がる（v1=基本行動 → v2=クエリ＋制御 → v3=攻撃）。 */
+export const BASE_IMAGES: readonly BaseImage[] = [TURTLOGO_V1, TURTLOGO_V2, TURTLOGO_V3];
 
 /** 系統（imageName）でまとめた版の並び。選択UIの「系統 × 版ラダー」の土台（カタログから動的生成）。 */
 export interface BaseImageFamily {

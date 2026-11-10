@@ -28,6 +28,8 @@ export type { UsedCapabilities } from "./program/capabilities";
 export {
   TURTLOGO_V1,
   TURTLOGO_V2,
+  TURTLOGO_V3,
+  BRITTLE_SENTRY,
   BASE_IMAGES,
   UNKNOWN_BASE_IMAGE,
   baseImageFamilies,

@@ -13,6 +13,8 @@ export const commandLabel = (cmd: CommandName): string => {
       return "攻撃する";
     case "loadAttack":
       return "負荷攻撃する";
+    case "brittleAttack":
+      return "攻撃する（脆弱性あり）";
     case "wait":
       return "待機する";
   }

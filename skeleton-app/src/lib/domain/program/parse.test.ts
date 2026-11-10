@@ -62,7 +62,8 @@ describe("parseProgram（素質ガード）", () => {
   });
 
   it("付与セット内なら通る（V2 は制御・センサを許可）", () => {
-    const result = parseProgram("if enemyAhead:\n  attack()", TURTLOGO_V2);
+    // 内側コマンドは V2 が賄う stepForward（attack は v3 以降）。判定を制御(if)・センサ許可に絞る。
+    const result = parseProgram("if enemyAhead:\n  stepForward()", TURTLOGO_V2);
     expect(result.ok).toBe(true);
   });
 

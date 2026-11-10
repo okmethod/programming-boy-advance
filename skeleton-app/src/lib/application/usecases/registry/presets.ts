@@ -7,7 +7,7 @@
  */
 
 import type { BaseImage, Program } from "$lib/domain";
-import { TURTLOGO_V2 } from "$lib/domain";
+import { TURTLOGO_V2, TURTLOGO_V3 } from "$lib/domain";
 
 /** お手本プリセット：ブロックで組む前に挙動を確かめるための見本。 */
 export interface AllyPreset {
@@ -19,7 +19,7 @@ export interface AllyPreset {
 
 /** 選ぶと Blockly に復元され、そこから allyProgram が再生成される見本一覧。
  *  ループは「ずっとくりかえす」（while(true) の糖衣）で表す。対戦は共通クロックの上限で止まる。
- *  見本はいずれもクエリ・制御（if/while/sensor）を使うため、素質はフル機能の v2.0 を土台とする。 */
+ *  各見本は使う命令を賄える最小版を自己記述する（前進のみ＝v2.0／攻撃を使う＝v3.0）。 */
 export const ALLY_PRESETS: Record<string, AllyPreset> = {
   forward: {
     label: "前進する",
@@ -28,7 +28,7 @@ export const ALLY_PRESETS: Record<string, AllyPreset> = {
   },
   forwardAttack: {
     label: "前進し、攻撃する",
-    baseImage: TURTLOGO_V2,
+    baseImage: TURTLOGO_V3,
     program: [
       {
         kind: "while",

@@ -40,8 +40,9 @@ describe("baseImageSupports（互換性ガード）", () => {
   });
 
   it("制御(if)を使うと v1 は非互換・v2 は互換（ダウングレードで失われる）", () => {
+    // 内側コマンドは v2 が賄える stepForward にし、判定を「制御(if)の有無」だけに絞る（attack は v3 以降）。
     const p: Program = [
-      { kind: "if", cond: { kind: "sensor", sensor: "enemyAhead" }, then: [{ kind: "call", cmd: "attack" }] },
+      { kind: "if", cond: { kind: "sensor", sensor: "enemyAhead" }, then: [{ kind: "call", cmd: "stepForward" }] },
     ];
     expect(baseImageSupports(TURTLOGO_V1, p)).toBe(false);
     expect(baseImageSupports(TURTLOGO_V2, p)).toBe(true);

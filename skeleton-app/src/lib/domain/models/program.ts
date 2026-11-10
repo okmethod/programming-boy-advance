@@ -9,7 +9,9 @@
 /** 命令木のノード識別子（プログラム表示の実行ハイライト用）。構造上の pre-order 連番。 */
 export type NodeId = number;
 
-export type CommandName = "stepForward" | "turnRight" | "turnLeft" | "attack" | "loadAttack" | "wait";
+// brittleAttack＝敵専用の暴発コマンド。前方に相手がいる時だけ発動し自分が自壊する。
+// プレイヤー素質には付与しないため player のツールボックス/ブロックには現れない（敵プログラム専用）。
+export type CommandName = "stepForward" | "turnRight" | "turnLeft" | "attack" | "loadAttack" | "brittleAttack" | "wait";
 
 export type SensorName = "wallAhead" | "enemyAhead";
 
@@ -33,6 +35,7 @@ export type Action =
   | { readonly kind: "turn"; readonly rotation: "left" | "right" }
   | { readonly kind: "attack" }
   | { readonly kind: "loadAttack" }
+  | { readonly kind: "brittleAttack" }
   | { readonly kind: "wait" };
 
 /** インタプリタが1クロックに1つ yield する単位。アクションと、それを生んだ命令ノードの id。 */

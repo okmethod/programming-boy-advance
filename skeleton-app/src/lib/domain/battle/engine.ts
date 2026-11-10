@@ -76,6 +76,8 @@ export const commandToAction = (cmd: CommandName): Action => {
       return { kind: "attack" };
     case "loadAttack":
       return { kind: "loadAttack" };
+    case "brittleAttack":
+      return { kind: "brittleAttack" };
     case "wait":
       return { kind: "wait" };
     default: {
@@ -201,6 +203,17 @@ export function applyAction(
       const idx = automatons.findIndex((o) => o.id !== selfId && samePos(o.pos, front));
       if (idx >= 0) {
         automatons = automatons.map((e, i) => (i === idx ? withBpRaised(e, params.loadAttackBp, params) : e));
+      }
+      break;
+    }
+    case "brittleAttack": {
+      // brittleAttack（暴発のみ）：前方に相手がいる時だけ発動し、相手は無傷・自分の HP が 0 になる（自壊）。
+      // 空振り（前方に相手なし）は無害。敵の「脆弱性」を位置取りで突いて勝たせる Chap1 の勝ち筋。
+      const front = frontCell(self.pos, self.dir);
+      const hasTarget = automatons.some((o) => o.id !== selfId && samePos(o.pos, front));
+      if (hasTarget) {
+        automatons = automatons.map((e) => (e.id === selfId ? { ...e, hp: 0 } : e));
+        logs = [...logs, { clock: state.clock, attacker: selfId, target: selfId, damage: self.hp, targetHpAfter: 0 }];
       }
       break;
     }

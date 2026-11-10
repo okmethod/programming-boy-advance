@@ -57,3 +57,36 @@ describe("辺壁（WallEdge）", () => {
     expect(posOf(applyAction(edge, "ally", { kind: "move" }))).toEqual({ x: 2, y: 0 });
   });
 });
+
+describe("brittleAttack（暴発のみ）", () => {
+  const hpOf = (s: BattleState, id: Automaton["id"]): number => s.automatons.find((e) => e.id === id)!.hp;
+
+  // enemy を x=1（ally の正面）に置き、ally を右向きで x=0 に置く。
+  function facing(): BattleState {
+    return {
+      grid: { width: 3, height: 1, walls: [] },
+      automatons: [
+        ally({ x: 0, y: 0 }, "right"),
+        { id: "enemy", pos: { x: 1, y: 0 }, dir: "left", hp: 2, bp: 0, freezeRemaining: 0, priority: 0 },
+      ],
+      clock: 0,
+      rngSeed: 0,
+      logs: [],
+      winner: null,
+    };
+  }
+
+  it("前方に相手がいると自分が自壊し、相手は無傷（暴発）", () => {
+    // ally が brittleAttack＝ally 自身の HP が 0・enemy は無傷。勝者は enemy（自壊側の負け）。
+    const next = applyAction(facing(), "ally", { kind: "brittleAttack" });
+    expect(hpOf(next, "ally")).toBe(0);
+    expect(hpOf(next, "enemy")).toBe(2);
+    expect(next.winner).toBe("enemy");
+  });
+
+  it("空振り（前方に相手なし）は無害＝状態を変えない", () => {
+    const empty = row([], { x: 0, y: 0 }, "right"); // ally だけ・前方は空
+    const next = applyAction(empty, "ally", { kind: "brittleAttack" });
+    expect(next).toBe(empty); // 何も変化しないので同一参照を返す
+  });
+});
