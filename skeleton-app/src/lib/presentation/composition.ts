@@ -20,14 +20,14 @@
  */
 
 import { createBattleFacade, createRegistryFacade } from "$lib/application";
-import type { BattleFacade, RegistryFacade, Stage } from "$lib/application";
+import type { BattleFacade, Chapter, RegistryFacade } from "$lib/application";
 import { localStorageRegistryRepository, staticStageRepository } from "$lib/infrastructure";
 
 /** UI 全体で共有する単一の Facade ＝ UI からゲームロジックへの唯一の窓口。 */
 export const battleFacade: BattleFacade = createBattleFacade(staticStageRepository);
 
-/** ステージ選択 UI 用の一覧（不変・登録順）。 */
-export const stageList: readonly Stage[] = battleFacade.listStages();
+/** ステージ選択 UI 用のチャプター一覧（不変・登録順）。章ごとにステージを束ねて持つ。 */
+export const chapterList: readonly Chapter[] = battleFacade.listChapters();
 
 /** 手持ちイメージ操作の単一窓口。読みは registryImages（readonly store）を `$`購読する。 */
 export const registryFacade: RegistryFacade = createRegistryFacade(localStorageRegistryRepository);
