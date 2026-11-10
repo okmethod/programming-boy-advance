@@ -9,6 +9,7 @@
   import {
     baseImageCatalog,
     baseImageSupports,
+    filterBaseImageFamilies,
     workbenchDraft,
     workbenchFacade,
     type BaseImage,
@@ -27,9 +28,11 @@
     discardOnIncompatible?: boolean;
     // 素質を適用し終えた後に親へ通知する（テキスト権威の code 面が現テキストを新素質で再検証するための口）。
     onApplied?: () => void;
+    // 選べる素質の許可集合（未指定＝無制限）。カタログをこの範囲だけに絞る。
+    allowedImages?: readonly BaseImage[];
   }
 
-  let { onClear, discardOnIncompatible = true, onApplied }: BaseImageSelectorProps = $props();
+  let { onClear, discardOnIncompatible = true, onApplied, allowedImages }: BaseImageSelectorProps = $props();
 
   // 現在適用中の素質・編集中プログラムはドラフトを直接購読する（プレビュー初期値／互換性ガードの材料）。
   const draft = $derived($workbenchDraft);
@@ -37,7 +40,8 @@
   // 開閉状態（このセレクタが所有）。トリガで開き、確定／閉じるで閉じる。
   let open = $state(false);
 
-  const families = baseImageCatalog;
+  // 許可集合でカタログを絞る（未指定＝無制限でカタログ全版）。ステージ制限はここで選択肢に効く。
+  const families = $derived(filterBaseImageFamilies(baseImageCatalog, allowedImages));
 
   // プレビュー中の版（＝選択候補・下段の解放リストとラダーの強調対象）。
   // 既定は適用中（draft.baseImage）。開いた後にブラウズした分だけ override で上書きし、開くたび override を消す。

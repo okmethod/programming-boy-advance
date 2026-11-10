@@ -4,6 +4,7 @@
  * ステージ定義の供給元（TS 定数・将来の JSON/DSL・API）をゲームロジックから隠す継ぎ目。
  * アプリ層はこの契約だけに依存し、具体実装（インフラ層の Adapter）は合成ルートで注入される。
  * 設計の最新断面は docs/design/architecture.md を正とする。
+ * レベルデザインは docs/design/ux-level-design.md を正とする。
  */
 
 import type { BaseImage, BattleParams, BattleState, Program } from "$lib/domain";
@@ -32,12 +33,29 @@ export interface Stage {
   // 戦闘チューニングのステージ固有上書き（未指定 knob は既定 BATTLE_PARAMS が効く）。
   // ここを足場に「全バランス調整がステージ側で成り立つ」を担保する。
   readonly params?: Partial<BattleParams>;
+  // プレイヤーが使える素質（系統×版）の許可集合。未指定＝無制限（カタログ全版）。
+  // ラダーの段階性を縛る土台＝選択UIを許可版だけに絞り、入場時に許可外ドラフトを最上位版へクランプする。
+  readonly allowedImages?: readonly BaseImage[];
+}
+
+/**
+ * チャプター＝ステージ選択 UI の章区切り（Tier > Chapter > Stage の中間層）。
+ * 新しい UX 要素を 1 つ導入する単位で、配下のステージはその要素を反復・変化させる。
+ */
+export interface Chapter {
+  // 順序非依存の安定 slug（表示番号・順序を載せない）。
+  readonly id: string;
+  // 章見出しの A面表示名。
+  readonly label: string;
+  readonly stages: readonly Stage[];
 }
 
 /** ステージ定義の取得口。供給元はインフラ層の Adapter が実装する。 */
 export interface StageRepository {
   /** id でステージ定義を取得する。未知の id は例外。 */
   get(id: string): Stage;
-  /** 選択 UI 用に全ステージ定義を一覧する（登録順）。 */
+  /** 選択 UI 用に全ステージ定義を一覧する（章を跨いで平坦・登録順）。URL 解決・getStage の母集合。 */
   list(): readonly Stage[];
+  /** 選択 UI の章区切り表示用に、チャプターごとのステージ群を一覧する（登録順）。 */
+  listChapters(): readonly Chapter[];
 }

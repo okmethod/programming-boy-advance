@@ -50,7 +50,7 @@ export {
   enemyHash,
 } from "./usecases/battle/store";
 export type { BattleSession } from "./usecases/battle/store";
-export type { Stage, StageRepository } from "./ports/stageRepository";
+export type { Chapter, Stage, StageRepository } from "./ports/stageRepository";
 
 export { createRegistryFacade } from "./usecases/registry/facade";
 export type { RegistryFacade } from "./usecases/registry/facade";
@@ -70,5 +70,8 @@ export {
   differsFromBuilt,
   baseImageCatalog,
   baseImageSupports,
+  filterBaseImageFamilies,
+  baseImageAllowed,
+  highestAllowedImage,
 } from "./usecases/workbench/store";
 export type { WorkbenchDraft, CurrentImage } from "./usecases/workbench/store";

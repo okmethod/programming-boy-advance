@@ -12,7 +12,7 @@
 
 import { recordRun } from "$lib/domain";
 import type { BaseImage, BattleRun, Program } from "$lib/domain";
-import type { Stage, StageRepository } from "$lib/application/ports/stageRepository";
+import type { Chapter, Stage, StageRepository } from "$lib/application/ports/stageRepository";
 import { sandboxInitial, SANDBOX_MAX_CLOCKS, type SandboxTarget } from "./sandbox";
 import { storeWriter } from "./store";
 
@@ -20,8 +20,10 @@ import { storeWriter } from "./store";
 export interface BattleFacade {
   /** ステージ定義を取得する（提示テキスト・初期盤面などの表示用。openSession へ渡す元にも使う）。 */
   getStage(stageId: string): Stage;
-  /** ステージ選択 UI 用に全ステージ定義を一覧する。 */
+  /** ステージ選択 UI 用に全ステージ定義を一覧する（章を跨いで平坦）。 */
   listStages(): readonly Stage[];
+  /** ステージ選択 UI の章区切り表示用に、チャプターごとのステージ群を一覧する。 */
+  listChapters(): readonly Chapter[];
   /** 観戦セッションを開く＝舞台（stage）を据えてデプロイをリセットする（ステージ切替の起点）。 */
   openSession(stage: Stage): void;
   /** デプロイ＝ビルド済みイメージ（素質込み）を対戦に出す（観戦セッションの ally を差し替える）。allyHp＝配分で決めた初期 HP。 */
@@ -54,6 +56,7 @@ export const createBattleFacade = (stages: StageRepository): BattleFacade => {
   return {
     getStage: (stageId) => stages.get(stageId),
     listStages: () => stages.list(),
+    listChapters: () => stages.listChapters(),
     openSession,
     deploy,
     runSandbox,

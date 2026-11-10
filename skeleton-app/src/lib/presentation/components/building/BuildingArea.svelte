@@ -56,6 +56,8 @@
     sandboxPlaying?: boolean;
     // 試運転で ally が実行中の命令ノード id（親が中継）。コード面の観戦オーバーレイのハイライトに素通しする。
     sandboxActiveId?: NodeId;
+    // プレイヤーが選べる素質の許可集合（未指定で無制限）。BaseImageSelector のカタログ絞り込みに素通しする。
+    allowedImages?: readonly BaseImage[];
   }
 
   let {
@@ -67,6 +69,7 @@
     panelClass = "bg-surface-50", // 既定: 薄緑地
     sandboxPlaying = false,
     sandboxActiveId,
+    allowedImages,
   }: BuildingAreaProps = $props();
 
   // 編集中ドラフト＝アプリ層のワークベンチ store（サンドボックス⇄プレイ面で共有・画面跨ぎで保持）。
@@ -289,6 +292,7 @@
               切替後は現テキスト（lastCodeText）を新素質で再検証して表示エラーを更新する（onApplied）。 -->
       <div class="absolute right-5 top-15 z-20">
         <BaseImageSelector
+          {allowedImages}
           onClear={() => editor?.load([])}
           discardOnIncompatible={mainView === "edit"}
           onApplied={mainView === "code" ? () => applyCodeText(lastCodeText) : undefined}

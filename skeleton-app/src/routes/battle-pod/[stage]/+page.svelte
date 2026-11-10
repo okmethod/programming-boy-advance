@@ -12,6 +12,9 @@
   import { battleFacade } from "$lib/presentation/composition";
   import {
     workbenchDraft,
+    workbenchFacade,
+    baseImageAllowed,
+    highestAllowedImage,
     differsFromBuilt,
     battleSession,
     battleRun,
@@ -163,6 +166,15 @@
     playing = false;
     started = false;
   });
+
+  // ステージの素質制限に合わせて編集中ドラフトの素質をクランプする。許可外のときだけ許可最上位版へ寄せる
+  // （プログラムは保持し、非互換命令は編集面の capability エラーで示す）。素質選択UIの絞り込みと対で制限を実効化する。
+  $effect(() => {
+    const allowed = stage.allowedImages;
+    if (!allowed || baseImageAllowed($workbenchDraft.baseImage, allowed)) return;
+    const target = highestAllowedImage(allowed);
+    if (target) workbenchFacade.setBaseImage(target);
+  });
 </script>
 
 <!-- 一画面（iPad 横向き前提・スクロール無し）：ヘッダーの残り高を埋め、はみ出しは内側で吸収。 -->
@@ -288,6 +300,7 @@
     <BuildingArea
       memoryTotal={stage.memoryTotal}
       memoryGrain={stage.memoryGrain}
+      allowedImages={stage.allowedImages}
       active={drawerOpen}
       showDeploy
       onDeploy={deployImage}

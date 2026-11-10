@@ -131,6 +131,12 @@ export function differsFromBuilt(draft: WorkbenchDraft, image: Program | null): 
 export { baseImageSupports } from "$lib/domain";
 
 /**
+ * 素質カタログのステージ制限（許可集合でのフィルタ）とクランプ判定もドメインに委ね、プレゼンへ公開面を畳む。
+ * 素質選択UIは許可版だけのカタログを購読し、ページはクランプ判定（許可外→最上位版）に使う。
+ */
+export { filterBaseImageFamilies, baseImageAllowed, highestAllowedImage } from "$lib/domain";
+
+/**
  * ドラフトへの機械的な書き込み口（facade からのみ呼ぶ・UI には公開しない）。
  * 単一レコードなので、集合版 registry の add/replace とは異なり update/snapshot が機械的プリミティブ。
  */
