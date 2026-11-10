@@ -52,7 +52,7 @@ export const baseImageSupports = (base: BaseImage, program: Program): boolean =>
  * カメの歩み（turtlogo）1.0 ＝ 基本の行動のみ。
  *
  * 移動・向き変え・待機だけを付与し、攻撃は持たない（攻撃は最後に v3.0 で開花）。クエリ・制御も未獲得。
- * ＝Chap1 は攻撃不可で、敵の脆弱性を位置取りで突いて勝つ（[[chap1-design]]）。loadAttack はブロック未提供なので含めない。
+ * ＝Chap1 は攻撃不可で、敵の脆弱性を位置取りで突いて勝つ。loadAttack はブロック未提供なので含めない。
  */
 export const TURTLOGO_V1: BaseImage = {
   imageName: "turtlogo",
@@ -145,6 +145,38 @@ export const baseImageFamilies = (): BaseImageFamily[] => {
     return { imageName: head.imageName, family: head.family, icon: head.icon, versions: sorted };
   });
 };
+
+// 素質の同定キー＝系統×版（表示整形に依らない内部キー。許可集合の照合に使う）。
+const baseImageKey = (base: BaseImage): string => `${base.imageName}@${base.version}`;
+
+/**
+ * 候補の素質がステージの許可集合に含まれるか（undefined＝無制限で常に true）。
+ * ステージごとの素質制限（Chap1 ラダーは v1 のみ等）の判定の原点。
+ */
+export const baseImageAllowed = (base: BaseImage, allowed?: readonly BaseImage[]): boolean => {
+  if (!allowed) return true;
+  const key = baseImageKey(base);
+  return allowed.some((a) => baseImageKey(a) === key);
+};
+
+/**
+ * 系統×版カタログを許可集合で絞る（undefined＝無制限でそのまま返す）。
+ * 各系統は許可された版だけを残し、残り版が無い系統は落とす＝選択UIを許可範囲だけの同じ形に畳む。
+ */
+export const filterBaseImageFamilies = (
+  families: readonly BaseImageFamily[],
+  allowed?: readonly BaseImage[],
+): BaseImageFamily[] => {
+  if (!allowed) return [...families];
+  const keys = new Set(allowed.map(baseImageKey));
+  return families
+    .map((family) => ({ ...family, versions: family.versions.filter((v) => keys.has(baseImageKey(v))) }))
+    .filter((family) => family.versions.length > 0);
+};
+
+/** 許可集合のうち最も版が進んだ素質＝ステージ入場時のクランプ先（空集合は undefined）。 */
+export const highestAllowedImage = (allowed: readonly BaseImage[]): BaseImage | undefined =>
+  [...allowed].sort((a, b) => compareVersion(a.version, b.version)).at(-1);
 
 // 版タグ（major.minor）を数値で比較する。文字列比較だと "10.0" < "2.0" を誤るため桁ごとに見る。
 function compareVersion(a: string, b: string): number {

@@ -34,6 +34,9 @@ export {
   UNKNOWN_BASE_IMAGE,
   baseImageFamilies,
   baseImageSupports,
+  baseImageAllowed,
+  filterBaseImageFamilies,
+  highestAllowedImage,
 } from "./baseimage/baseImage";
 
 export { usedCapabilities } from "./program/capabilities";

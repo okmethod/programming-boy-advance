@@ -1,5 +1,14 @@
 import { describe, it, expect } from "vitest";
-import { baseImageFamilies, baseImageSupports, TURTLOGO_V1, TURTLOGO_V2 } from "./baseImage";
+import {
+  baseImageFamilies,
+  baseImageSupports,
+  baseImageAllowed,
+  filterBaseImageFamilies,
+  highestAllowedImage,
+  TURTLOGO_V1,
+  TURTLOGO_V2,
+  TURTLOGO_V3,
+} from "./baseImage";
 import type { Program } from "$lib/domain/models/program";
 
 describe("後方互換の原則（同一系統）", () => {
@@ -53,5 +62,28 @@ describe("baseImageSupports（互換性ガード）", () => {
       { kind: "while", cond: { kind: "sensor", sensor: "wallAhead" }, body: [{ kind: "call", cmd: "turnRight" }] },
     ];
     expect(baseImageSupports(TURTLOGO_V1, p)).toBe(false);
+  });
+});
+
+describe("ステージ素質制限（許可集合）", () => {
+  it("baseImageAllowed＝未指定は無制限・許可集合は版単位で判定する", () => {
+    expect(baseImageAllowed(TURTLOGO_V3, undefined)).toBe(true); // 未指定＝無制限
+    expect(baseImageAllowed(TURTLOGO_V1, [TURTLOGO_V1])).toBe(true);
+    expect(baseImageAllowed(TURTLOGO_V2, [TURTLOGO_V1])).toBe(false); // 許可外
+  });
+
+  it("filterBaseImageFamilies＝許可版だけを残し、残り版が無い系統は落とす", () => {
+    const families = baseImageFamilies();
+    const only1 = filterBaseImageFamilies(families, [TURTLOGO_V1]);
+    const turtlogo = only1.find((f) => f.imageName === "turtlogo");
+    expect(turtlogo?.versions.map((v) => v.version)).toEqual(["1.0"]);
+    // 未指定は無制限でそのまま。
+    expect(filterBaseImageFamilies(families, undefined)).toEqual(families);
+  });
+
+  it("highestAllowedImage＝許可集合のうち最も版が進んだ素質（クランプ先）", () => {
+    expect(highestAllowedImage([TURTLOGO_V1])?.version).toBe("1.0");
+    expect(highestAllowedImage([TURTLOGO_V1, TURTLOGO_V2])?.version).toBe("2.0");
+    expect(highestAllowedImage([])).toBeUndefined();
   });
 });
