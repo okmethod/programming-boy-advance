@@ -192,7 +192,14 @@
     <div
       class="flex min-h-0 flex-1 flex-col overflow-hidden rounded-lg border border-gray-700 bg-gray-900 text-gray-200"
     >
-      <AutomatonStatusViewer frames={displayFrames} {frameIndex} id="ally" maxHp={maxHpById.ally} {bpMax} />
+      <AutomatonStatusViewer
+        frames={displayFrames}
+        {frameIndex}
+        id="ally"
+        maxHp={maxHpById.ally}
+        {bpMax}
+        inactive={deployed === null}
+      />
       <!-- ビュー切替タブ（ダーク）＝パネル内の区切り兼見出し。イメージ/プログラム/ログ。 -->
       <div class="flex shrink-0 justify-center border-t border-gray-800 p-2">
         <SegmentedTabs value={allyView} items={columnTabs} onChange={(v) => (allyView = v as ColumnView)} dense dark />

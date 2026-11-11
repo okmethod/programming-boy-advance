@@ -20,8 +20,11 @@
   const STUB_ICON = "mdi:ghost";
 
   // セルに描くアイコン名。サンドバッグ指定時は enemy を的アイコンにし、それ以外は通常の陣営アイコン（撃破顔含む）。
+  // 未起動の ally（allyInactive）は HP0 でも休眠であって撃破ではないので、×目（撃破顔）にはしない。
   function iconFor(e: BattleState["automatons"][number]): string {
-    return stubEnemy && e.id === "enemy" ? STUB_ICON : automatonIcon(e.id, e.hp <= 0);
+    if (stubEnemy && e.id === "enemy") return STUB_ICON;
+    const inactiveAlly = allyInactive && e.id === "ally";
+    return automatonIcon(e.id, e.hp <= 0 && !inactiveAlly);
   }
 
   // 開始前など ally を非活性に見せたいときだけ、ally スプライトをくすませるクラスを返す。

@@ -20,9 +20,11 @@
     maxHp: number;
     // BP 天井＝フリーズ閾値（波形スケールの分母）。戦闘パラメータは合成ルートから供給する。
     bpMax: number;
+    // 未起動（未デプロイ）＝まだ出撃していない。HP0 でも「撃破」ではなく休眠として描く（×目にしない）。
+    inactive?: boolean;
   }
 
-  let { frames, frameIndex, id, maxHp, bpMax }: AutomatonStatusViewerProps = $props();
+  let { frames, frameIndex, id, maxHp, bpMax, inactive = false }: AutomatonStatusViewerProps = $props();
 
   // BP 波形の SVG 座標系（preserveAspectRatio=none で横に引き伸ばす）。
   const VBW = 100;
@@ -40,12 +42,13 @@
   const cur = $derived(series[curIndex]);
   const hp = $derived(cur?.hp ?? 0);
   const bp = $derived(cur?.bp ?? 0);
-  const defeated = $derived(hp <= 0);
+  // 撃破＝実戦で HP が尽きた状態。未起動（未デプロイ）の HP0 は休眠であって撃破ではない。
+  const defeated = $derived(hp <= 0 && !inactive);
   const freezeRemaining = $derived(cur?.freezeRemaining ?? 0);
   const frozen = $derived(freezeRemaining > 0);
 
-  // HP が残りわずか／BP が高いときは警告色にする。
-  const hpDanger = $derived(defeated || hp / Math.max(1, maxHp) <= 0.34);
+  // HP が残りわずか／BP が高いときは警告色にする。未起動は休眠なので警告色を出さない。
+  const hpDanger = $derived(!inactive && (defeated || hp / Math.max(1, maxHp) <= 0.34));
   const bpDanger = $derived(frozen || bp / Math.max(1, bpMax) >= 0.8);
 
   // 再生ヘッドの x 座標（＝描画の右端＝現在フレーム）。
@@ -76,7 +79,8 @@
 <div class="flex w-full flex-col gap-2 p-3">
   <!-- 見出し：陣営アイコン＋名前。フリーズ中は山場としてバッジを出す。 -->
   <div class="flex items-center gap-1.5">
-    <Icon icon={automatonIcon(id, defeated)} class="size-5" />
+    <!-- 未起動は盤面スプライト（allyInactive）と同じくすませ方で「まだ動いていない」を示す。 -->
+    <Icon icon={automatonIcon(id, defeated)} class="size-5 {inactive ? 'opacity-40 grayscale' : ''}" />
     <span class="text-sm font-bold">{automatonName(id)}</span>
     {#if frozen}
       <span
