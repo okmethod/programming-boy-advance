@@ -14,6 +14,7 @@
     type Program,
   } from "$lib/application";
   import { registryFacade } from "$lib/presentation/composition";
+  import { playSE } from "$lib/presentation/sounds";
   import { hhmm } from "$lib/presentation/utils/labels";
   import BaseImageChip from "$lib/presentation/components/shared/BaseImageChip.svelte";
 
@@ -47,6 +48,7 @@
   function pushImage() {
     if (draft.builtImage === null) return;
     registryFacade.push(draft.builtImage, draft.baseImage, draft.imageName);
+    playSE.push();
   }
 
   // プル＝レジストリのイメージをカレント（ビルド断面）に取り込む。改良の起点。
@@ -56,11 +58,19 @@
   function pullImage(image: RegistryImage) {
     onPull(image.program);
     workbenchFacade.pull(image);
+    playSE.pull();
+  }
+
+  // 保管済みイメージの削除（手持ちのみ）。
+  function removeImage(id: string) {
+    registryFacade.remove(id);
+    playSE.delete();
   }
 
   // カレントイメージを破棄＝未ビルドに戻す（編集中の Blockly はそのまま・凍結した断面だけ捨てる）。
   function clearBuiltImage() {
     workbenchFacade.clearBuilt();
+    playSE.delete();
   }
 
   // リネーム（インライン編集）。編集中の行 id と入力値を持ち、Enter/blur で確定・Escape で取消。
@@ -74,7 +84,10 @@
   function commitRename() {
     if (renamingId === null) return;
     const label = renameValue.trim();
-    if (label.length > 0) registryFacade.rename(renamingId, label);
+    if (label.length > 0) {
+      registryFacade.rename(renamingId, label);
+      playSE.rename();
+    }
     renamingId = null;
   }
   // インライン入力はマウント時にフォーカスしたい（bind:this は不安定なので use: で登録）。
@@ -95,6 +108,7 @@
     if (name.length > 0) {
       workbenchFacade.setName(name);
       if (duplicate?.source === "user") registryFacade.rename(duplicate.id, name);
+      playSE.rename();
     }
     tileRenaming = false;
   }
@@ -154,7 +168,7 @@
             <button
               class="action-btn disabled:opacity-40"
               disabled={image.source === "preset"}
-              onclick={() => registryFacade.remove(image.id)}
+              onclick={() => removeImage(image.id)}
             >
               <Icon icon="mdi:delete-outline" class="size-4" /> 削除
             </button>
