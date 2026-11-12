@@ -42,7 +42,7 @@
   import ImageViewer from "$lib/presentation/components/inspecting/ImageViewer.svelte";
   import { automatonIcon } from "$lib/presentation/utils/labels";
   import { navigateTo } from "$lib/presentation/utils/navigation";
-  import { playSE, resolvePlaybackCue } from "$lib/presentation/sounds";
+  import { attachPlaybackCues } from "$lib/presentation/sounds";
   import { fade } from "svelte/transition";
 
   let { data }: { data: PageData } = $props();
@@ -186,14 +186,12 @@
     if (target) workbenchFacade.setBaseImage(target);
   });
 
-  // 再生位置が進むたび、直前フレームとの差分から効果音を鳴らす。
-  // 鳴らす音と再生ポリシーの判定は純関数に畳み、ここは配線と再生だけ持つ。
-  let lastCuedIndex = -1;
-  $effect(() => {
-    const { cue, cuedIndex } = resolvePlaybackCue(frames, frameIndex, playing, lastCuedIndex);
-    lastCuedIndex = cuedIndex;
-    if (cue) playSE[cue]();
-  });
+  // 再生位置の前進に合わせて効果音を鳴らす（本番・試運転で共有の配線）。
+  attachPlaybackCues(
+    () => frames,
+    () => frameIndex,
+    () => playing,
+  );
 </script>
 
 <!-- 一画面（iPad 横向き前提・スクロール無し）：ヘッダーの残り高を埋め、はみ出しは内側で吸収。 -->

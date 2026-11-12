@@ -3,6 +3,7 @@
   // 「観る→直す→また観る」を本番対戦と切り離して回す。プレイ面のレールとレジストリ管理ページで共有する。
   import Icon from "@iconify/svelte";
   import { buildActionLog, type BattleFacade, type SandboxTarget, type Program, type NodeId } from "$lib/application";
+  import { attachPlaybackCues } from "$lib/presentation/sounds";
   import BattlePodViewer from "./BattlePodViewer.svelte";
   import PlaybackController from "./PlaybackController.svelte";
   import ActionLogViewer from "$lib/presentation/components/inspecting/ActionLogViewer.svelte";
@@ -43,6 +44,14 @@
     frameIndex = 0;
     playing = false;
   });
+
+  // 再生位置の前進に合わせて効果音を鳴らす（本番対戦と同じ配線）。
+  // 試運転は ignoreWinner なので winner は常に null＝勝敗音は鳴らず、移動・攻撃などのみ鳴る。
+  attachPlaybackCues(
+    () => frames,
+    () => frameIndex,
+    () => playing,
+  );
 </script>
 
 <!-- ヘッダー：左に「サンドボックス」見出し、右にサンドバッグの有無スイッチ。 -->
