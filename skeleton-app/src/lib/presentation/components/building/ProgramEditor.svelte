@@ -7,6 +7,8 @@
   //
   // 見た目は ProgramViewer に寄せる：暗地（gray-900）・緑モノスペース・行番号ガターまで揃え、読み↔編集の連続性を担保する。
   // textarea は内側スクロールなので、ガターは overlay にして縦スクロールを同期する。
+  // viewer は実行行の左ボーダー（border-l-2＝2px）ぶん全行が右へ寄る。編集面にその強調は無いが、
+  // 観戦オーバーレイ（ProgramViewer）と重ねたとき桁がずれないよう、ガター/本文の各層で同じ 2px を透明ボーダーで確保する。
   import { untrack } from "svelte";
   import Icon from "@iconify/svelte";
   import type { ParseError } from "$lib/application";
@@ -64,7 +66,8 @@
     <!-- 行番号ガター（overlay・縦スクロール同期）。bg で横スクロール時に下を流れる本文を隠す。
          ▶ の無い編集面でも viewer と桁を合わせるため w-4（旧 ▶ 列）＋ w-7（番号列）を踏襲する。 -->
     <div aria-hidden="true" class="pointer-events-none absolute inset-y-0 left-0 w-11 overflow-hidden bg-gray-900 py-1">
-      <div bind:this={gutterInner}>
+      <!-- 透明ボーダーで viewer の実行行ボーダー（2px）ぶんを確保し、番号の桁を観戦オーバーレイと揃える。 -->
+      <div bind:this={gutterInner} class="border-l-2 border-transparent">
         {#each Array(lineCount) as _, i (i)}
           <div class="flex">
             <!-- 警告マーク列（syntax=赤・丸／capability=黄・三角）。両方載る行は重い syntax を優先。
@@ -93,7 +96,7 @@
          （エラー行＝番号と同じ赤/黄・それ以外＝緑）。textarea と同じ字送り（font/leading/padding/pre）で重ねる。
          ガターより後・textarea より前に置き、x<44（ガター域）は透明にしてガターを透かす。 -->
     <div aria-hidden="true" class="pointer-events-none absolute inset-0 overflow-hidden">
-      <div bind:this={highlightInner} class="w-max py-1 pr-2 pl-11">
+      <div bind:this={highlightInner} class="w-max border-l-2 border-transparent py-1 pr-2 pl-11">
         {#each lines as line, i (i)}
           <!-- 空行も行箱の高さを保つため最低1文字（半角空白）を描く＝番号・textarea と行高を揃える。 -->
           <div class="whitespace-pre {lineColor(i + 1)}">{line.length === 0 ? " " : line}</div>
@@ -109,7 +112,7 @@
       onscroll={syncScroll}
       spellcheck="false"
       wrap="off"
-      class="absolute inset-0 resize-none overflow-auto whitespace-pre bg-transparent py-1 pr-2 pl-11 font-mono text-xs leading-relaxed text-transparent caret-green-200 outline-none"
+      class="absolute inset-0 resize-none overflow-auto whitespace-pre border-l-2 border-transparent bg-transparent py-1 pr-2 pl-11 font-mono text-xs leading-relaxed text-transparent caret-green-200 outline-none"
       aria-label="プログラム（テキスト編集）"></textarea>
   </div>
 
