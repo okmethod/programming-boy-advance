@@ -42,6 +42,7 @@
   import ImageViewer from "$lib/presentation/components/inspecting/ImageViewer.svelte";
   import { automatonIcon } from "$lib/presentation/utils/labels";
   import { navigateTo } from "$lib/presentation/utils/navigation";
+  import { playSE, resolvePlaybackCue } from "$lib/presentation/sounds";
   import { fade } from "svelte/transition";
 
   let { data }: { data: PageData } = $props();
@@ -183,6 +184,15 @@
     if (!allowed || baseImageAllowed($workbenchDraft.baseImage, allowed)) return;
     const target = highestAllowedImage(allowed);
     if (target) workbenchFacade.setBaseImage(target);
+  });
+
+  // 再生位置が進むたび、直前フレームとの差分から効果音を鳴らす。
+  // 鳴らす音と再生ポリシーの判定は純関数に畳み、ここは配線と再生だけ持つ。
+  let lastCuedIndex = -1;
+  $effect(() => {
+    const { cue, cuedIndex } = resolvePlaybackCue(frames, frameIndex, playing, lastCuedIndex);
+    lastCuedIndex = cuedIndex;
+    if (cue) playSE[cue]();
   });
 </script>
 

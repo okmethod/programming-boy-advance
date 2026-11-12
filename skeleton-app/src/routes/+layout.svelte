@@ -5,6 +5,7 @@
   import Icon from "@iconify/svelte";
   import { navigateTo } from "$lib/presentation/utils/navigation";
   import { pageTitle } from "$lib/presentation/utils/routes";
+  import { audioOn, setAudioOn } from "$lib/presentation/sounds";
   import StageSelector from "$lib/presentation/components/progression/StageSelector.svelte";
   import ToastLayer from "$lib/presentation/components/shared/ToastLayer.svelte";
 
@@ -38,6 +39,14 @@
       {/if}
 
       <nav class="ml-auto flex items-center gap-1 text-sm">
+        <!-- 効果音 ON/OFF（アプリ全体設定）。AudioContext はユーザー操作内でのみ起動できるため、このクリックで初期化する。 -->
+        <button
+          class="action-btn"
+          onclick={() => setAudioOn(!$audioOn)}
+          aria-label={$audioOn ? "効果音をオフにする" : "効果音をオンにする"}
+        >
+          <Icon icon={$audioOn ? "mdi:volume-high" : "mdi:volume-off"} class="size-4" />音声
+        </button>
         <!-- ステージセレクタ（トリガ＋モーダルを自己所有）。選んだステージは URL（/battle-pod/[stage]）が SSoT。 -->
         <StageSelector />
         <button class="action-btn">
