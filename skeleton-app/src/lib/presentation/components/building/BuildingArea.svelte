@@ -27,6 +27,7 @@
     type NodeId,
   } from "$lib/application";
   import { automatonIcon, hhmm } from "$lib/presentation/utils/labels";
+  import { playSE } from "$lib/presentation/sounds";
   import BlocklyEditor from "./BlocklyEditor.svelte";
   import BaseImageSelector from "./BaseImageSelector.svelte";
   import CapacityAllocator from "./CapacityAllocator.svelte";
@@ -161,6 +162,14 @@
   // ビルド＝現在の編集を凍結してイメージ化（試運転・デプロイの前提）。スナップショット化は facade が担う。
   function build() {
     workbenchFacade.build();
+    playSE.build();
+  }
+
+  // デプロイ＝ビルド済みイメージを対戦に反映（状態遷移は親の onDeploy が担う。ここは出撃の一打を鳴らす）。
+  function deploy() {
+    if (!draft.builtImage) return;
+    playSE.deploy();
+    onDeploy?.(draft.builtImage, builtName, draft.baseImage, allyHp);
   }
 
   // エディタ編集面を種から貼り直すための nonce。ProgramEditor はテキストを初期値限りで取り以後ローカル保持するため、
@@ -253,7 +262,7 @@
              副作用のある命令なのでビルドと同じ強調色（action-btn-strong）で揃える。 -->
         <button
           class="action-btn-strong disabled:opacity-40"
-          onclick={() => draft.builtImage && onDeploy?.(draft.builtImage, builtName, draft.baseImage, allyHp)}
+          onclick={deploy}
           disabled={current.notBuilt}
           title={current.notBuilt ? "先にビルド" : "ビルド済みイメージを対戦に反映"}
         >

@@ -2,6 +2,7 @@
   // ブロックUI（Blockly）エディタ。組んだワークスペースをドメインの Program（命令木）に変換して通知する。
   // Blockly は DOM 必須のため use: アクション内で inject する（アクションはクライアントでのみ走る）。
   import { untrack } from "svelte";
+  import { get } from "svelte/store";
   import * as Blockly from "blockly";
   import type { BaseImage, Program } from "$lib/application";
   import {
@@ -14,6 +15,7 @@
     programToWorkspace,
     RETRO_THEME,
   } from "$lib/presentation/blockly";
+  import { audioOn } from "$lib/presentation/sounds";
 
   interface BlocklyEditorProps {
     // 土台にする素質（系統×版）。付与命令セットがパレットに出せるブロックを決める（コマンド解放の seam）。
@@ -101,6 +103,12 @@
     });
   });
 
+  // Blockly 内蔵音（接続・削除・切断）をアプリの音声 ON/OFF と連動させる。
+  // Blockly は独自の AudioManager を持ち既定で鳴るため、ストアと別管理だと「OFF でも鳴る」ズレが出る。
+  $effect(() => {
+    ws?.getAudioManager().setMuted(!$audioOn);
+  });
+
   function blockly(node: HTMLElement) {
     registerBlocks();
     // フライアウトを固定下限幅版に差し替えてからinject（タブ切替でパレット幅を一定に保つ）。
@@ -115,6 +123,9 @@
       move: { scrollbars: true, drag: true, wheel: true },
       zoom: { controls: true, wheel: false, startScale: 1, maxScale: 2, minScale: 0.6, scaleSpeed: 1.2 },
     });
+
+    // 初期ミュート状態を inject 直後に確定する（以後のトグル追従は $effect が担う）。
+    ws.getAudioManager().setMuted(!get(audioOn));
 
     // 全カテゴリを一度 show してフライアウト幅を全体最大に温める（sticky max を確定）。
     // これで最初のタブから幅が最大に固定され、タブ切替で原点がずれず配置済みブロックも動かない。
