@@ -21,11 +21,12 @@ const NOTE_PATTERNS = {
   SERVO: { startFreq: 196, endFreq: 659, duration: 0.18 }, // 立ち上がる駆動音（square でウィーン）
 } as const satisfies Record<string, NotePattern>;
 
-// 複数周波数の和音パターン（勝敗ジングル・金属リング）。
+// 複数周波数の和音パターン（勝敗ジングル・金属リング・システム合図）。
 const CHORD_PATTERNS = {
-  FANFARE: { frequencies: [261.63, 329.63, 392, 523.25, 659.25], duration: 0.8, arpeggio: 0.1 }, // 堂々とした勝利
+  CLEAR: { frequencies: [523.25, 659.25, 783.99], duration: 0.22, arpeggio: 0.06 }, // 明るい上昇3音（ゲームクリア）
   FALL: { frequencies: [659.25, 523.25, 392], duration: 0.5, arpeggio: 0.12 }, // 寂しい下降（敗北）
   CLANG: { frequencies: [1568, 2349, 3136], duration: 0.16 }, // 協和寄りの高音（金属のリング・ベル質感）
+  PUPI: { frequencies: [523.25, 659.25], duration: 0.04, arpeggio: 0.05 }, // 柔らかい2音（音声ON・尻ぎれのプピッ）
 } as const satisfies Record<string, ChordPattern>;
 
 // 帯域制限ノイズで作る打撃パターン（構築フェーズの操作音＝Blockly の触感に寄せる）。
@@ -79,14 +80,15 @@ const layers = (...defs: SoundDefinition[]): SoundDefinition => ({ type: "layers
 
 // イベント → サウンド定義の割り当て（波形・音量もここで確定する）。
 // バトル：wait は何もしないクロックでも毎回鳴る土台なので最も控えめに、被弾・勝敗は存在感を出す。
-// 構築：ビルド＝確定の一打（打撃＋ピン）、デプロイ＝出撃（重い打撃＋駆け上がる和音）。
+// 構築：ビルド＝確定のガシャン、デプロイ＝機械起動（ガコッ＋サーボ＋ラッチ）。
+// システム：audioOn＝音声を入れた合図（控えめなプピ）。勝利は明るい上昇チャイム（ゲームクリア）。
 const SE_ASSIGNMENTS = {
   wait: note(NOTE_PATTERNS.TICK, "square", 0.05),
   move: note(NOTE_PATTERNS.SWIPE, "sine"),
   turn: note(NOTE_PATTERNS.PIVOT, "triangle", 0.08),
   damage: note(NOTE_PATTERNS.THUD, "square", 0.14),
   freeze: note(NOTE_PATTERNS.DESCEND, "sine"),
-  win: chord(CHORD_PATTERNS.FANFARE, "triangle", 0.12),
+  win: chord(CHORD_PATTERNS.CLEAR, "triangle", 0.12),
   lose: chord(CHORD_PATTERNS.FALL, "sawtooth", 0.1),
   build: layers(
     note(NOTE_PATTERNS.THUD, "square", 0.16), // 低い衝撃の芯＝ガ（t=0）
@@ -98,6 +100,7 @@ const SE_ASSIGNMENTS = {
     note(NOTE_PATTERNS.SERVO, "square", 0.07, 0.03), // 立ち上がる駆動音（ウィーン）
     click(CLICK_PATTERNS.LATCH, 0.14, 0.17), // 噛み合うラッチ（カチャ・終端で締める）
   ),
+  audioOn: chord(CHORD_PATTERNS.PUPI, "triangle", 0.06),
 } satisfies Record<string, SoundDefinition>;
 
 /** SE の識別子（割り当てキー全体）。 */

@@ -5,7 +5,7 @@
   import Icon from "@iconify/svelte";
   import { navigateTo } from "$lib/presentation/utils/navigation";
   import { pageTitle } from "$lib/presentation/utils/routes";
-  import { audioOn, setAudioOn } from "$lib/presentation/sounds";
+  import { audioOn, setAudioOn, playSE } from "$lib/presentation/sounds";
   import StageSelector from "$lib/presentation/components/progression/StageSelector.svelte";
   import ToastLayer from "$lib/presentation/components/shared/ToastLayer.svelte";
 
@@ -13,6 +13,13 @@
 
   // ヘッダー中央に出す現在ページ名。ルート id（base path 非依存）から引く。
   const currentPageTitle = $derived(pageTitle(page.route.id));
+
+  // 音声トグル。ON にした瞬間だけ合図音を鳴らす（このクリックで AudioContext が起動するので同じ gesture 内で鳴らせる）。
+  function toggleAudio() {
+    const next = !$audioOn;
+    setAudioOn(next);
+    if (next) playSE.audioOn();
+  }
 </script>
 
 <svelte:head>
@@ -42,7 +49,7 @@
         <!-- 効果音 ON/OFF（アプリ全体設定）。AudioContext はユーザー操作内でのみ起動できるため、このクリックで初期化する。 -->
         <button
           class="action-btn"
-          onclick={() => setAudioOn(!$audioOn)}
+          onclick={toggleAudio}
           aria-label={$audioOn ? "効果音をオフにする" : "効果音をオンにする"}
         >
           <Icon icon={$audioOn ? "mdi:volume-high" : "mdi:volume-off"} class="size-4" />音声
