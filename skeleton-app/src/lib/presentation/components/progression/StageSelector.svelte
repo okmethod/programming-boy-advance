@@ -31,6 +31,7 @@
     <Icon icon="mdi:map-marker-path" class="size-5" /> ステージ選択
   {/snippet}
   <div class="min-h-0 overflow-auto">
-    <StageSelectList onSelect={select} {selectedId} />
+    <!-- モーダルは狭いクイック切替＝compact（単列・説明文なし・番号なし）で現在地強調だけ担う。 -->
+    <StageSelectList onSelect={select} {selectedId} compact />
   </div>
 </ModalShell>
