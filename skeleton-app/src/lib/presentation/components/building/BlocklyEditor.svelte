@@ -31,12 +31,15 @@
   let ws: Blockly.WorkspaceSvg | undefined;
 
   // 素質から導くパレットのカテゴリ（タブ＋フライアウトの素）。素質を切り替えると自動で追従する。
+  // 素質が付与しない族は enabled=false の非活性タブとして残る（選べないが枠は見える）。
   const blockCategories = $derived(categoriesForBaseImage(baseImage));
+  // フォールバック先＝先頭の活性カテゴリ（非活性タブは選択対象にしない）。コマンドは常に活性。
+  const firstEnabled = $derived(blockCategories.find((category) => category.enabled) ?? blockCategories[0]);
 
   // パレット上部タブで選択中のカテゴリ。選んだカテゴリのブロックだけを固定幅フライアウトに出す。
-  // 明示選択（クリック）前は undefined で、先頭カテゴリにフォールバックする（素質が変わっても先頭に追従）。
+  // 明示選択（クリック）前は undefined で、先頭の活性カテゴリにフォールバックする（素質が変わっても追従）。
   let selectedCategoryId = $state<string | undefined>(undefined);
-  const activeCategoryId = $derived(selectedCategoryId ?? blockCategories[0].id);
+  const activeCategoryId = $derived(selectedCategoryId ?? firstEnabled.id);
 
   // タブ配色＝ブロック配色（緑=コマンド / 青緑=クエリ / 黄土=制御）。色でカテゴリを識別させる。
   // テーマトークン（primary/secondary/tertiary）に寄せ、配色はテーマ差し替えで一括追従させる。
@@ -55,6 +58,9 @@
       idle: "border-tertiary-400 text-tertiary-700 hover:bg-tertiary-50",
     },
   };
+
+  // 非活性タブ（素質が未付与の族）の配色。色でカテゴリを識別させず「まだ使えない」ことだけ示す。
+  const TAB_DISABLED = "cursor-not-allowed border-surface-200 text-surface-300";
 
   // タブを選ぶ＝そのカテゴリのブロックだけをフライアウトに差し替える（横幅は不変・ポップアップ無し）。
   function selectCategory(category: BlockCategory) {
@@ -97,7 +103,9 @@
     untrack(() => {
       // 幅を温め直し、選択中タブ（版downで消えていたら先頭）のブロックを表示する。
       for (const category of categories) flyout.show(category.contents);
-      const active = categories.find((category) => category.id === selectedCategoryId) ?? categories[0];
+      // 選択中タブが版downで非活性化／消滅したら先頭の活性カテゴリに逃がす。
+      const selected = categories.find((category) => category.id === selectedCategoryId);
+      const active = selected?.enabled ? selected : (categories.find((category) => category.enabled) ?? categories[0]);
       selectedCategoryId = active.id;
       flyout.show(active.contents);
     });
@@ -131,7 +139,7 @@
     // これで最初のタブから幅が最大に固定され、タブ切替で原点がずれず配置済みブロックも動かない。
     const flyout = ws.getFlyout();
     for (const category of blockCategories) flyout?.show(category.contents);
-    selectCategory(blockCategories[0]);
+    selectCategory(firstEnabled);
 
     // ブロックの追加・移動・値変更のたびに命令木を作り直して通知する。
     // ドラッグ中は新ブロックが独立トップ扱いになる過渡状態（workspaceToProgram は先頭連鎖1本だけ拾う）
@@ -164,8 +172,14 @@
   <div class="flex shrink-0 items-center gap-1 p-2 {headerReserve}">
     {#each blockCategories as category (category.id)}
       {@const style = TAB_STYLE[category.id]}
+      {@const tabStyle = !category.enabled
+        ? TAB_DISABLED
+        : activeCategoryId === category.id
+          ? style.active
+          : style.idle}
       <button
-        class="rounded border px-3 py-1 text-sm {activeCategoryId === category.id ? style.active : style.idle}"
+        class="rounded border px-3 py-1 text-sm {tabStyle}"
+        disabled={!category.enabled}
         onclick={() => selectCategory(category)}
       >
         {category.label}

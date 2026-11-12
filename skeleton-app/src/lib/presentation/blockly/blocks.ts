@@ -161,6 +161,8 @@ export interface BlockCategory {
   readonly label: string;
   // flyout.show() にそのまま渡せるブロック並び。
   readonly contents: FlyoutBlock[];
+  // 素質が1つも付与しない族は非活性（タブは残すが選べない）。中身が空なら false。
+  readonly enabled: boolean;
 }
 
 // 素質の付与する制御構文（Stmt.kind 粒度）から、対応するパレットブロック群への写像。
@@ -176,22 +178,34 @@ const CONTROL_BLOCKS: Record<ControlName, FlyoutBlock[]> = {
  * 素質（BaseImage）の付与命令セットからパレットのカテゴリを生成する（コマンド/クエリ/制御の3ファミリー＝CQS）。
  *
  * 固定定義をやめ、ここを「コマンド解放の seam」にする＝素質・版を替えれば出せるブロックが変わる。
- * block.type は接頭辞（cmd_/qry_）で命令名に対応。1つも付与しない族は空カテゴリ＝タブごと落とす。
+ * block.type は接頭辞（cmd_/qry_）で命令名に対応。1つも付与しない族は中身が空＝非活性タブで残す
+ * （タブごと落とすと「将来解放される枠」が見えないため、非表示ではなく非活性で存在だけ示す）。
  *
  * カテゴリ式ツールボックス（クリックでポップアップ）は開閉で横幅が変わり盤面と重なるため使わない。
  * 代わりに上部タブで選んだ1カテゴリのみを常時表示の固定幅フライアウトに出す（横幅は不変）。
  */
 export const categoriesForBaseImage = (base: BaseImage): BlockCategory[] => {
-  const categories: BlockCategory[] = [
-    { id: "command", label: "コマンド", contents: toFlyoutBlocks(base.commands.map((cmd) => COMMAND_PREFIX + cmd)) },
-    { id: "query", label: "クエリ", contents: toFlyoutBlocks(base.queries.map((sensor) => QUERY_PREFIX + sensor)) },
-    { id: "control", label: "制御", contents: base.controls.flatMap((control) => CONTROL_BLOCKS[control]) },
+  const withEnabled = (category: Omit<BlockCategory, "enabled">): BlockCategory => ({
+    ...category,
+    enabled: category.contents.length > 0,
+  });
+  return [
+    withEnabled({
+      id: "command",
+      label: "コマンド",
+      contents: toFlyoutBlocks(base.commands.map((c) => COMMAND_PREFIX + c)),
+    }),
+    withEnabled({ id: "query", label: "クエリ", contents: toFlyoutBlocks(base.queries.map((s) => QUERY_PREFIX + s)) }),
+    withEnabled({
+      id: "control",
+      label: "制御",
+      contents: base.controls.flatMap((control) => CONTROL_BLOCKS[control]),
+    }),
   ];
-  return categories.filter((category) => category.contents.length > 0);
 };
 
-/** inject 用の初期ツールボックス（最初のカテゴリを出す固定幅フライアウト）。 */
+/** inject 用の初期ツールボックス（最初の活性カテゴリを出す固定幅フライアウト）。 */
 export const toolboxForBaseImage = (base: BaseImage) => {
-  const categories = categoriesForBaseImage(base);
-  return { kind: "flyoutToolbox", contents: categories[0]?.contents ?? [] };
+  const firstEnabled = categoriesForBaseImage(base).find((category) => category.enabled);
+  return { kind: "flyoutToolbox", contents: firstEnabled?.contents ?? [] };
 };
