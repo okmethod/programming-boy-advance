@@ -57,8 +57,8 @@ export const hhmm = (ts: number): string =>
 
 /** 勝敗を A面の表示文に変換する（盤面バッジと結果サマリで共有）。 */
 export const winnerText = (winner: BattleState["winner"]): string => {
-  if (winner === "ally") return "自キャラの勝ち";
-  if (winner === "enemy") return "敵キャラの勝ち";
+  if (winner === "ally") return "ステージクリア！";
+  if (winner === "enemy") return "負け...";
   if (winner === "draw") return "引き分け";
   return "";
 };

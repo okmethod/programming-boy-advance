@@ -41,6 +41,7 @@
   import ActionLogViewer from "$lib/presentation/components/inspecting/ActionLogViewer.svelte";
   import ImageViewer from "$lib/presentation/components/inspecting/ImageViewer.svelte";
   import { automatonIcon } from "$lib/presentation/utils/labels";
+  import { navigateTo } from "$lib/presentation/utils/navigation";
   import { fade } from "svelte/transition";
 
   let { data }: { data: PageData } = $props();
@@ -50,6 +51,14 @@
   const facade = battleFacade;
   const stageId = $derived(data.stageId);
   const stage = $derived(facade.getStage(stageId));
+
+  // 次ステージ＝登録順（listStages の平坦列）で現ステージの直後。終端は null＝「次へ」を出さない。
+  // 章を跨ぐ前進もこの平坦列が吸収する（並び順は StageRepository が正）。
+  const nextStageId = $derived.by(() => {
+    const stages = facade.listStages();
+    const index = stages.findIndex((s) => s.id === stageId);
+    return index >= 0 ? (stages[index + 1]?.id ?? null) : null;
+  });
 
   // デプロイ済みイメージ（出撃した実体・未デプロイは null）は battle store の所有 state を購読する。
   // program・表示名・素質・時刻は一体の集合体で、未デプロイは丸ごと null（表示メタだけ欠ける状態は起きない）。
@@ -233,7 +242,12 @@
         <!-- 非活性はデプロイ前のみ（まだ自機が出ていない）。デプロイ後は実行前でも活性で描く。 -->
         <BattlePodViewer state={displayFrame} allyInactive={deployed === null} />
         {#if decided && result}
-          <ResultOverlay winner={result.winner} onReplay={replay} />
+          <!-- 「次へ」は勝利時かつ次ステージがあるときだけ（onNext を渡す＝条件成立）。遷移先 id はプレゼンが解決。 -->
+          <ResultOverlay
+            winner={result.winner}
+            onReplay={replay}
+            onNext={nextStageId ? () => navigateTo(`/battle-pod/${nextStageId}`) : undefined}
+          />
         {/if}
       </div>
       {#if !deployed}
