@@ -32,11 +32,14 @@ export interface WorkbenchFacade {
    * （失敗時は直近の有効 program を保つ）。結果（ok/errors）を返し、UI は確定ブロック等に使う。
    */
   setProgramFromText(text: string): ParseResult;
-  /** ビルド＝現在の編集を凍結してイメージ化する（生編集から切り離した不変スナップショット）。 */
+  /**
+   * ビルド＝現在の編集を凍結してイメージ化する（生編集から切り離した不変スナップショット）。
+   * program だけでなく baseImage（素質）も断面に含める＝ビルド後に素質を乗り換えても凍結時点を保つ。
+   */
   build(): void;
   /**
-   * 前回ビルド断面へ戻す＝編集中 program をビルドイメージで上書きする（復元点として使う）。
-   * 未ビルドは no-op。ビルドと対称に clone し、program↔builtImage のエイリアスを断つ。
+   * 前回ビルド断面へ戻す＝編集中 program／baseImage をビルドイメージで上書きする（復元点として使う）。
+   * 未ビルドは no-op。ビルドと対称に program を clone し、program↔builtImage のエイリアスを断つ。
    * ビューの追従（Blockly 再ロード／テキスト欄の種貼り直し）はプレゼン側の責務でここには含めない。
    */
   revertToBuilt(): void;
@@ -69,13 +72,15 @@ export const workbenchFacade: WorkbenchFacade = {
   build() {
     storeWriter.update((draft) => ({
       ...draft,
-      builtImage: structuredClone(draft.program),
+      builtImage: { program: structuredClone(draft.program), baseImage: draft.baseImage },
       builtAt: Date.now(),
     }));
   },
   revertToBuilt() {
     storeWriter.update((draft) =>
-      draft.builtImage === null ? draft : { ...draft, program: structuredClone(draft.builtImage) },
+      draft.builtImage === null
+        ? draft
+        : { ...draft, program: structuredClone(draft.builtImage.program), baseImage: draft.builtImage.baseImage },
     );
   },
   clearBuilt() {
@@ -90,7 +95,7 @@ export const workbenchFacade: WorkbenchFacade = {
   pull(image) {
     storeWriter.update((draft) => ({
       ...draft,
-      builtImage: image.program,
+      builtImage: { program: image.program, baseImage: image.baseImage },
       builtAt: image.pushedAt ?? Date.now(),
       imageName: image.label,
       baseImage: image.baseImage,

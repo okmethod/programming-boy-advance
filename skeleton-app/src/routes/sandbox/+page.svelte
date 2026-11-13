@@ -37,7 +37,7 @@
     <div class="flex min-h-0 w-[26rem] shrink-0 flex-col">
       <div class="flex min-h-0 flex-1 flex-col gap-3 overflow-auto rounded border border-surface-300 bg-white p-3">
         <SandboxRail
-          image={$workbenchDraft.builtImage}
+          image={$workbenchDraft.builtImage?.program ?? null}
           facade={battleFacade}
           bind:playing={sandboxPlaying}
           onActiveChange={(id) => (sandboxActiveId = id)}

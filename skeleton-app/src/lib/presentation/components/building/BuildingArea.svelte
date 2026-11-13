@@ -153,7 +153,7 @@
   // 名前＝ローカル名（draft.imageName）> 同一内容の既存イメージのラベル > プレースホルダ の順で解決する。
   // 同一内容ラベルの引き当ては registry スライスのセレクタ（labelOf）に委ね、反応性は $registryImages の購読で担う。
   const builtName = $derived(
-    draft.imageName || (draft.builtImage ? labelOf($registryImages, draft.builtImage) : undefined) || "未保存",
+    draft.imageName || (draft.builtImage ? labelOf($registryImages, draft.builtImage.program) : undefined) || "未保存",
   );
 
   // 最終ビルド時刻ラベル。ビルドが「いつの断面か」を示し、ビルドの実在を体感させる（復元点の目印）。
@@ -169,7 +169,8 @@
   function deploy() {
     if (!draft.builtImage) return;
     playSE.deploy();
-    onDeploy?.(draft.builtImage, builtName, draft.baseImage, allyHp);
+    // 素質はビルド断面が凍結したもの（builtImage.baseImage）を渡す＝ビルド後に乗り換えた素質を引きずらない。
+    onDeploy?.(draft.builtImage.program, builtName, draft.builtImage.baseImage, allyHp);
   }
 
   // エディタ編集面を種から貼り直すための nonce。ProgramEditor はテキストを初期値限りで取り以後ローカル保持するため、
@@ -178,10 +179,12 @@
 
   // 最新ビルドに戻す＝編集中の変更を破棄してビルド断面へ復帰（ビルドを復元点として使う）。
   // 状態遷移（program ← builtImage）はアプリ層の操作なので、ビューの追従だけをここで権威別に担う：
-  //  - ブロック編集：Blockly が SSoT。load() で流し込むと onProgramChange が順方向で同じ戻しを起こす（facade は呼ばない＝二重 write 回避）。
-  //  - エディタ編集：テキスト欄は dumb leaf で順方向に流せない。facade で store を戻し、エラーを払って ProgramEditor を種から貼り直す。
+  //  - ブロック編集：program は Blockly が SSoT。load() で流し込むと onProgramChange が順方向で同じ戻しを起こす（program の facade 直書きはしない＝二重 write 回避）。
+  //    ただし素質（baseImage）は Blockly が持たず順方向に流れないため、断面の素質へ facade で別途戻す（パレットが追従する）。
+  //  - エディタ編集：テキスト欄は dumb leaf で順方向に流せない。facade で store（program／baseImage）を戻し、エラーを払って ProgramEditor を種から貼り直す。
   function revertToBuilt() {
-    if (draft.builtImage === null) return;
+    const built = draft.builtImage;
+    if (built === null) return;
     if (mainView === "code") {
       workbenchFacade.revertToBuilt();
       codeErrors = [];
@@ -189,7 +192,8 @@
       codeSeedNonce++;
       return;
     }
-    editor?.load(draft.builtImage);
+    workbenchFacade.setBaseImage(built.baseImage);
+    editor?.load(built.program);
   }
 
   // ビュー切替。code モードを離れるときだけ 2 つ効く：

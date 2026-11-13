@@ -36,7 +36,7 @@
 
   // 同一内容の既存イメージ（あれば＝プッシュ不要・表示名の基／push・rename の対象）。
   // 内容等価の引き当ては registry スライスのセレクタ（imageOf）に委ね、反応性は $registryImages の購読で担う。
-  const duplicate = $derived(draft.builtImage ? imageOf($registryImages, draft.builtImage) : undefined);
+  const duplicate = $derived(draft.builtImage ? imageOf($registryImages, draft.builtImage.program) : undefined);
   const alreadyPushed = $derived(duplicate !== undefined);
   // タイルに出す表示名。ローカル名（draft.imageName）> 同一内容の既存イメージのラベル > プレースホルダ の順で解決する。
   const builtName = $derived(draft.imageName || duplicate?.label || "未保存");
@@ -47,7 +47,8 @@
   // プッシュ＝ビルド済みイメージをレジストリに保存（ローカル名で保管）。生の編集ではなくビルド断面を積む。
   function pushImage() {
     if (draft.builtImage === null) return;
-    registryFacade.push(draft.builtImage, draft.baseImage, draft.imageName);
+    // 素質はビルド断面が凍結したもの（builtImage.baseImage）を積む＝ビルド後に乗り換えた素質を引きずらない。
+    registryFacade.push(draft.builtImage.program, draft.builtImage.baseImage, draft.imageName);
     playSE.push();
   }
 

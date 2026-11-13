@@ -27,12 +27,22 @@ import {
   baseImageFamilies,
 } from "$lib/domain";
 
+/**
+ * ビルドで凍結したイメージ＝program（ブロック）と baseImage（素質）を一体で持つ不変断面。
+ * レジストリの RegistryImage と同じ {program, baseImage} の形にし、復元・プッシュ・デプロイで
+ * 「ビルド時点の素質」まで一緒に運べるようにする（program だけ凍結すると素質が編集中に引きずられる）。
+ */
+export interface BuiltImage {
+  readonly program: Program;
+  readonly baseImage: BaseImage;
+}
+
 /** 編集中のドラフト断面。program＝Blockly からの最新、builtImage＝ビルドで凍結した断面。 */
 export interface WorkbenchDraft {
   // 編集中プログラム（Blockly を SSoT とする順方向の断面）。
   readonly program: Program;
   // ビルドで凍結したイメージ（試運転／デプロイ／プッシュの対象）。未ビルドは null。
-  readonly builtImage: Program | null;
+  readonly builtImage: BuiltImage | null;
   // 最終ビルド時刻（復元点の目印）。未ビルドは null。
   readonly builtAt: number | null;
   // カレントイメージのローカル名（push 前から付けられる）。
@@ -76,8 +86,8 @@ export const currentImage = derived(draftStore, (draft): CurrentImage => {
   const built = draft.builtImage;
   return {
     notBuilt: built === null,
-    dirty: built !== null && !areProgramsEqual(draft.program, built),
-    hash: built === null ? null : hashProgram(built),
+    dirty: built !== null && !areProgramsEqual(draft.program, built.program),
+    hash: built === null ? null : hashProgram(built.program),
   };
 });
 
@@ -98,7 +108,7 @@ export const draftLines = derived(draftStore, (draft) => flatLines(draft.program
  * 試運転が走るのは builtImage なので、実行行ハイライトはこの行割り（＝nodeIdMap と同採番）に合わせる
  * ＝編集中テキスト（draftText）ではなく走っている断面を正として光らせる。
  */
-export const builtLines = derived(draftStore, (draft) => (draft.builtImage ? flatLines(draft.builtImage) : []));
+export const builtLines = derived(draftStore, (draft) => (draft.builtImage ? flatLines(draft.builtImage.program) : []));
 
 /**
  * 編集中プログラムの擬似コード全文（エディタ編集面のシード用の読み投影）。draft.program だけの純投影。
@@ -120,7 +130,7 @@ export const baseImageCatalog: readonly BaseImageFamily[] = baseImageFamilies();
  * builtImage との突き合わせの合成だけをプレゼン側に委ねる（join store は作らない）。
  */
 export function differsFromBuilt(draft: WorkbenchDraft, image: Program | null): boolean {
-  return draft.builtImage !== null && image !== null && !areProgramsEqual(draft.builtImage, image);
+  return draft.builtImage !== null && image !== null && !areProgramsEqual(draft.builtImage.program, image);
 }
 
 /**

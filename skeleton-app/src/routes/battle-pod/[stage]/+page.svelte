@@ -370,7 +370,7 @@
           />
         {:else}
           <SandboxRail
-            image={$workbenchDraft.builtImage}
+            image={$workbenchDraft.builtImage?.program ?? null}
             {facade}
             bind:playing={sandboxPlaying}
             onActiveChange={(id) => (sandboxActiveId = id)}
