@@ -34,7 +34,7 @@ export interface Automaton {
 /**
  * 壁＝セルとセルの間の辺（境界）。隣接2セルの往来だけを塞ぎ、セル自体は通路として使える。
  * セル単位の壁ブロックだと迷路で盤面が倍々に膨らむため、辺で持つ（docs/game-rules/overview.md の「辺」定義に一致）。
- * a/b は隣接（マンハッタン距離1）前提。往来判定は対称なので格納順は問わない（wallBetween/wallSide で生成）。
+ * a/b は隣接（マンハッタン距離1）前提。往来判定は対称なので格納順は問わない（wallBetween/wallOn で生成）。
  */
 export interface WallEdge {
   readonly a: Position;

@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { applyAction } from "./engine";
 import { sensorValue } from "./sensor";
-import { wallBetween, wallSide } from "./grid";
+import { wallBetween, wallOn } from "./grid";
 import type { Automaton, BattleState, Position, WallEdge } from "./model";
 
 // --- テスト用ヘルパー ---
@@ -25,8 +25,8 @@ function row(walls: readonly WallEdge[], pos: Position, dir: Automaton["dir"]): 
 const posOf = (s: BattleState): Position => s.automatons[0].pos;
 
 describe("辺壁（WallEdge）", () => {
-  it("wallSide は指定セルの指定方向の隣接セルとの辺を作る", () => {
-    expect(wallSide({ x: 0, y: 0 }, "right")).toEqual({ a: { x: 0, y: 0 }, b: { x: 1, y: 0 } });
+  it("wallOn は指定セルの指定方向の隣接セルとの辺を作る", () => {
+    expect(wallOn({ x: 0, y: 0 }, "right")).toEqual({ a: { x: 0, y: 0 }, b: { x: 1, y: 0 } });
   });
 
   it("壁の無い辺へは前進できる", () => {
@@ -35,14 +35,14 @@ describe("辺壁（WallEdge）", () => {
   });
 
   it("前方の辺に壁があると前進できない（その場に留まる）", () => {
-    const walls = [wallSide({ x: 0, y: 0 }, "right")];
+    const walls = [wallOn({ x: 0, y: 0 }, "right")];
     const next = applyAction(row(walls, { x: 0, y: 0 }, "right"), "ally", { kind: "move" });
     expect(posOf(next)).toEqual({ x: 0, y: 0 });
   });
 
   it("壁は往来対称＝反対セル側から記述しても同じ辺を塞ぐ", () => {
     // (1,0) の左辺 ＝ (0,0) の右辺。格納順が逆でも (0,0)→(1,0) の前進を塞ぐ。
-    const walls = [wallSide({ x: 1, y: 0 }, "left")];
+    const walls = [wallOn({ x: 1, y: 0 }, "left")];
     const next = applyAction(row(walls, { x: 0, y: 0 }, "right"), "ally", { kind: "move" });
     expect(posOf(next)).toEqual({ x: 0, y: 0 });
   });

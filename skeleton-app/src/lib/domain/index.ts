@@ -45,4 +45,4 @@ export {
 
 // battle＝盤面モデルと対戦の実行。盤面の下位型や engine 純関数はドメイン内専用なので公開しない。
 export type { Automaton, AutomatonId, BattleState, BattleRun, BattleParams, Direction, Winner } from "./battle";
-export { withAllyInitialHp, resolveBattleParams, wallSide, runBattle, recordRun } from "./battle";
+export { withAllyInitialHp, resolveBattleParams, wallOn, runBattle, recordRun } from "./battle";

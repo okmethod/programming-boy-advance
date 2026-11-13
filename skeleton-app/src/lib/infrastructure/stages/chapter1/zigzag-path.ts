@@ -1,19 +1,19 @@
 import type { Stage } from "$lib/application";
-import { BRITTLE_SENTRY, TURTLOGO_V1, wallSide } from "$lib/domain";
+import { BRITTLE_SENTRY, TURTLOGO_V1, wallOn } from "$lib/domain";
 import { BRITTLE_ENEMY_LABEL, BRITTLE_ENEMY_PROGRAM } from "$lib/infrastructure/stages/chapter1/brittle-enemy";
 
 // 4x4 の盤面を九十九折りにする辺壁。各行境界を1列だけ開けて一本道にする。
 // 行0→1 は x=3 のみ開通、行1→2 は x=0 のみ、行2→3 は x=3 のみ。
 const MAZE_WALLS = [
-  wallSide({ x: 0, y: 0 }, "down"),
-  wallSide({ x: 1, y: 0 }, "down"),
-  wallSide({ x: 2, y: 0 }, "down"),
-  wallSide({ x: 1, y: 1 }, "down"),
-  wallSide({ x: 2, y: 1 }, "down"),
-  wallSide({ x: 3, y: 1 }, "down"),
-  wallSide({ x: 0, y: 2 }, "down"),
-  wallSide({ x: 1, y: 2 }, "down"),
-  wallSide({ x: 2, y: 2 }, "down"),
+  wallOn({ x: 0, y: 0 }, "down"),
+  wallOn({ x: 1, y: 0 }, "down"),
+  wallOn({ x: 2, y: 0 }, "down"),
+  wallOn({ x: 1, y: 1 }, "down"),
+  wallOn({ x: 2, y: 1 }, "down"),
+  wallOn({ x: 3, y: 1 }, "down"),
+  wallOn({ x: 0, y: 2 }, "down"),
+  wallOn({ x: 1, y: 2 }, "down"),
+  wallOn({ x: 2, y: 2 }, "down"),
 ];
 
 export const ZIGZAG_PATH_STAGE: Stage = {

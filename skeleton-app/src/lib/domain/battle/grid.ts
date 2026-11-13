@@ -32,7 +32,7 @@ export function frontCell(pos: Position, dir: Direction): Position {
 export const wallBetween = (a: Position, b: Position): WallEdge => ({ a, b });
 
 /** 指定セルの指定方向の辺に壁を作る（ステージ記述用＝「このセルの〇側に壁」）。 */
-export const wallSide = (pos: Position, dir: Direction): WallEdge => ({ a: pos, b: frontCell(pos, dir) });
+export const wallOn = (pos: Position, dir: Direction): WallEdge => ({ a: pos, b: frontCell(pos, dir) });
 
 function isInBounds(grid: Grid, p: Position): boolean {
   return p.x >= 0 && p.y >= 0 && p.x < grid.width && p.y < grid.height;

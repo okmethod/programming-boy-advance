@@ -7,7 +7,7 @@
 export type { Automaton, AutomatonId, BattleState, Direction, Winner } from "./model";
 export { withAllyInitialHp } from "./model";
 
-export { wallSide } from "./grid";
+export { wallOn } from "./grid";
 
 export type { BattleParams } from "./params";
 export { resolveBattleParams } from "./params";
