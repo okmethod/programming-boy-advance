@@ -1,8 +1,7 @@
 /**
- * バトルポッドの盤面モデル（PoC）。
+ * バトルポッドの盤面モデル（対戦状態を表す型の SSoT）。
  *
- * ドメイン層は純 TypeScript・決定的・不変。
- * Svelte / DOM / 外部データを持ち込まない。
+ * applyAction が新しい状態を返す不変データ。壁は辺（セル間）で持つ。
  * 設計の最新断面は docs/design/execution-model.md を正とする。
  */
 

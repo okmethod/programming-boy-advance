@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
-import { runBattle, recordBattle } from "./runBattle";
-import type { Automaton, BattleState } from "./battle";
+import { runBattle, recordBattle } from "./loop";
+import type { Automaton, BattleState } from "./model";
 import type { BattleParams } from "./params";
 import type { Program } from "$lib/domain/program";
 

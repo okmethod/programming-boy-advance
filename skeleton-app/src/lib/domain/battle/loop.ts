@@ -6,12 +6,12 @@
  * 対戦は決定的に進み、同入力なら必ず同結果になる。
  */
 
-import type { Automaton, AutomatonId, BattleResult, BattleState } from "./battle";
 import type { NodeId, Program, Step } from "$lib/domain/program";
+import { nodeIdMap } from "$lib/domain/program";
+import type { Automaton, AutomatonId, BattleResult, BattleState } from "./model";
 import { applyAction, advanceClock } from "./engine";
 import { BATTLE_PARAMS, type BattleParams } from "./params";
-import { run } from "./interpreter";
-import { nodeIdMap } from "$lib/domain/program";
+import { interpret } from "./interpreter";
 
 const DEFAULT_MAX_CLOCKS = 1000;
 
@@ -69,10 +69,10 @@ export function recordBattle(
   let state = initial;
   // インタプリタは read() で最新状態を参照する。逐次解決なので後手は先手の行動後を見る。
   const read = () => state;
-  // 各プログラムのノード id 表。run が yield する Step の nodeId はこの採番に従う。
+  // 各プログラムのノード id 表。interpret が yield する Step の nodeId はこの採番に従う。
   const gens: Record<AutomatonId, Generator<Step, void, unknown>> = {
-    ally: run(allyProgram, "ally", read, nodeIdMap(allyProgram)),
-    enemy: run(enemyProgram, "enemy", read, nodeIdMap(enemyProgram)),
+    ally: interpret(allyProgram, "ally", read, nodeIdMap(allyProgram)),
+    enemy: interpret(enemyProgram, "enemy", read, nodeIdMap(enemyProgram)),
   };
 
   // priority は固定値なので行動順は対戦を通じて不変。初期状態から一度だけ決める。
@@ -81,7 +81,7 @@ export function recordBattle(
   const frames: BattleState[] = [state];
 
   // 膠着（状態が変化しない）が続いたら引き分けで打ち切るための検出。
-  let prevSig = signature(state);
+  let prevSig = signatureOf(state);
   let stallCount = 0;
 
   while (state.winner === null && state.clock < maxClocks) {
@@ -103,7 +103,7 @@ export function recordBattle(
     state = { ...state, active };
     frames.push(state);
 
-    const sig = signature(state);
+    const sig = signatureOf(state);
     if (sig === prevSig) {
       if (++stallCount >= 2) break;
     } else {
@@ -133,7 +133,7 @@ export function recordRun(
 
 // 膠着検出用の状態シグネチャ（clock は含めない）。
 // BP・フリーズも含める：クールダウンやフリーズ減算を「進行」とみなし、回復途中での誤判定（早期引き分け）を防ぐ。
-function signature(state: BattleState): string {
+function signatureOf(state: BattleState): string {
   return state.automatons
     .map((e) => `${e.id}:${e.pos.x},${e.pos.y},${e.dir},${e.hp},${e.bp},${e.freezeRemaining}`)
     .join("|");
