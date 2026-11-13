@@ -6,12 +6,12 @@
  * 対戦は決定的に進み、同入力なら必ず同結果になる。
  */
 
-import type { Automaton, AutomatonId, BattleResult, BattleState } from "$lib/domain/battle/battle";
-import type { NodeId, Program, Step } from "$lib/domain/program/program";
+import type { Automaton, AutomatonId, BattleResult, BattleState } from "./battle";
+import type { NodeId, Program, Step } from "$lib/domain/program";
 import { applyAction, advanceClock } from "./engine";
 import { BATTLE_PARAMS, type BattleParams } from "./params";
-import { run } from "$lib/domain/battle/interpreter";
-import { nodeIdMap } from "$lib/domain/program/nodes";
+import { run } from "./interpreter";
+import { nodeIdMap } from "$lib/domain/program";
 
 const DEFAULT_MAX_CLOCKS = 1000;
 

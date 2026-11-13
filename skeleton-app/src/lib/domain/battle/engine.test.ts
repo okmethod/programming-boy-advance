@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
-import { applyAction, sensorValue, wallBetween, wallSide } from "$lib/domain";
-import type { Automaton, BattleState, Position, WallEdge } from "$lib/domain";
+import { applyAction, sensorValue, wallBetween, wallSide } from "./engine";
+import type { Automaton, BattleState, Position, WallEdge } from "./battle";
 
 // --- テスト用ヘルパー ---
 

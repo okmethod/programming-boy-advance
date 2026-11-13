@@ -1,8 +1,8 @@
 import { describe, it, expect } from "vitest";
 import { flatLines, nodeIdMap } from "./nodes";
-import { recordBattle } from "$lib/domain/battle/runBattle";
-import type { BattleState } from "$lib/domain/battle/battle";
-import type { Program } from "$lib/domain/program/program";
+import { recordBattle } from "$lib/domain/battle";
+import type { BattleState } from "$lib/domain/battle";
+import type { Program } from "./program";
 
 describe("flatLines / nodeIdMap", () => {
   const program: Program = [

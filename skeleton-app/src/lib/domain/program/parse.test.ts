@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { parseProgram, programToText } from "./parse";
-import { TURTLOGO_V1, TURTLOGO_V2 } from "$lib/domain/image/baseImage";
-import type { Program } from "$lib/domain/program/program";
+import { TURTLOGO_V1, TURTLOGO_V2 } from "$lib/domain/image";
+import type { Program } from "./program";
 
 describe("parseProgram / programToText", () => {
   // 制御構文・ネスト・else・while(true) 糖衣を網羅する代表プログラム。

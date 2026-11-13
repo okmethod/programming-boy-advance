@@ -11,7 +11,7 @@
  * 認識点（＝行番号を持てる唯一の場所）でここに畳む（flatLines の連番ではなく元テキスト行を指すため）。
  */
 
-import type { CommandName, Expr, Program, SensorName, Stmt } from "$lib/domain/program/program";
+import type { CommandName, Expr, Program, SensorName, Stmt } from "./program";
 import type { UsedCapabilities } from "./capabilities";
 import { flatLines } from "./nodes";
 

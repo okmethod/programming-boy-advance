@@ -4,17 +4,8 @@
  * すべて決定的な純関数。乱数・時刻・DOM に依存しない。
  */
 
-import type {
-  Automaton,
-  AutomatonId,
-  BattleState,
-  Direction,
-  Grid,
-  Position,
-  WallEdge,
-  Winner,
-} from "$lib/domain/battle/battle";
-import type { Action, CommandName, Expr, SensorName } from "$lib/domain/program/program";
+import type { Action, CommandName, Expr, SensorName } from "$lib/domain/program";
+import type { Automaton, AutomatonId, BattleState, Direction, Grid, Position, WallEdge, Winner } from "./battle";
 import { BATTLE_PARAMS, type BattleParams } from "./params";
 
 const DIR_VECTORS: Record<Direction, Position> = {

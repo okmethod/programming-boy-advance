@@ -8,19 +8,9 @@
  * - CONSUMED BY: アプリ層・インフラ層のみ。プレゼン層からの直接 import は禁止（アプリ層バレル経由）
  */
 
-export type {
-  Automaton,
-  AutomatonId,
-  BattleResult,
-  BattleState,
-  DamageLog,
-  Direction,
-  Grid,
-  Position,
-  WallEdge,
-  Winner,
-} from "./battle/battle";
-export { withAllyInitialHp } from "./battle/battle";
+// 概念ごとのサブバレルを合成してドメイン層の公開面を編む（個別ファイルには降りない）。
+
+// program＝命令木の言語モデルと操作（解析・コスト・指紋・整形）。
 export type {
   Action,
   CommandName,
@@ -31,37 +21,57 @@ export type {
   SensorName,
   Step,
   Stmt,
-} from "./program/program";
-export type { AutomatonImage } from "./image/automatonImage";
-export { imageHash } from "./image/automatonImage";
-export type { BaseImage, BaseImageFamily } from "./image/baseImage";
-export type { UsedCapabilities } from "./program/capabilities";
-
+  UsedCapabilities,
+  FlatLine,
+  ParseError,
+  ParseResult,
+} from "./program";
 export {
+  usedCapabilities,
+  programCost,
+  hashProgram,
+  areProgramsEqual,
+  flatLines,
+  nodeIdMap,
+  parseProgram,
+  programToText,
+} from "./program";
+
+// image＝ベースイメージ（素質）とオートマトンイメージ（素質×プログラム）。
+export type { AutomatonImage, BaseImage, BaseImageFamily } from "./image";
+export {
+  imageHash,
+  baseImageSupports,
+  baseImageFamilies,
+  baseImageAllowed,
+  filterBaseImageFamilies,
+  highestAllowedImage,
   TURTLOGO_V1,
   TURTLOGO_V2,
   TURTLOGO_V3,
   BRITTLE_SENTRY,
   BASE_IMAGES,
   UNKNOWN_BASE_IMAGE,
-  baseImageFamilies,
-  baseImageSupports,
-  baseImageAllowed,
-  filterBaseImageFamilies,
-  highestAllowedImage,
-} from "./image/baseImage";
+} from "./image";
 
-export { usedCapabilities } from "./program/capabilities";
-export { programCost } from "./program/cost";
-export { hashProgram, areProgramsEqual } from "./program/hash";
-export { flatLines, nodeIdMap, type FlatLine } from "./program/nodes";
-export { parseProgram, programToText, type ParseError, type ParseResult } from "./program/parse";
-
-export { run } from "./battle/interpreter";
-
-export type { BattleRun } from "./battle/runBattle";
-export { resolveBattleParams, type BattleParams } from "./battle/params";
+// battle＝盤面モデルと対戦の実行（エンジン・パラメータ・解釈・1戦走行）。
+export type {
+  Automaton,
+  AutomatonId,
+  BattleResult,
+  BattleState,
+  BattleRun,
+  BattleParams,
+  DamageLog,
+  Direction,
+  Grid,
+  Position,
+  WallEdge,
+  Winner,
+} from "./battle";
 export {
+  withAllyInitialHp,
+  resolveBattleParams,
   applyAction,
   advanceClock,
   commandToAction,
@@ -69,5 +79,8 @@ export {
   sensorValue,
   wallBetween,
   wallSide,
-} from "./battle/engine";
-export { runBattle, recordBattle, recordRun } from "./battle/runBattle";
+  run,
+  runBattle,
+  recordBattle,
+  recordRun,
+} from "./battle";

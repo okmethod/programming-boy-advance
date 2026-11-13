@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { areProgramsEqual } from "./hash";
-import type { Program } from "$lib/domain/program/program";
+import type { Program } from "./program";
 
 describe("areProgramsEqual", () => {
   it("空プログラム同士は等価", () => {

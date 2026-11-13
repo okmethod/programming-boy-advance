@@ -7,7 +7,7 @@
  * nodeIdMap と flatLines は同一の走査順を使う（＝実 Stmt を数える順が一致する）ことが不変条件。
  */
 
-import type { Expr, NodeId, Program, Stmt } from "$lib/domain/program/program";
+import type { Expr, NodeId, Program, Stmt } from "./program";
 
 // 式（クエリ）を擬似コード文字列にする。センサは B 面の実名をそのまま出す（別名化しない）。
 function exprToText(expr: Expr): string {

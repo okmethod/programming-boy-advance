@@ -1,6 +1,8 @@
 import { describe, it, expect } from "vitest";
-import { runBattle, recordBattle } from "$lib/domain";
-import type { Automaton, BattleParams, BattleState, Program } from "$lib/domain";
+import { runBattle, recordBattle } from "./runBattle";
+import type { Automaton, BattleState } from "./battle";
+import type { BattleParams } from "./params";
+import type { Program } from "$lib/domain/program";
 
 // --- テスト用ヘルパー ---
 

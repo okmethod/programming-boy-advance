@@ -9,8 +9,8 @@
  * （mdi 名は識別子であり描画依存ではない）。単価・解放スケジュールは本型の責務外（params / レベルデザイン）。
  */
 
-import type { CommandName, ControlName, Program, SensorName } from "../program/program";
-import { usedCapabilities } from "../program/capabilities";
+import type { CommandName, ControlName, Program, SensorName } from "$lib/domain/program";
+import { usedCapabilities } from "$lib/domain/program";
 
 /** 素質（系統×版）。付与する命令セットがこの素質の「できること」を定める。 */
 export interface BaseImage {
