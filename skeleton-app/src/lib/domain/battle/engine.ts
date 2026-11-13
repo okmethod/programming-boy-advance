@@ -13,8 +13,8 @@ import type {
   Position,
   WallEdge,
   Winner,
-} from "$lib/domain/models/battle";
-import type { Action, CommandName, Expr, SensorName } from "$lib/domain/models/program";
+} from "$lib/domain/battle/battle";
+import type { Action, CommandName, Expr, SensorName } from "$lib/domain/program/program";
 import { BATTLE_PARAMS, type BattleParams } from "./params";
 
 const DIR_VECTORS: Record<Direction, Position> = {

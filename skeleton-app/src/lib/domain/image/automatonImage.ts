@@ -7,8 +7,8 @@
  * レジストリ／デプロイ／ビルド断面は、これにユースケース固有メタ（タグ・HP・時刻等）を足した特化形。
  */
 
-import type { Program } from "$lib/domain/models/program";
-import type { BaseImage } from "$lib/domain/baseimage/baseImage";
+import type { Program } from "$lib/domain/program/program";
+import type { BaseImage } from "$lib/domain/image/baseImage";
 import { hashProgram } from "$lib/domain/program/hash";
 
 /** オートマトンイメージ＝素質とプログラムの不変ペア（ビルド済みの最小実体）。 */

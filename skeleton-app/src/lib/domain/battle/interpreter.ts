@@ -5,8 +5,8 @@
  * センサ評価はその時点の最新状態を read() から読む＝ロックステップで公平に判断できる。
  */
 
-import type { AutomatonId, BattleState } from "$lib/domain/models/battle";
-import type { NodeId, Program, Step, Stmt } from "$lib/domain/models/program";
+import type { AutomatonId, BattleState } from "$lib/domain/battle/battle";
+import type { NodeId, Program, Step, Stmt } from "$lib/domain/program/program";
 import { commandToAction, exprValue } from "$lib/domain/battle/engine";
 
 // yield を伴わないループ（空の while(true) 等）を検出するための上限。

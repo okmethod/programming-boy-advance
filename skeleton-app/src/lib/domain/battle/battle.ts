@@ -6,7 +6,7 @@
  * 設計の最新断面は docs/design/execution-model.md を正とする。
  */
 
-import type { NodeId } from "./program";
+import type { NodeId } from "../program/program";
 
 export type Direction = "up" | "down" | "left" | "right";
 

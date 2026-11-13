@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { programCost } from "./cost";
-import type { Program } from "$lib/domain/models/program";
+import type { Program } from "$lib/domain/program/program";
 
 describe("programCost", () => {
   it("空プログラムは 0", () => {

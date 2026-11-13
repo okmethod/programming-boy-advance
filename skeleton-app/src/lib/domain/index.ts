@@ -19,12 +19,12 @@ export type {
   Position,
   WallEdge,
   Winner,
-} from "./models/battle";
-export { withAllyInitialHp } from "./models/battle";
-export type { Action, CommandName, Expr, NodeId, Program, SensorName, Step, Stmt } from "./models/program";
+} from "./battle/battle";
+export { withAllyInitialHp } from "./battle/battle";
+export type { Action, CommandName, Expr, NodeId, Program, SensorName, Step, Stmt } from "./program/program";
 export type { AutomatonImage } from "./image/automatonImage";
 export { imageHash } from "./image/automatonImage";
-export type { BaseImage, BaseImageFamily, ControlName } from "./baseimage/baseImage";
+export type { BaseImage, BaseImageFamily, ControlName } from "./image/baseImage";
 export type { UsedCapabilities } from "./program/capabilities";
 
 export {
@@ -39,7 +39,7 @@ export {
   baseImageAllowed,
   filterBaseImageFamilies,
   highestAllowedImage,
-} from "./baseimage/baseImage";
+} from "./image/baseImage";
 
 export { usedCapabilities } from "./program/capabilities";
 export { programCost } from "./program/cost";
@@ -47,7 +47,7 @@ export { hashProgram, areProgramsEqual } from "./program/hash";
 export { flatLines, nodeIdMap, type FlatLine } from "./program/nodes";
 export { parseProgram, programToText, type ParseError, type ParseResult } from "./program/parse";
 
-export { run } from "./interpreter/run";
+export { run } from "./battle/interpreter";
 
 export type { BattleRun } from "./battle/runBattle";
 export { resolveBattleParams, type BattleParams } from "./battle/params";

@@ -6,7 +6,7 @@
  * ローカル image ID とも別物）とは異なる＝「ダイジェスト≠ハッシュ」。名前＝タグ（可動ラベル）も併せて明かす。
  */
 
-import type { Program } from "$lib/domain/models/program";
+import type { Program } from "$lib/domain/program/program";
 
 /**
  * 命令木の内容等価（content-addressable な一致判定）。中身が同じなら true。

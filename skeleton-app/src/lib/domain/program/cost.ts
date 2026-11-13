@@ -7,7 +7,7 @@
  * CP は戦闘には登場しない作成予算なので BattleState には持たせず、Program から導く。
  */
 
-import type { Program, Stmt } from "$lib/domain/models/program";
+import type { Program, Stmt } from "$lib/domain/program/program";
 
 /** プログラム全体の CP 消費量（ブロック総数）を返す。 */
 export const programCost = (program: Program): number => program.reduce((sum, stmt) => sum + stmtCost(stmt), 0);

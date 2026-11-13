@@ -9,7 +9,7 @@
  * （mdi 名は識別子であり描画依存ではない）。単価・解放スケジュールは本型の責務外（params / レベルデザイン）。
  */
 
-import type { CommandName, Program, SensorName } from "../models/program";
+import type { CommandName, Program, SensorName } from "../program/program";
 import { usedCapabilities } from "../program/capabilities";
 
 /** 素質が付与しうる制御構文（ドメインの Stmt.kind に対応。if は else 有無を含む）。 */
