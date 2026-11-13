@@ -1,5 +1,5 @@
 /**
- * 命令木（プログラム）の言語モデル（PoC）。
+ * 命令木（プログラム）の言語モデル。
  *
  * ブロックUI はこの命令木を出力する想定。JS 文字列ではない。
  * 文（Stmt）と式（Expr）の二層構造。CQS に沿い、コマンドは状態を変え、クエリ（式）は値を返す。
@@ -9,18 +9,12 @@
 /** 命令木のノード識別子（プログラム表示の実行ハイライト用）。構造上の pre-order 連番。 */
 export type NodeId = number;
 
-// brittleAttack＝敵専用の暴発コマンド。前方に相手がいる時だけ発動し自分が自壊する。
-// プレイヤー素質には付与しないため player のツールボックス/ブロックには現れない（敵プログラム専用）。
 export type CommandName = "stepForward" | "turnRight" | "turnLeft" | "attack" | "loadAttack" | "brittleAttack" | "wait";
 
 export type SensorName = "wallAhead" | "enemyAhead";
 
-// 制御構文の名前（CQS のフロー層）。素質はこの集合で「どの制御を解放するか」を定める。
-// command/sensor と同じ言語語彙なのでここ（program 言語モデル）に置く（素質はこれを参照する側）。
 export type ControlName = "if" | "repeat" | "while";
 
-// 式（クエリ）＝状態への問い合わせ（CQS の query 層）。値を返し状態は変えない。
-// sensor=センサ読み取り、literal=真偽の定数（「ずっとくりかえす」= while(true) の糖衣で使う）。
 export type Expr =
   { readonly kind: "sensor"; readonly sensor: SensorName } | { readonly kind: "literal"; readonly value: boolean };
 
@@ -32,8 +26,7 @@ export type Stmt =
 
 export type Program = readonly Stmt[];
 
-// --- アクション（インタプリタが1クロックに1つ yield する最小の効果単位） ---
-
+/** インタプリタが1クロックに1つ yield する最小の効果単位。 */
 export type Action =
   | { readonly kind: "move" }
   | { readonly kind: "turn"; readonly rotation: "left" | "right" }

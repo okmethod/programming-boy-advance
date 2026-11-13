@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
-import { programCost } from "./cost";
-import type { Program } from "./program";
+import { programCost, areProgramsEqual } from "./derive";
+import type { Program } from "./model";
 
 describe("programCost", () => {
   it("空プログラムは 0", () => {
@@ -48,5 +48,41 @@ describe("programCost", () => {
     ];
     // repeat(1) + if(1) + attack(1) + stepForward(1) = 4
     expect(programCost(p)).toBe(4);
+  });
+});
+
+describe("areProgramsEqual", () => {
+  it("空プログラム同士は等価", () => {
+    expect(areProgramsEqual([], [])).toBe(true);
+  });
+
+  it("同じ中身は等価", () => {
+    const a: Program = [
+      { kind: "call", cmd: "stepForward" },
+      { kind: "call", cmd: "attack" },
+    ];
+    const b: Program = [
+      { kind: "call", cmd: "stepForward" },
+      { kind: "call", cmd: "attack" },
+    ];
+    expect(areProgramsEqual(a, b)).toBe(true);
+  });
+
+  it("順序が違えば非等価（命令木は順序を持つ）", () => {
+    const a: Program = [
+      { kind: "call", cmd: "stepForward" },
+      { kind: "call", cmd: "attack" },
+    ];
+    const b: Program = [
+      { kind: "call", cmd: "attack" },
+      { kind: "call", cmd: "stepForward" },
+    ];
+    expect(areProgramsEqual(a, b)).toBe(false);
+  });
+
+  it("ネスト内の差分も拾う", () => {
+    const a: Program = [{ kind: "repeat", count: 2, body: [{ kind: "call", cmd: "attack" }] }];
+    const b: Program = [{ kind: "repeat", count: 3, body: [{ kind: "call", cmd: "attack" }] }];
+    expect(areProgramsEqual(a, b)).toBe(false);
   });
 });

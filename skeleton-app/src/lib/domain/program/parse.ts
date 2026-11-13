@@ -8,12 +8,12 @@
  *
  * 文法検証に加え、素質（granted）を渡すと「文法上妥当だが付与対象外の命令」を行つきで弾く。
  * ブロック編集ではツールボックスが構造的にこれを防ぐが、テキスト直接編集には素質ガードの穴があるため、
- * 認識点（＝行番号を持てる唯一の場所）でここに畳む（flatLines の連番ではなく元テキスト行を指すため）。
+ * テキストが元の行番号を持つ唯一の認識点なので、文法検査と同じ場所で併せて行う（flatLines の連番ではなく元テキスト行を指せる）。
  */
 
-import type { CommandName, Expr, Program, SensorName, Stmt } from "./program";
-import type { UsedCapabilities } from "./capabilities";
-import { flatLines } from "./nodes";
+import type { CommandName, Expr, Program, SensorName, Stmt } from "./model";
+import type { UsedCapabilities } from "./derive";
+import { flatLines } from "./linearize";
 
 /**
  * パースが弾いた行。line は 1 始まりの元テキスト行番号（空行を詰めず元位置を指す）。
@@ -59,20 +59,19 @@ interface SourceLine {
 
 /**
  * 擬似コードテキストを Program にパースする。エラーが 1 つでもあれば ok:false。
- * granted（素質の付与セット）を渡すと、付与対象外の命令も行つきエラーとして同じ errors に畳む
+ * granted（素質の付与セット）を渡すと、付与対象外の命令も行つきエラーとして同じ errors に積む
  * （構文エラーと同列＝ビルド不可）。省略時は文法だけを見る（round-trip・ブロック編集は無影響）。
  */
 export const parseProgram = (text: string, granted?: UsedCapabilities): ParseResult => {
   const errors: ParseError[] = [];
   const lines: SourceLine[] = [];
 
-  // 構文エラー（文法が壊れている＝ビルド不可）。capability エラーと kind で区別し表示側の色分けの根拠にする。
   const addSyntax = (line: number, message: string) => {
     errors.push({ line, message, kind: "syntax" });
   };
 
   // 素質（granted）が与えられ、かつ pool に name が無ければ「この素質では使えない」エラーを行つきで push する。
-  // granted 省略時は pool が undefined になり素通し＝従来の文法検証だけになる。category は命令の分類（Command/Sensor/Control）。
+  // pool が undefined（granted 省略）なら素通し。category は命令の分類（Command/Sensor/Control）。
   const denyIfUngranted = <T extends string>(
     pool: readonly T[] | undefined,
     name: T,

@@ -1,13 +1,14 @@
 /**
- * 命令木のノード識別（実行ハイライトの土台）。
+ * 命令木の線形化（実行ハイライトの土台）。
  *
  * 各 Stmt に pre-order（親→子、子リストは body / then → else の順）で連番 NodeId を振る。
- * インタプリタ（run）とプログラム表示（ProgramViewer）が同じ採番を共有することで、
+ * nodeIdMap（Stmt→id の対応表）と flatLines（表示用の行列）を同一の走査順で導く。
+ * インタプリタ（run）とプログラム表示（ProgramViewer）がこの採番を共有することで、
  * 「今どのノードを実行中か」を id 1 つで突き合わせられる。
- * nodeIdMap と flatLines は同一の走査順を使う（＝実 Stmt を数える順が一致する）ことが不変条件。
+ * 両者が同じ走査順を使う（＝実 Stmt を数える順が一致する）ことが不変条件。
  */
 
-import type { Expr, NodeId, Program, Stmt } from "./program";
+import type { Expr, NodeId, Program, Stmt } from "./model";
 
 // 式（クエリ）を擬似コード文字列にする。センサは B 面の実名をそのまま出す（別名化しない）。
 function exprToText(expr: Expr): string {
