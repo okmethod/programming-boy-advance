@@ -9,19 +9,17 @@
  */
 
 import { get, readonly, writable } from "svelte/store";
-import type { BaseImage, Program } from "$lib/domain";
-import { hashProgram, areProgramsEqual } from "$lib/domain";
+import type { AutomatonImage, Program } from "$lib/domain";
+import { areProgramsEqual } from "$lib/domain";
 import { ALLY_PRESETS } from "./presets";
 
-/** レジストリに並ぶオートマトンイメージ（ビルド済みの保管単位）。 */
-export interface RegistryImage {
+/**
+ * レジストリに並ぶ保管単位＝オートマトンイメージ（program+baseImage）にレジストリ固有メタを足した特化形。
+ * baseImage は永続化時に参照（imageName×version）へ落とし、ロードでカタログから復元する。
+ */
+export interface RegistryImage extends AutomatonImage {
   readonly id: string;
   readonly label: string;
-  readonly program: Program;
-  // 中身の指紋（A面に名前と並べて見せる短いハッシュ）。name＝タグ、hash＝中身の識別。
-  readonly hash: string;
-  // 土台にした素質（系統×版）。永続化時は参照（imageName×version）に落とし、ロードでカタログから復元する。
-  readonly baseImage: BaseImage;
   // お手本（初期シード・読み取り専用）か、ユーザがプッシュした手持ちか。
   readonly source: "preset" | "user";
   // プッシュ日時（手持ちのみ）。お手本は null。版メタデータとして一覧に出す。
@@ -34,7 +32,6 @@ function seedImages(): RegistryImage[] {
     id: `preset:${key}`,
     label: preset.label,
     program: preset.program,
-    hash: hashProgram(preset.program),
     baseImage: preset.baseImage,
     source: "preset",
     pushedAt: null,

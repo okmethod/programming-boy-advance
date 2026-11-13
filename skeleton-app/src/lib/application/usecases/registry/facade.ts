@@ -40,13 +40,12 @@ function resolveBaseImage(ref: PersistedImage["baseRef"]): BaseImage {
   );
 }
 
-// 永続化 DTO → 表示用 RegistryImage。baseRef を実体へ、hash は program から再計算、source は user 固定。
+// 永続化 DTO → 表示用 RegistryImage。baseRef を実体へ、source は user 固定（指紋は表示時に imageHash で算出）。
 function hydrate(dto: PersistedImage): RegistryImage {
   return {
     id: dto.id,
     label: dto.label,
     program: dto.program,
-    hash: hashProgram(dto.program),
     baseImage: resolveBaseImage(dto.baseRef),
     source: "user",
     pushedAt: dto.pushedAt,
@@ -87,7 +86,6 @@ export const createRegistryFacade = (repo: RegistryRepository): RegistryFacade =
       id: `user:${n}`,
       label: name,
       program,
-      hash: hashProgram(program),
       baseImage,
       source: "user",
       pushedAt: Date.now(),

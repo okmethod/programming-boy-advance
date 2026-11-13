@@ -11,21 +11,18 @@
  */
 
 import { derived, get, readonly, writable } from "svelte/store";
-import { recordRun, resolveBattleParams, hashProgram, flatLines, withAllyInitialHp } from "$lib/domain";
-import type { BaseImage, BattleParams, BattleRun, FlatLine, Program } from "$lib/domain";
+import { recordRun, resolveBattleParams, hashProgram, imageHash, flatLines, withAllyInitialHp } from "$lib/domain";
+import type { AutomatonImage, BattleParams, BattleRun, FlatLine } from "$lib/domain";
 import type { Stage } from "$lib/application/ports/stageRepository";
 import { buildActionLog, type ActionLogRow } from "./actionLog";
 
 /**
- * デプロイ済みイメージ＝出撃した ally の実体。
- * プログラム・表示名・素質・出撃時刻は一体で、別々に欠けることはない（未デプロイは集合体ごと null）。
+ * デプロイ済みイメージ＝出撃した ally の実体＝オートマトンイメージ（program+baseImage）に出撃メタを足した特化形。
+ * プログラム・素質・表示名・出撃時刻は一体で、別々に欠けることはない（未デプロイは集合体ごと null）。
  */
-export interface DeployedImage {
-  readonly program: Program;
+export interface DeployedImage extends AutomatonImage {
   // 表示名（タグ）。観戦側イメージタイルに出す。
   readonly name: string;
-  // 土台にした素質（系統×版）。イメージタイルの表示土台。
-  readonly baseImage: BaseImage;
   // 初期 HP＝デプロイ時にメモリ総量（stage.memoryTotal）から配分した個体値。ステージ固有値ではなく出撃ごとに決まる。
   readonly allyHp: number;
   // 出撃時刻（復元点の目印・ドリフト表示の起点）。
@@ -96,7 +93,7 @@ export const enemyLog = derived([battleRun, sessionStore], ([run, session]): Act
 
 /** ally（デプロイ済み）イメージの指紋。未デプロイは null。 */
 export const deployedHash = derived(sessionStore, (session): string | null =>
-  session.deployed === null ? null : hashProgram(session.deployed.program),
+  session.deployed === null ? null : imageHash(session.deployed),
 );
 
 /** enemy（ステージ固定）イメージの指紋。未セッションは null。 */

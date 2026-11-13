@@ -1,6 +1,6 @@
 import { beforeEach, describe, it, expect } from "vitest";
 import { get } from "svelte/store";
-import { UNKNOWN_BASE_IMAGE, TURTLOGO_V1, hashProgram, type Program } from "$lib/domain";
+import { UNKNOWN_BASE_IMAGE, TURTLOGO_V1, hashProgram, imageHash, type Program } from "$lib/domain";
 import type { PersistedRegistry, RegistryRepository } from "$lib/application";
 import { createRegistryFacade } from "./facade";
 import { registryImages, storeWriter } from "./store";
@@ -106,7 +106,7 @@ describe("registry facade", () => {
 
     const restored = get(registryImages).at(-1)!;
     expect(restored.baseImage).toEqual(UNKNOWN_BASE_IMAGE); // 未知版は UNKNOWN に落ちる
-    expect(restored.hash).toBe(hashProgram(PROG_B)); // program から再計算
+    expect(imageHash(restored)).toBe(hashProgram(PROG_B)); // 指紋は program から算出（格納しない）
     expect(restored.source).toBe("user");
 
     // 以降の push は復元した seq の続きから採番される。

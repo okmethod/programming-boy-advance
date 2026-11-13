@@ -10,6 +10,7 @@
     workbenchDraft,
     currentImage,
     imageOf,
+    imageHash,
     type RegistryImage,
     type Program,
   } from "$lib/application";
@@ -130,7 +131,7 @@
         <li class="flex h-12 items-center justify-between gap-3 rounded border border-surface-200 px-3">
           <!-- 並び＝ハッシュ（中身の指紋）／素質（土台）／名前（タグ）／時刻 or sample。 -->
           <div class="flex min-w-0 items-center gap-2">
-            <span class="font-mono text-xs opacity-60">{image.hash}</span>
+            <span class="font-mono text-xs opacity-60">{imageHash(image)}</span>
             <BaseImageChip base={image.baseImage} cRoot="shrink-0 text-xs text-surface-500" />
             {#if renamingId === image.id}
               <!-- インライン編集：Enter/blur で確定、Escape で取消。 -->

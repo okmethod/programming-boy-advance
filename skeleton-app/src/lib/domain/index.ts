@@ -22,6 +22,8 @@ export type {
 } from "./models/battle";
 export { withAllyInitialHp } from "./models/battle";
 export type { Action, CommandName, Expr, NodeId, Program, SensorName, Step, Stmt } from "./models/program";
+export type { AutomatonImage } from "./image/automatonImage";
+export { imageHash } from "./image/automatonImage";
 export type { BaseImage, BaseImageFamily, ControlName } from "./baseimage/baseImage";
 export type { UsedCapabilities } from "./program/capabilities";
 

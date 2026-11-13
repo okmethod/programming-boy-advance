@@ -16,10 +16,10 @@
  */
 
 import { derived, get, readonly, writable } from "svelte/store";
-import type { BaseImage, BaseImageFamily, Program } from "$lib/domain";
+import type { AutomatonImage, BaseImage, BaseImageFamily, Program } from "$lib/domain";
 import {
   TURTLOGO_V2,
-  hashProgram,
+  imageHash,
   areProgramsEqual,
   programCost,
   flatLines,
@@ -27,22 +27,13 @@ import {
   baseImageFamilies,
 } from "$lib/domain";
 
-/**
- * ビルドで凍結したイメージ＝program（ブロック）と baseImage（素質）を一体で持つ不変断面。
- * レジストリの RegistryImage と同じ {program, baseImage} の形にし、復元・プッシュ・デプロイで
- * 「ビルド時点の素質」まで一緒に運べるようにする（program だけ凍結すると素質が編集中に引きずられる）。
- */
-export interface BuiltImage {
-  readonly program: Program;
-  readonly baseImage: BaseImage;
-}
-
 /** 編集中のドラフト断面。program＝Blockly からの最新、builtImage＝ビルドで凍結した断面。 */
 export interface WorkbenchDraft {
   // 編集中プログラム（Blockly を SSoT とする順方向の断面）。
   readonly program: Program;
-  // ビルドで凍結したイメージ（試運転／デプロイ／プッシュの対象）。未ビルドは null。
-  readonly builtImage: BuiltImage | null;
+  // ビルドで凍結したオートマトンイメージ（試運転／デプロイ／プッシュの対象）。未ビルドは null。
+  // program だけでなく baseImage（素質）も一体で凍結する＝ビルド後に素質を乗り換えても断面を保つ。
+  readonly builtImage: AutomatonImage | null;
   // 最終ビルド時刻（復元点の目印）。未ビルドは null。
   readonly builtAt: number | null;
   // カレントイメージのローカル名（push 前から付けられる）。
@@ -87,7 +78,7 @@ export const currentImage = derived(draftStore, (draft): CurrentImage => {
   return {
     notBuilt: built === null,
     dirty: built !== null && !areProgramsEqual(draft.program, built.program),
-    hash: built === null ? null : hashProgram(built.program),
+    hash: built === null ? null : imageHash(built),
   };
 });
 

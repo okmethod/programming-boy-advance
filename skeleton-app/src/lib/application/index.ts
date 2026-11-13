@@ -22,6 +22,7 @@ export type {
   ControlName,
   NodeId,
   FlatLine,
+  AutomatonImage,
   BaseImage,
   BaseImageFamily,
   BattleState,
@@ -32,6 +33,7 @@ export type {
   ParseError,
   ParseResult,
 } from "$lib/domain";
+export { imageHash } from "$lib/domain";
 
 export { createBattleFacade } from "./usecases/battle/facade";
 export type { BattleFacade } from "./usecases/battle/facade";
