@@ -11,7 +11,7 @@
  */
 
 import { derived, get, readonly, writable } from "svelte/store";
-import { recordRun, resolveBattleParams, imageHash, flatLines, withAllyInitialHp } from "$lib/domain";
+import { runBattle, resolveBattleParams, imageHash, flatLines, withAllyInitialHp } from "$lib/domain";
 import type { AutomatonImage, BattleParams, BattleRun, FlatLine } from "$lib/domain";
 import type { Stage } from "$lib/application/ports/stageRepository";
 import { buildActionLog, type ActionLogRow } from "./actionLog";
@@ -72,7 +72,7 @@ export const battleRun = derived([sessionStore, battleParams], ([session, params
   if (session.stage === null || session.deployed === null) return null;
   // ally の初期 HP はステージ固有値ではなく配分の個体値＝初期盤面へデプロイ値を差し込んでから回す。
   const initial = withAllyInitialHp(session.stage.initial, session.deployed.allyHp);
-  return recordRun(initial, session.deployed.program, session.stage.enemy, { params });
+  return runBattle(initial, session.deployed.program, session.stage.enemy, { params });
 });
 
 /** ally（デプロイ済み）の擬似コード行＝ProgramViewer に渡す View Model。 */

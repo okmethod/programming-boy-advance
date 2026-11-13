@@ -1,7 +1,7 @@
 /**
  * 対戦ループ：自キャラ（Ally）と敵キャラ（Enemy）のプログラムを共通クロックで逐次実行する。
  *
- * 各クロックで、行動順（イニシアチブ）に従い1体ずつ「読む→1アクション適用」を解決する。
+ * 各クロックで、行動順（priority の高い順）に従い1体ずつ「読む→1アクション適用」を解決する。
  * 後手は先手の行動を反映した最新状態を見て判断するため、同マス同時侵入の矛盾が起きない。
  * 対戦は決定的に進み、同入力なら必ず同結果になる。
  */
@@ -15,13 +15,6 @@ import { interpret } from "./interpreter";
 
 const DEFAULT_MAX_CLOCKS = 1000;
 
-// 行動順（イニシアチブ）：priority の高いオートマトンから動く。
-// priority はオートマトンが持つ固定値のため、対戦を通じて不変。
-// 同 priority は定義順（Array.sort の安定性）で決まる。
-function turnOrder(automatons: readonly Automaton[]): readonly AutomatonId[] {
-  return [...automatons].sort((a, b) => b.priority - a.priority).map((e) => e.id);
-}
-
 /** 記録された一戦＝観戦フレーム列と、そこから導いた結果。観戦・リプレイの読み元になる。 */
 export interface BattleRun {
   // 各クロックの状態列（初期状態を含む）。
@@ -29,37 +22,36 @@ export interface BattleRun {
   readonly result: BattleResult;
 }
 
-/**
- * フレーム列から対戦結果（勝者・クロック数・最終状態）を導く。
- *
- * 対戦は決定的なので結果は最終フレームから一意に定まる＝観戦フレームを持っていれば対戦を二度回す必要はない。
- */
+// 行動順：priority の高いオートマトンから動く。
+// priority はオートマトンが持つ固定値のため、対戦を通じて不変。
+const orderOfPriority = (automatons: readonly Automaton[]): readonly AutomatonId[] =>
+  [...automatons].sort((a, b) => b.priority - a.priority).map((e) => e.id);
+
+// フレーム列から対戦結果（勝者・クロック数・最終状態）を導く。
+// 対戦は決定的なので結果は最終フレームから一意に定まる。
 const resultOf = (frames: readonly BattleState[]): BattleResult => {
   const finalState = frames[frames.length - 1];
   return { winner: finalState.winner ?? "draw", clocks: finalState.clock, finalState };
 };
 
-/** 対戦を最後まで実行し、結果（勝者・クロック数・最終状態）を返す。 */
+// 膠着検出用の状態シグネチャ（clock は含めない）。
+// BP・フリーズも含める：クールダウンやフリーズ減算を「進行」とみなし、回復途中での誤判定（早期引き分け）を防ぐ。
+const signatureOf = (state: BattleState): string =>
+  state.automatons.map((e) => `${e.id}:${e.pos.x},${e.pos.y},${e.dir},${e.hp},${e.bp},${e.freezeRemaining}`).join("|");
+
+/**
+ * 対戦を実行し、観戦フレーム列と結果（BattleRun）をまとめて返す。
+ *
+ * 各クロックで行動順に1体ずつ「読む→1アクション適用」を解決してフレーム列を積み、結果を導く。
+ * 決定的なので同入力なら常に同じ BattleRun。結果だけ欲しければ .result を見る（二度回さない）。
+ * ステージ対戦・試運転とも、この1本を入力（盤面・プログラム・オプション）だけ替えて呼ぶ。
+ */
 export function runBattle(
   initial: BattleState,
   allyProgram: Program,
   enemyProgram: Program,
-  options?: { maxClocks?: number; params?: BattleParams },
-): BattleResult {
-  return resultOf(recordBattle(initial, allyProgram, enemyProgram, options));
-}
-
-/**
- * 対戦を実行し、各クロックの状態列（初期状態を含む）を返す。観戦・リプレイ用。
- *
- * 決定的なので、同じ入力なら常に同じフレーム列になる。
- */
-export function recordBattle(
-  initial: BattleState,
-  allyProgram: Program,
-  enemyProgram: Program,
   options?: { maxClocks?: number; params?: BattleParams; ignoreWinner?: boolean },
-): readonly BattleState[] {
+): BattleRun {
   const maxClocks = options?.maxClocks ?? DEFAULT_MAX_CLOCKS;
   const params = options?.params ?? BATTLE_PARAMS;
   // 試運転（サンドボックス）用：勝敗で打ち切らず、停止条件を膠着/最大クロックだけに委ねる。
@@ -76,7 +68,7 @@ export function recordBattle(
   };
 
   // priority は固定値なので行動順は対戦を通じて不変。初期状態から一度だけ決める。
-  const order = turnOrder(initial.automatons);
+  const order = orderOfPriority(initial.automatons);
 
   const frames: BattleState[] = [state];
 
@@ -112,29 +104,5 @@ export function recordBattle(
     }
   }
 
-  return frames;
-}
-
-/**
- * 対戦を実行し、観戦フレーム列と結果をまとめて返す。
- *
- * recordBattle（フレーム）と runBattle（結果）の両方を一度の実行で束ねる＝対戦を二度回さない。
- * ステージ対戦・試運転とも、この1本を入力（盤面・プログラム・オプション）だけ替えて呼ぶ。
- */
-export function recordRun(
-  initial: BattleState,
-  allyProgram: Program,
-  enemyProgram: Program,
-  options?: { maxClocks?: number; params?: BattleParams; ignoreWinner?: boolean },
-): BattleRun {
-  const frames = recordBattle(initial, allyProgram, enemyProgram, options);
   return { frames, result: resultOf(frames) };
-}
-
-// 膠着検出用の状態シグネチャ（clock は含めない）。
-// BP・フリーズも含める：クールダウンやフリーズ減算を「進行」とみなし、回復途中での誤判定（早期引き分け）を防ぐ。
-function signatureOf(state: BattleState): string {
-  return state.automatons
-    .map((e) => `${e.id}:${e.pos.x},${e.pos.y},${e.dir},${e.hp},${e.bp},${e.freezeRemaining}`)
-    .join("|");
 }

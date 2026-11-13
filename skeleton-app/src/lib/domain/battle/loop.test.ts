@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { runBattle, recordBattle } from "./loop";
+import { runBattle } from "./loop";
 import type { Automaton, BattleState } from "./model";
 import type { BattleParams } from "./params";
 import type { Program } from "$lib/domain/program";
@@ -56,15 +56,15 @@ const NAIVE: Program = [{ kind: "repeat", count: 100, body: [{ kind: "call", cmd
 
 describe("runBattle（逐次実行・プレイヤー先手）", () => {
   it("決定的：同じ入力なら必ず同じ結果になる", () => {
-    const a = runBattle(corridor(6, 3), COUNTER, CHARGER);
-    const b = runBattle(corridor(6, 3), COUNTER, CHARGER);
+    const { result: a } = runBattle(corridor(6, 3), COUNTER, CHARGER);
+    const { result: b } = runBattle(corridor(6, 3), COUNTER, CHARGER);
     expect(a.winner).toBe(b.winner);
     expect(a.clocks).toBe(b.clocks);
     expect(a.finalState.logs).toEqual(b.finalState.logs);
   });
 
   it("敵の動きを読んで対抗すると勝てる（COUNTER が CHARGER を倒す）", () => {
-    const result = runBattle(corridor(6, 3), COUNTER, CHARGER);
+    const { result } = runBattle(corridor(6, 3), COUNTER, CHARGER);
     expect(result.winner).toBe("ally");
     const enemy = result.finalState.automatons.find((e) => e.id === "enemy");
     expect(enemy?.hp).toBeLessThanOrEqual(0);
@@ -73,19 +73,19 @@ describe("runBattle（逐次実行・プレイヤー先手）", () => {
   it("正面衝突の初期距離が偶数でも勝てる（逐次解決で隣接が成立する）", () => {
     // 幅7・敵 x=6＝距離6（偶数）。同時適用だと中央マスの奪い合いで膠着→引き分けになっていたケース。
     // 逐次解決では先手 ally が中央へ進み、後手 enemy は埋まったマスへ進めず隣接が成立して交戦できる。
-    const result = runBattle(corridor(7, 6), COUNTER, CHARGER);
+    const { result } = runBattle(corridor(7, 6), COUNTER, CHARGER);
     expect(result.winner).toBe("ally");
   });
 
   it("素朴に突進するだけだと勝てない（NAIVE vs CHARGER は膠着で引き分け）", () => {
-    const result = runBattle(corridor(6, 3), NAIVE, CHARGER);
+    const { result } = runBattle(corridor(6, 3), NAIVE, CHARGER);
     expect(result.winner).toBe("draw");
     // 膠着を検出して maxClocks に達する前に打ち切れている
     expect(result.clocks).toBeLessThan(1000);
   });
 
   it("移動チュートリアル：動かない敵に近づいて撃破できる", () => {
-    const result = runBattle(corridor(6, 4, 3, 2), COUNTER, DUMMY);
+    const { result } = runBattle(corridor(6, 4, 3, 2), COUNTER, DUMMY);
     expect(result.winner).toBe("ally");
   });
 });
@@ -106,7 +106,7 @@ describe("試運転（ignoreWinner：勝敗で打ち切らない）", () => {
   }
 
   it("敵不在でも即決着せず、ally が前進して盤を進む", () => {
-    const frames = recordBattle(allyOnly(5), NAIVE, [], { ignoreWinner: true });
+    const { frames } = runBattle(allyOnly(5), NAIVE, [], { ignoreWinner: true });
     // 決着で打ち切られていない（winner はどのフレームでも付かない）。
     expect(frames.every((f) => f.winner === null)).toBe(true);
     // 右端(x=4)まで前進できている＝1クロックで止まっていない。
@@ -131,8 +131,8 @@ describe("行動順（priority）", () => {
   }
 
   it("priority の高い方が先に行動する（同時攻撃は先手が勝つ）", () => {
-    expect(runBattle(duel(1, 0), ATTACK, ATTACK).winner).toBe("ally");
-    expect(runBattle(duel(0, 1), ATTACK, ATTACK).winner).toBe("enemy");
+    expect(runBattle(duel(1, 0), ATTACK, ATTACK).result.winner).toBe("ally");
+    expect(runBattle(duel(0, 1), ATTACK, ATTACK).result.winner).toBe("enemy");
   });
 });
 
@@ -164,13 +164,13 @@ describe("BP（負荷攻撃・過負荷フリーズ）", () => {
   }
 
   it("負荷攻撃を受けると過負荷フリーズに陥る", () => {
-    const frames = recordBattle(adjacent(), DDOS, DUMMY, { params });
+    const { frames } = runBattle(adjacent(), DDOS, DUMMY, { params });
     const frozen = frames.some((f) => (f.automatons.find((e) => e.id === "enemy")?.freezeRemaining ?? 0) > 0);
     expect(frozen).toBe(true);
   });
 
   it("負荷攻撃は HP を削らない（BP だけでは撃破できず引き分け）", () => {
-    const result = runBattle(adjacent(), DDOS, DUMMY, { params });
+    const { result } = runBattle(adjacent(), DDOS, DUMMY, { params });
     expect(result.winner).toBe("draw");
     const enemy = result.finalState.automatons.find((e) => e.id === "enemy");
     expect(enemy?.hp).toBe(3);
@@ -204,7 +204,7 @@ describe("センサ（wallAhead）", () => {
       },
     ];
     // 1手目: 前方(2,0)は道 → 前進して x=2。2手目: 前方(3,0)は場外=壁 → 旋回して向きが down に。
-    const result = runBattle(state, program, DUMMY, { maxClocks: 10 });
+    const { result } = runBattle(state, program, DUMMY, { maxClocks: 10 });
     const ally = result.finalState.automatons.find((e) => e.id === "ally");
     expect(ally?.pos.x).toBe(2);
     expect(ally?.dir).toBe("down");

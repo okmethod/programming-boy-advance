@@ -14,7 +14,7 @@ const SOLUTION: Program = [fwd, fwd, fwd, right, fwd, right, fwd, fwd, fwd, left
 describe("ZIGZAG_PATH_STAGE", () => {
   it("攻撃を使わず正面に到達するだけで勝てる（敵が自壊・迷路が連結）", () => {
     const state = withAllyInitialHp(ZIGZAG_PATH_STAGE.initial, 3);
-    const result = runBattle(state, SOLUTION, ZIGZAG_PATH_STAGE.enemy);
+    const { result } = runBattle(state, SOLUTION, ZIGZAG_PATH_STAGE.enemy);
     expect(result.winner).toBe("ally");
   });
 
@@ -22,7 +22,7 @@ describe("ZIGZAG_PATH_STAGE", () => {
     // 右へ進み続けるだけ＝上段の端で詰まり、敵のいる下段へ降りられない。
     const naive: Program = [{ kind: "repeat", count: 100, body: [fwd] }];
     const state = withAllyInitialHp(ZIGZAG_PATH_STAGE.initial, 3);
-    const result = runBattle(state, naive, ZIGZAG_PATH_STAGE.enemy);
+    const { result } = runBattle(state, naive, ZIGZAG_PATH_STAGE.enemy);
     expect(result.winner).not.toBe("ally");
   });
 });

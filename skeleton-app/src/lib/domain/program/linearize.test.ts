@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { flatLines, nodeIdMap } from "./linearize";
-import { recordBattle } from "$lib/domain/battle";
+import { runBattle } from "$lib/domain/battle";
 import type { BattleState } from "$lib/domain/battle";
 import type { Program } from "./model";
 
@@ -30,7 +30,7 @@ describe("flatLines / nodeIdMap", () => {
   });
 });
 
-describe("recordBattle は実行中ノードを active に記録する", () => {
+describe("runBattle は実行中ノードを active に記録する", () => {
   function corridor(width: number): BattleState {
     return {
       grid: { width, height: 1, walls: [] },
@@ -50,7 +50,7 @@ describe("recordBattle は実行中ノードを active に記録する", () => {
       { kind: "call", cmd: "stepForward" },
       { kind: "call", cmd: "stepForward" },
     ];
-    const frames = recordBattle(corridor(6), ally, []);
+    const { frames } = runBattle(corridor(6), ally, []);
     // frames[0] は初期状態（実行前）なので active なし。
     expect(frames[0].active).toBeUndefined();
     expect(frames[1].active?.ally).toBe(0);

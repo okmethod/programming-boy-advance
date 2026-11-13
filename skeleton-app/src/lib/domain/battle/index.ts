@@ -13,4 +13,4 @@ export type { BattleParams } from "./params";
 export { resolveBattleParams } from "./params";
 
 export type { BattleRun } from "./loop";
-export { runBattle, recordBattle, recordRun } from "./loop";
+export { runBattle } from "./loop";

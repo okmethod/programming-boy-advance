@@ -16,7 +16,7 @@ function cpMax(stage: { memoryTotal: number; memoryGrain: number }): number {
 // 攻撃を使わず、敵の正面に立つだけで勝てることを確認する共通ヘルパー。
 function winsWith(stage: typeof STRAIGHT_CORRIDOR_STAGE, program: Program) {
   const state = withAllyInitialHp(stage.initial, 3);
-  return runBattle(state, program, stage.enemy).winner;
+  return runBattle(state, program, stage.enemy).result.winner;
 }
 
 describe("STRAIGHT_CORRIDOR_STAGE（まっすぐ）", () => {

@@ -8,8 +8,6 @@
  * - CONSUMED BY: アプリ層・インフラ層のみ。プレゼン層からの直接 import は禁止（アプリ層バレル経由）
  */
 
-// 概念ごとのサブバレルを合成してドメイン層の公開面を編む（個別ファイルには降りない）。
-
 // program＝命令木の言語モデルと操作（解析・コスト・整形・等価判定）。
 export type {
   CommandName,
@@ -45,4 +43,4 @@ export {
 
 // battle＝盤面モデルと対戦の実行。盤面の下位型や engine 純関数はドメイン内専用なので公開しない。
 export type { Automaton, AutomatonId, BattleState, BattleRun, BattleParams, Direction, Winner } from "./battle";
-export { withAllyInitialHp, resolveBattleParams, wallOn, runBattle, recordRun } from "./battle";
+export { withAllyInitialHp, resolveBattleParams, wallOn, runBattle } from "./battle";
