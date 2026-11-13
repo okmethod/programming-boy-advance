@@ -21,7 +21,7 @@
     draftText,
     builtLines,
     labelOf,
-    type Program,
+    type AutomatonImage,
     type BaseImage,
     type ParseError,
     type NodeId,
@@ -48,9 +48,9 @@
     // デプロイ（編集文脈の前進）を出すか（プレイ面=true／サンドボックス=false）。
     showDeploy?: boolean;
     // デプロイ押下＝ビルド済みイメージを対戦に反映する。親（プレイ面）が対戦に流す。
-    // 観戦側のイメージタイルが同じ表示名・素質を出せるよう、イメージと一緒にローカル名・素質も渡す。
+    // イメージ（program＋素質の運搬単位）と一緒にローカル名を渡す＝観戦側のイメージタイルが同じ表示名・素質を出せる。
     // allyHp＝HP 配分（memoryTotal − CP 割り当て）＝起動時に供給する ally の初期 HP。配分は構築側が所有するのでここで添える。
-    onDeploy?: (image: Program, name: string, baseImage: BaseImage, allyHp: number) => void;
+    onDeploy?: (image: AutomatonImage, name: string, allyHp: number) => void;
     // エディタ/レジストリ面パネルの背景クラス。このエリアを置く親の背景に合わせる。
     panelClass?: string;
     // 試運転が再生中か（親＝ページが SandboxRail から中継）。再生開始でコード面を観戦表示へ切り替えるトリガー。
@@ -153,7 +153,7 @@
   // 名前＝ローカル名（draft.imageName）> 同一内容の既存イメージのラベル > プレースホルダ の順で解決する。
   // 同一内容ラベルの引き当ては registry スライスのセレクタ（labelOf）に委ね、反応性は $registryImages の購読で担う。
   const builtName = $derived(
-    draft.imageName || (draft.builtImage ? labelOf($registryImages, draft.builtImage.program) : undefined) || "未保存",
+    draft.imageName || (draft.builtImage ? labelOf($registryImages, draft.builtImage) : undefined) || "未保存",
   );
 
   // 最終ビルド時刻ラベル。ビルドが「いつの断面か」を示し、ビルドの実在を体感させる（復元点の目印）。
@@ -169,8 +169,8 @@
   function deploy() {
     if (!draft.builtImage) return;
     playSE.deploy();
-    // 素質はビルド断面が凍結したもの（builtImage.baseImage）を渡す＝ビルド後に乗り換えた素質を引きずらない。
-    onDeploy?.(draft.builtImage.program, builtName, draft.builtImage.baseImage, allyHp);
+    // ビルド断面（builtImage＝program＋凍結した素質）をそのまま運搬単位として渡す＝ビルド後に乗り換えた素質を引きずらない。
+    onDeploy?.(draft.builtImage, builtName, allyHp);
   }
 
   // エディタ編集面を種から貼り直すための nonce。ProgramEditor はテキストを初期値限りで取り以後ローカル保持するため、

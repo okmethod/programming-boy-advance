@@ -25,8 +25,7 @@
     deployedHash,
     enemyHash,
     battleParams,
-    type Program,
-    type BaseImage,
+    type AutomatonImage,
     type NodeId,
   } from "$lib/application";
   import type { PageData } from "./$types";
@@ -145,8 +144,8 @@
   // 必ず先頭・実行前へ＝「deploy で再生リセット」を再生状態の所有者（プレゼン）が畳む。
   // 名前は構築エリアのカレントイメージ名を受け取り、観戦側タイルで同じ表示名を出す。
   // allyHp＝構築エリアで配分した初期 HP（HP 側＝総メモリ − CP 割り当て）。所有は構築側なので onDeploy で受け取る。
-  function deployImage(image: Program, name: string, baseImage: BaseImage, allyHp: number) {
-    facade.deploy(image, name, baseImage, allyHp);
+  function deployImage(image: AutomatonImage, name: string, allyHp: number) {
+    facade.deploy(image, name, allyHp);
     frameIndex = 0;
     playing = false;
     started = false;

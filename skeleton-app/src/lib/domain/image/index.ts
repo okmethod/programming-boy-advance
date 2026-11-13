@@ -5,7 +5,7 @@
  */
 
 export type { AutomatonImage } from "./automatonImage";
-export { imageHash } from "./automatonImage";
+export { imageHash, areImagesEqual } from "./automatonImage";
 export type { BaseImage, BaseImageFamily } from "./baseImage";
 export {
   baseImageSupports,

@@ -11,7 +11,7 @@
  */
 
 import { derived, get, readonly, writable } from "svelte/store";
-import { recordRun, resolveBattleParams, hashProgram, imageHash, flatLines, withAllyInitialHp } from "$lib/domain";
+import { recordRun, resolveBattleParams, imageHash, flatLines, withAllyInitialHp } from "$lib/domain";
 import type { AutomatonImage, BattleParams, BattleRun, FlatLine } from "$lib/domain";
 import type { Stage } from "$lib/application/ports/stageRepository";
 import { buildActionLog, type ActionLogRow } from "./actionLog";
@@ -96,7 +96,7 @@ export const deployedHash = derived(sessionStore, (session): string | null =>
   session.deployed === null ? null : imageHash(session.deployed),
 );
 
-/** enemy（ステージ固定）イメージの指紋。未セッションは null。 */
+/** enemy（ステージ固定）イメージの指紋。未セッションは null。ally と同じ image 粒度（program＋素質）で算出する。 */
 export const enemyHash = derived(sessionStore, (session): string | null =>
-  session.stage === null ? null : hashProgram(session.stage.enemy),
+  session.stage === null ? null : imageHash({ program: session.stage.enemy, baseImage: session.stage.enemyBaseImage }),
 );

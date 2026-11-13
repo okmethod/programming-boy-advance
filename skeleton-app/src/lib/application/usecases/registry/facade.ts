@@ -10,24 +10,24 @@
  * （reactive に使う側は registryImages を併せて購読する）。
  */
 
-import type { BaseImage, Program } from "$lib/domain";
-import { BASE_IMAGES, UNKNOWN_BASE_IMAGE, hashProgram, areProgramsEqual } from "$lib/domain";
+import type { AutomatonImage, BaseImage } from "$lib/domain";
+import { BASE_IMAGES, UNKNOWN_BASE_IMAGE, imageHash, areImagesEqual } from "$lib/domain";
 import type { PersistedImage, PersistedRegistry, RegistryRepository } from "$lib/application/ports/registryRepository";
 import { storeWriter, type RegistryImage } from "./store";
 
 /** UI が参照する手持ちイメージ操作の単一窓口。 */
 export interface RegistryFacade {
-  /** プッシュ＝ビルド済みイメージ（素質込み）を手持ちに保存する。
+  /** プッシュ＝ビルド済みイメージ（program＋素質を一体で運ぶ運搬単位）を手持ちに保存する。
    *  label 省略時は自動名（イメージ N）。同一内容が既にあれば no-op（content-addressable）。 */
-  push(program: Program, baseImage: BaseImage, label?: string): void;
+  push(image: AutomatonImage, label?: string): void;
   /** リネーム＝名前（タグ）の付け替え。中身は不変。お手本（preset）は対象外。 */
   rename(id: string, label: string): void;
   /** 削除。お手本（preset）は残し、手持ちのみ消せる。 */
   remove(id: string): void;
   /** 同一内容の既存イメージ（あれば）。プッシュ重複の判定・表示に使う。 */
-  duplicateOf(program: Program): RegistryImage | undefined;
-  /** 命令木の内容ハッシュ（content fingerprint）。レジストリ外でも同じ指紋を見せるため公開。 */
-  hashOf(program: Program): string;
+  duplicateOf(image: AutomatonImage): RegistryImage | undefined;
+  /** イメージの内容ハッシュ（content fingerprint）。レジストリ外でも同じ指紋を見せるため公開。 */
+  hashOf(image: AutomatonImage): string;
   /** 永続化済みの手持ちを読み込み、state に反映する（合成ルートが起動時に一度呼ぶ）。 */
   restore(): void;
 }
@@ -73,20 +73,20 @@ export const createRegistryFacade = (repo: RegistryRepository): RegistryFacade =
     repo.save(toPersisted(storeWriter.snapshot(), storeWriter.seq));
   }
 
-  function duplicateOf(program: Program): RegistryImage | undefined {
-    // 内容等価（content-addressable）で同一イメージを探す。等価判定はドメインに委ねる。
-    return storeWriter.snapshot().find((image) => areProgramsEqual(image.program, program));
+  function duplicateOf(image: AutomatonImage): RegistryImage | undefined {
+    // 内容等価（content-addressable）で同一イメージを探す。等価判定（program＋素質）はドメインに委ねる。
+    return storeWriter.snapshot().find((candidate) => areImagesEqual(candidate, image));
   }
 
-  function push(program: Program, baseImage: BaseImage, label?: string): void {
-    if (duplicateOf(program)) return; // 同じ中身は二重に積まない
+  function push(image: AutomatonImage, label?: string): void {
+    if (duplicateOf(image)) return; // 同じ中身は二重に積まない
     const n = storeWriter.nextSeq();
     const name = label?.trim() ? label.trim() : `イメージ ${n}`;
     storeWriter.add({
       id: `user:${n}`,
       label: name,
-      program,
-      baseImage,
+      program: image.program,
+      baseImage: image.baseImage,
       source: "user",
       pushedAt: Date.now(),
     });
@@ -118,7 +118,7 @@ export const createRegistryFacade = (repo: RegistryRepository): RegistryFacade =
     rename,
     remove,
     duplicateOf,
-    hashOf: (program) => hashProgram(program),
+    hashOf: (image) => imageHash(image),
     restore,
   };
 };

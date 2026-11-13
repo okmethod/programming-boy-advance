@@ -9,8 +9,8 @@
  */
 
 import { get, readonly, writable } from "svelte/store";
-import type { AutomatonImage, Program } from "$lib/domain";
-import { areProgramsEqual } from "$lib/domain";
+import type { AutomatonImage } from "$lib/domain";
+import { areImagesEqual } from "$lib/domain";
 import { ALLY_PRESETS } from "./presets";
 
 /**
@@ -52,13 +52,13 @@ export const registryImages = readonly(imagesStore);
  * 一覧（$registryImages）を引数で受ける純セレクタ＝内容等価の判定（ドメイン）をこのスライスに閉じ、
  * 突き合わせの反応性は呼び出し側の `$`購読に委ねる（プレゼンにドメイン述語を漏らさない）。
  */
-export function imageOf(images: readonly RegistryImage[], program: Program): RegistryImage | undefined {
-  return images.find((image) => areProgramsEqual(image.program, program));
+export function imageOf(images: readonly RegistryImage[], target: AutomatonImage): RegistryImage | undefined {
+  return images.find((image) => areImagesEqual(image, target));
 }
 
 /** 同一内容の登録済みイメージの表示名（表示名フォールバック用）。無ければ undefined。 */
-export function labelOf(images: readonly RegistryImage[], program: Program): string | undefined {
-  return imageOf(images, program)?.label;
+export function labelOf(images: readonly RegistryImage[], target: AutomatonImage): string | undefined {
+  return imageOf(images, target)?.label;
 }
 
 /**

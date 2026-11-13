@@ -10,7 +10,7 @@
 
 // 概念ごとのサブバレルを合成してドメイン層の公開面を編む（個別ファイルには降りない）。
 
-// program＝命令木の言語モデルと操作（解析・コスト・指紋・整形）。
+// program＝命令木の言語モデルと操作（解析・コスト・整形・等価判定）。
 export type {
   CommandName,
   ControlName,
@@ -23,20 +23,13 @@ export type {
   ParseError,
   ParseResult,
 } from "./program";
-export {
-  programCost,
-  hashProgram,
-  areProgramsEqual,
-  flatLines,
-  nodeIdMap,
-  parseProgram,
-  programToText,
-} from "./program";
+export { programCost, areProgramsEqual, flatLines, nodeIdMap, parseProgram, programToText } from "./program";
 
 // image＝ベースイメージ（素質）とオートマトンイメージ（素質×プログラム）。
 export type { AutomatonImage, BaseImage, BaseImageFamily } from "./image";
 export {
   imageHash,
+  areImagesEqual,
   baseImageSupports,
   baseImageFamilies,
   baseImageAllowed,

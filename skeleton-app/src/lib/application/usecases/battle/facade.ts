@@ -11,7 +11,7 @@
  */
 
 import { recordRun } from "$lib/domain";
-import type { BaseImage, BattleRun, Program } from "$lib/domain";
+import type { AutomatonImage, BattleRun, Program } from "$lib/domain";
 import type { Chapter, Stage, StageRepository } from "$lib/application/ports/stageRepository";
 import { sandboxInitial, SANDBOX_MAX_CLOCKS, type SandboxTarget } from "./sandbox";
 import { storeWriter } from "./store";
@@ -26,8 +26,8 @@ export interface BattleFacade {
   listChapters(): readonly Chapter[];
   /** 観戦セッションを開く＝舞台（stage）を据えてデプロイをリセットする（ステージ切替の起点）。 */
   openSession(stage: Stage): void;
-  /** デプロイ＝ビルド済みイメージ（素質込み）を対戦に出す（観戦セッションの ally を差し替える）。allyHp＝配分で決めた初期 HP。 */
-  deploy(image: Program, name: string, baseImage: BaseImage, allyHp: number): void;
+  /** デプロイ＝ビルド済みイメージ（program＋素質を一体で運ぶ運搬単位）を対戦に出す（観戦セッションの ally を差し替える）。allyHp＝配分で決めた初期 HP。 */
+  deploy(image: AutomatonImage, name: string, allyHp: number): void;
   /** 試運転：相手なし／stub 相手でプログラムを単体実行し、観戦フレーム列を返す（勝敗なし）。 */
   runSandbox(program: Program, target: SandboxTarget): BattleRun;
 }
@@ -40,10 +40,10 @@ export const createBattleFacade = (stages: StageRepository): BattleFacade => {
   }
 
   // 別イメージ（新ハッシュ）を出したら必ず先頭から＝再生リセットはプレゼン（再生状態の所有者）が畳む。
-  function deploy(image: Program, name: string, baseImage: BaseImage, allyHp: number): void {
+  function deploy(image: AutomatonImage, name: string, allyHp: number): void {
     storeWriter.update((session) => ({
       ...session,
-      deployed: { program: image, name, baseImage, allyHp, deployedAt: Date.now() },
+      deployed: { ...image, name, allyHp, deployedAt: Date.now() },
     }));
   }
 
