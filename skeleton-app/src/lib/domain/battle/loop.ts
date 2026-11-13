@@ -39,6 +39,50 @@ const resultOf = (frames: readonly BattleState[]): BattleResult => {
 const signatureOf = (state: BattleState): string =>
   state.automatons.map((e) => `${e.id}:${e.pos.x},${e.pos.y},${e.dir},${e.hp},${e.bp},${e.freezeRemaining}`).join("|");
 
+// 状態が変化しない（同一シグネチャが続く）膠着を検出する。
+// 呼ぶたびに直前との差分を見て、同一が規定回数続いたら true を返す。
+const makeStallDetector = (initialState: BattleState) => {
+  let prevSig = signatureOf(initialState);
+  let stallCount = 0;
+  return (state: BattleState): boolean => {
+    const sig = signatureOf(state);
+    if (sig === prevSig) return ++stallCount >= 2;
+    stallCount = 0;
+    prevSig = sig;
+    return false;
+  };
+};
+
+// 盤面の「今」を指す共有カーソル。interpret の read() と resolveActions が同じ参照を覗くことで、
+// 1クロック内の逐次書き換え（先手の行動後）を後手に見せる。純関数に state を値渡しすると後手が古い状態を読む。
+interface StateCursor {
+  current: BattleState;
+}
+
+// 1クロック分を行動順に1体ずつ「読む→1アクション適用」で解決し、cursor を進める。
+// 戻り値は各オートマトンが実行した命令ノード（実行ハイライト用）。
+function resolveActions(
+  cursor: StateCursor,
+  order: readonly AutomatonId[],
+  gens: Record<AutomatonId, Generator<Step, void, unknown>>,
+  params: BattleParams,
+  ignoreWinner: boolean,
+): Partial<Record<AutomatonId, NodeId>> {
+  const active: Partial<Record<AutomatonId, NodeId>> = {};
+  for (const id of order) {
+    // 先手が決着させたら後手は動かない。
+    if (cursor.current.winner !== null) break;
+    const step = gens[id].next();
+    // プログラム終了後は wait（何もしない）とみなし、ハイライト対象なし。
+    const action = step.done ? ({ kind: "wait" } as const) : step.value.action;
+    if (!step.done) active[id] = step.value.nodeId;
+    cursor.current = applyAction(cursor.current, id, action, params);
+    // 試運転では決着させない：winner が付いたら null に戻し、以降も applyAction が進むようにする。
+    if (ignoreWinner && cursor.current.winner !== null) cursor.current = { ...cursor.current, winner: null };
+  }
+  return active;
+}
+
 /**
  * 対戦を実行し、観戦フレーム列と結果（BattleRun）をまとめて返す。
  *
@@ -58,9 +102,9 @@ export function runBattle(
   // 敵不在だと decideWinner が即「ally 勝利」を返すため、winner を都度 null に戻して走り続けさせる。
   const ignoreWinner = options?.ignoreWinner ?? false;
 
-  let state = initial;
-  // インタプリタは read() で最新状態を参照する。逐次解決なので後手は先手の行動後を見る。
-  const read = () => state;
+  // gens の read() と resolveActions が同じカーソルを覗く。逐次解決で後手が先手の行動後を見るための共有点。
+  const cursor: StateCursor = { current: initial };
+  const read = () => cursor.current;
   // 各プログラムのノード id 表。interpret が yield する Step の nodeId はこの採番に従う。
   const gens: Record<AutomatonId, Generator<Step, void, unknown>> = {
     ally: interpret(allyProgram, "ally", read, nodeIdMap(allyProgram)),
@@ -70,38 +114,22 @@ export function runBattle(
   // priority は固定値なので行動順は対戦を通じて不変。初期状態から一度だけ決める。
   const order = orderOfPriority(initial.automatons);
 
-  const frames: BattleState[] = [state];
+  // 初期状態をフレーム列に追加。以降の各クロックで行動順に1体ずつ解決してフレームを積む。
+  const frames: BattleState[] = [cursor.current];
 
   // 膠着（状態が変化しない）が続いたら引き分けで打ち切るための検出。
-  let prevSig = signatureOf(state);
-  let stallCount = 0;
+  const isStalled = makeStallDetector(cursor.current);
 
-  while (state.winner === null && state.clock < maxClocks) {
-    // このクロックで各オートマトンが実行した命令ノード（実行ハイライト用）。
-    const active: Partial<Record<AutomatonId, NodeId>> = {};
-    // 1クロック内を行動順に1体ずつ解決する。先手が決着させたら後手は動かない。
-    for (const id of order) {
-      if (state.winner !== null) break;
-      const step = gens[id].next();
-      // プログラム終了後は wait（何もしない）とみなし、ハイライト対象なし。
-      const action = step.done ? ({ kind: "wait" } as const) : step.value.action;
-      if (!step.done) active[id] = step.value.nodeId;
-      state = applyAction(state, id, action, params);
-      // 試運転では決着させない：winner が付いたら null に戻し、以降も applyAction が進むようにする。
-      if (ignoreWinner && state.winner !== null) state = { ...state, winner: null };
-    }
-    // 全アクション解決後に時間経過（フリーズ減算・BP クールダウン・クロック+1）を適用する。
-    state = advanceClock(state, params);
-    state = { ...state, active };
-    frames.push(state);
+  // 各クロックの行動解決ループ。勝敗が決まるか最大クロックに達するまで繰り返す。
+  while (cursor.current.winner === null && cursor.current.clock < maxClocks) {
+    const active = resolveActions(cursor, order, gens, params, ignoreWinner);
 
-    const sig = signatureOf(state);
-    if (sig === prevSig) {
-      if (++stallCount >= 2) break;
-    } else {
-      stallCount = 0;
-      prevSig = sig;
-    }
+    // 全アクション解決後に時間経過（フリーズ減算・BP クールダウン・クロック+1）を適用し、実行ノードを添える。
+    const state = advanceClock(cursor.current, params);
+    cursor.current = { ...state, active };
+    frames.push(cursor.current);
+
+    if (isStalled(cursor.current)) break;
   }
 
   return { frames, result: resultOf(frames) };
