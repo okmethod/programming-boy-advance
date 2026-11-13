@@ -12,22 +12,18 @@
 
 // program＝命令木の言語モデルと操作（解析・コスト・指紋・整形）。
 export type {
-  Action,
   CommandName,
   ControlName,
   Expr,
   NodeId,
   Program,
   SensorName,
-  Step,
   Stmt,
-  UsedCapabilities,
   FlatLine,
   ParseError,
   ParseResult,
 } from "./program";
 export {
-  usedCapabilities,
   programCost,
   hashProgram,
   areProgramsEqual,
@@ -54,33 +50,6 @@ export {
   UNKNOWN_BASE_IMAGE,
 } from "./image";
 
-// battle＝盤面モデルと対戦の実行（エンジン・パラメータ・解釈・1戦走行）。
-export type {
-  Automaton,
-  AutomatonId,
-  BattleResult,
-  BattleState,
-  BattleRun,
-  BattleParams,
-  DamageLog,
-  Direction,
-  Grid,
-  Position,
-  WallEdge,
-  Winner,
-} from "./battle";
-export {
-  withAllyInitialHp,
-  resolveBattleParams,
-  applyAction,
-  advanceClock,
-  commandToAction,
-  exprValue,
-  sensorValue,
-  wallBetween,
-  wallSide,
-  run,
-  runBattle,
-  recordBattle,
-  recordRun,
-} from "./battle";
+// battle＝盤面モデルと対戦の実行。盤面の下位型や engine 純関数はドメイン内専用なので公開しない。
+export type { Automaton, AutomatonId, BattleState, BattleRun, BattleParams, Direction, Winner } from "./battle";
+export { withAllyInitialHp, resolveBattleParams, wallSide, runBattle, recordRun } from "./battle";

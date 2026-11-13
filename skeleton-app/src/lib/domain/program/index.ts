@@ -5,7 +5,7 @@
  */
 
 export type { NodeId, CommandName, SensorName, ControlName, Expr, Stmt, Program, Action, Step } from "./program";
-export type { UsedCapabilities } from "./capabilities";
+// UsedCapabilities 型は program 内（parse）専用なので公開しない。値 usedCapabilities は image/baseImage が使う。
 export { usedCapabilities } from "./capabilities";
 export { programCost } from "./cost";
 export { areProgramsEqual, hashProgram } from "./hash";
