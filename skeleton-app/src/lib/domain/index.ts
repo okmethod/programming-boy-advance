@@ -21,10 +21,20 @@ export type {
   Winner,
 } from "./battle/battle";
 export { withAllyInitialHp } from "./battle/battle";
-export type { Action, CommandName, Expr, NodeId, Program, SensorName, Step, Stmt } from "./program/program";
+export type {
+  Action,
+  CommandName,
+  ControlName,
+  Expr,
+  NodeId,
+  Program,
+  SensorName,
+  Step,
+  Stmt,
+} from "./program/program";
 export type { AutomatonImage } from "./image/automatonImage";
 export { imageHash } from "./image/automatonImage";
-export type { BaseImage, BaseImageFamily, ControlName } from "./image/baseImage";
+export type { BaseImage, BaseImageFamily } from "./image/baseImage";
 export type { UsedCapabilities } from "./program/capabilities";
 
 export {

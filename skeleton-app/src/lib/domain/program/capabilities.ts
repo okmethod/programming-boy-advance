@@ -5,8 +5,7 @@
  * 走査順は nodeIdMap / flatLines と同じ（親→子、then→else・body）。
  */
 
-import type { CommandName, Expr, Program, SensorName, Stmt } from "$lib/domain/program/program";
-import type { ControlName } from "$lib/domain/image/baseImage";
+import type { CommandName, ControlName, Expr, Program, SensorName, Stmt } from "$lib/domain/program/program";
 
 /** プログラムが使用している命令セット（重複なし）。素質の付与セットと突き合わせる。 */
 export interface UsedCapabilities {

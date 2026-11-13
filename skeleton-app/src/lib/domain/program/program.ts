@@ -15,6 +15,10 @@ export type CommandName = "stepForward" | "turnRight" | "turnLeft" | "attack" | 
 
 export type SensorName = "wallAhead" | "enemyAhead";
 
+// 制御構文の名前（CQS のフロー層）。素質はこの集合で「どの制御を解放するか」を定める。
+// command/sensor と同じ言語語彙なのでここ（program 言語モデル）に置く（素質はこれを参照する側）。
+export type ControlName = "if" | "repeat" | "while";
+
 // 式（クエリ）＝状態への問い合わせ（CQS の query 層）。値を返し状態は変えない。
 // sensor=センサ読み取り、literal=真偽の定数（「ずっとくりかえす」= while(true) の糖衣で使う）。
 export type Expr =
