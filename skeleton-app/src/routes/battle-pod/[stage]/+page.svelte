@@ -23,23 +23,17 @@
     enemyHash,
     battleParams,
     type AutomatonImage,
-    type NodeId,
   } from "#lib/application";
   import type { PageData } from "./$types";
-  import BuildingArea from "#lib/presentation/components/building/BuildingArea.svelte";
   import BattlePodViewer from "#lib/presentation/components/spectating/BattlePodViewer.svelte";
   import { resolveFrameCursor } from "#lib/presentation/utils/frameCursor";
   import PlaybackController from "#lib/presentation/components/spectating/PlaybackController.svelte";
   import SpectatorColumn from "#lib/presentation/components/spectating/SpectatorColumn.svelte";
   import ResultOverlay from "#lib/presentation/components/spectating/ResultOverlay.svelte";
-  import SandboxRail from "#lib/presentation/components/spectating/SandboxRail.svelte";
-  import SegmentedTabs from "#lib/presentation/components/shared/SegmentedTabs.svelte";
-  import ProgramViewer from "#lib/presentation/components/inspecting/ProgramViewer.svelte";
-  import { automatonIcon } from "#lib/presentation/utils/labels";
+  import ProgrammingDrawer from "#lib/presentation/components/building/ProgrammingDrawer.svelte";
   import { navigateTo } from "#lib/presentation/utils/navigation";
   import { attachPlaybackCues } from "#lib/presentation/sounds";
   import { emitFeedback } from "#lib/presentation/feedbacks";
-  import { fade } from "svelte/transition";
 
   let { data }: { data: PageData } = $props();
 
@@ -90,20 +84,6 @@
   // 盤面・自他プログラムは観戦ビューに常時表示し、構築（構築エリア＋試運転）だけをドロワーに格納する。
   // `観る → 直す → また観る` の文脈を切らさないため（docs/design/ui-screen-design.md）。
   let drawerOpen = $state(false);
-
-  // 構築ドロワー右レールの切替：参照（ステージの初期配置＋敵の手の内）⇄ 試運転（相手なし／stub の固定盤サンドボックス）。
-  // 試運転は SandboxRail に切り出し済み（レジストリ管理ページと共有）。参照はステージ固有なので inline に残す。
-  type RailView = "reference" | "sandbox";
-  let railView = $state<RailView>("reference");
-  const railTabs = [
-    { value: "reference", icon: "mdi:map-marker-outline", label: "ステージ情報" },
-    { value: "sandbox", icon: "mdi:flask-outline", label: "試運転" },
-  ];
-
-  // 試運転の再生状態・実行中ノードを右レール（SandboxRail）から受け、左の構築エリア（BuildingArea）の編集面へ渡す。
-  // 兄弟パネル間の受け渡しは共通の親（このページ）で解決する。
-  let sandboxPlaying = $state(false);
-  let sandboxActiveId = $state<NodeId | undefined>(undefined);
 
   // 観戦フレーム（battle 投影 $battleRun）× 再生位置（route の frameIndex）／ステージ（route の stage）の
   // クロス join はプレゼンで解決する（4層の依存を単一スライスに閉じる）。
@@ -267,75 +247,17 @@
   </button>
 </div>
 
-<!-- 構築ボトムドロワー＝作業台：構築エリア（左・大）＋参照レール（右・初期盤面/敵コード or 試運転）。
-     全幅を取れる下から出す形で Blockly に広さを与える。常時マウントして translate で開閉し、
-     開閉でワークスペース（組みかけのブロック）が消えないようにする。 -->
-{#if drawerOpen}
-  <button
-    class="fixed inset-0 z-40 bg-black/40"
-    aria-label="構築を閉じる"
-    onclick={() => (drawerOpen = false)}
-    transition:fade={{ duration: 200 }}
-  ></button>
-{/if}
-<aside
-  class="fixed inset-x-0 bottom-0 z-50 flex h-[92dvh] flex-col overflow-hidden rounded-t-xl bg-surface-50 p-4 shadow-xl transition-transform duration-300 {drawerOpen
-    ? 'translate-y-0'
-    : 'translate-y-full'}"
->
-  <!-- 2カラム：左＝構築エリア／右＝参照レール（固定幅）。両列のヘッダー高を揃える。 -->
-  <div class="flex min-h-0 flex-1 gap-4">
-    <!-- 構築エリア：タブ（ブロック編集/エディタ編集/レジストリ）＋CPゲージ＋Blockly 等を内包。
-         ドロワーは transform で開くため active にドロワー開閉を渡して開いた後に resize させる。 -->
-    <BuildingArea
-      memoryTotal={stage.memoryTotal}
-      memoryGrain={stage.memoryGrain}
-      allowedImages={stage.allowedImages}
-      active={drawerOpen}
-      showDeploy
-      onDeploy={deployImage}
-      panelClass="bg-white"
-      {sandboxPlaying}
-      {sandboxActiveId}
-    />
-
-    <!-- 参照レール列：ヘッダー（参照⇄試運転タブ＋閉じる）＋本体（参照は inline／試運転は SandboxRail）。 -->
-    <div class="flex min-h-0 w-[26rem] shrink-0 flex-col gap-3">
-      <!-- ヘッダー行：高さは構築エリアのヘッダーと揃える。 -->
-      <div class="flex h-9 shrink-0 items-center justify-between gap-3">
-        <SegmentedTabs value={railView} items={railTabs} onChange={(v) => (railView = v as RailView)} />
-        <button class="action-btn" onclick={() => (drawerOpen = false)}>
-          閉じる <Icon icon="mdi:close" class="size-4" />
-        </button>
-      </div>
-
-      <!-- 本体：参照（ステージの初期配置＋敵の手の内）／試運転（SandboxRail）を同じ枠線で囲う。 -->
-      <div class="flex min-h-0 flex-1 flex-col gap-3 overflow-auto rounded border border-surface-300 bg-white p-3">
-        {#if railView === "reference"}
-          <!-- ヘッダー（左寄せ）：サンドボックスの見出し行と高さ・位置を揃え、下の盤面を一致させる。 -->
-          <div class="flex h-7 shrink-0 items-center gap-1 text-xs font-bold opacity-70">
-            <Icon icon="mdi:view-grid-outline" class="size-4" /> 初期配置
-          </div>
-          <!-- 盤面：試運転と同じ size="sm" なので位置も構造的に一致する。デプロイ前でも見られるよう
-               実行結果ではなくステージ定義の初期状態（stage.initial）を直接描く。 -->
-          <BattlePodViewer state={stage.initial} size="sm" />
-
-          <ProgramViewer
-            title="敵プログラム"
-            titleIcon={automatonIcon("enemy")}
-            lines={$enemyLines}
-            activeId={undefined}
-            fill
-          />
-        {:else}
-          <SandboxRail
-            image={$workbenchDraft.builtImage?.program ?? null}
-            {facade}
-            bind:playing={sandboxPlaying}
-            onActiveChange={(id) => (sandboxActiveId = id)}
-          />
-        {/if}
-      </div>
-    </div>
-  </div>
-</aside>
+<!-- 構築ボトムドロワー＝作業台。開閉はトリガーを持つ本 route が所有し、ドロワーへ open/onClose で渡す。
+     ステージ由来の構築制約・参照盤面・敵プログラムは props で供給（コンポーネントはストア非購読）。 -->
+<ProgrammingDrawer
+  open={drawerOpen}
+  onClose={() => (drawerOpen = false)}
+  memoryTotal={stage.memoryTotal}
+  memoryGrain={stage.memoryGrain}
+  allowedImages={stage.allowedImages}
+  stageInitial={stage.initial}
+  enemyLines={$enemyLines}
+  sandboxImage={$workbenchDraft.builtImage?.program ?? null}
+  {facade}
+  onDeploy={deployImage}
+/>
