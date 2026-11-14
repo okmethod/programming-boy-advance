@@ -185,6 +185,7 @@
   function revertToBuilt() {
     const built = draft.builtImage;
     if (built === null) return;
+    playSE.revert();
     if (mainView === "code") {
       workbenchFacade.revertToBuilt();
       codeErrors = [];

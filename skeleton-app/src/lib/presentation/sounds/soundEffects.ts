@@ -21,8 +21,10 @@ const NOTE_PATTERNS = {
   SERVO: { startFreq: 196, endFreq: 659, duration: 0.18 }, // 立ち上がる駆動音（square でウィーン）
   UP: { startFreq: 523.25, endFreq: 783.99, duration: 0.07 }, // 軽い上昇（保存・プッシュ）
   DOWN: { startFreq: 783.99, endFreq: 523.25, duration: 0.07 }, // 軽い下降（取り込み・プル）
-  TAP: { startFreq: 988, duration: 0.04 }, // 高域の短いタップ（確定・リネーム）
+  TAP: { startFreq: 988, duration: 0.04 }, // 高域の短いタップ（確定・リネーム/配分決定）
   DROP: { startFreq: 440, endFreq: 130, duration: 0.1 }, // 落とす（破棄・削除）
+  SHIFT: { startFreq: 523.25, endFreq: 698.46, duration: 0.08 }, // 切り替わる4度上がり（素質切替）
+  REVERT: { startFreq: 659.25, endFreq: 392, duration: 0.1 }, // 巻き戻す下降（ロールバック）
 } as const satisfies Record<string, NotePattern>;
 
 // 複数周波数の和音パターン（勝敗ジングル・金属リング・システム合図）。
@@ -86,6 +88,7 @@ const layers = (...defs: SoundDefinition[]): SoundDefinition => ({ type: "layers
 // バトル：wait は何もしないクロックでも毎回鳴る土台なので最も控えめに、被弾・勝敗は存在感を出す。
 // 構築：ビルド＝確定のガシャン、デプロイ＝機械起動（ガコッ＋サーボ＋ラッチ）。
 // レジストリ：プル/プッシュ＝下降/上昇の対、リネーム＝軽いタップ、削除＝落とす音。軽量に揃える。
+// 確定操作：素質切替＝切り替わり、配分決定＝タップ、ロールバック＝巻き戻しの下降。
 // システム：audioOn＝音声を入れた合図（控えめなプピ）。勝利は明るい上昇チャイム（ゲームクリア）。
 const SE_ASSIGNMENTS = {
   wait: note(NOTE_PATTERNS.TICK, "square", 0.05),
@@ -109,6 +112,9 @@ const SE_ASSIGNMENTS = {
   push: note(NOTE_PATTERNS.UP, "sine", 0.08),
   rename: note(NOTE_PATTERNS.TAP, "triangle", 0.07),
   delete: note(NOTE_PATTERNS.DROP, "square", 0.09),
+  baseImage: note(NOTE_PATTERNS.SHIFT, "triangle", 0.09),
+  allocate: note(NOTE_PATTERNS.TAP, "sine", 0.08),
+  revert: note(NOTE_PATTERNS.REVERT, "sine", 0.08),
   audioOn: chord(CHORD_PATTERNS.PUPI, "triangle", 0.06),
 } satisfies Record<string, SoundDefinition>;
 
