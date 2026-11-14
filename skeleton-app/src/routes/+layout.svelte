@@ -28,7 +28,7 @@
 
 <ToastLayer />
 
-<div class="h-screen flex flex-col">
+<div class="h-dvh flex flex-col">
   <!-- Skeleton v5 で AppBar は Svelte コンポーネントではなくなったため、素の要素で代替する。
        左＝ブランド表示（クリックでホームへ）、右＝セクション間ナビ。アクション（組む）は画面側に置く。 -->
   <header class="shrink-0 border-b border-surface-400">
@@ -66,7 +66,7 @@
   </header>
 
   <!-- 残り高を埋めるコンテンツ領域。プレイ面は h-full で一画面に収め、books 等は内側でスクロール。 -->
-  <main class="w-screen mx-auto min-h-0 flex-1 overflow-y-auto scrollbar-gutter-stable">
+  <main class="w-full min-h-0 flex-1 overflow-y-auto scrollbar-gutter-stable">
     {@render children()}
   </main>
 </div>

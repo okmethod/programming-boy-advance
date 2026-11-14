@@ -79,7 +79,9 @@
 
 html,
 body {
-  @apply h-full overflow-hidden;
+  /* iPad などのモバイルブラウザでは 100vh/100% がツールバーを含む大きい方の
+     ビューポートを指し下端が見切れる。実際に見えている高さ(dvh)を基準にする。 */
+  @apply h-dvh overflow-hidden;
 }
 
 .cRouteBodyStyle {

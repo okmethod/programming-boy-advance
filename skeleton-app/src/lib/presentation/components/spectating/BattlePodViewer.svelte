@@ -6,7 +6,7 @@
 
   interface BattlePodViewerProps {
     state: BattleState;
-    // lg=観戦（中央カラムの残り領域にコンテナfitする可変盤面）／sm=参照レールの初期配置（小さい固定セル）。
+    // lg=観戦（中央カラムの残り領域にコンテナfitする可変盤面）／sm=参照レールの初期配置（高さ上限付きの小箱にフィット）。
     size?: "lg" | "sm";
     // 試運転のサンドバッグ：enemy スロットを別アイコンで描く（本物の敵と区別する）。
     stubEnemy?: boolean;
@@ -35,15 +35,23 @@
   const cols = $derived(state.grid.width);
   const rows = $derived(state.grid.height);
 
-  // lg＝観戦：親（container-type:size）の幅/高(cqw/cqh)に収まる最大正方形をセル辺にする。
-  // 列数・行数が増えても盤面が親箱からはみ出さない（8×8・迷路化に耐える）。gap=0.25rem,padding=0.5rem。
   const fit = $derived(size === "lg");
-  const fitStyle = $derived(
-    `--cell:min((100cqw - 1rem - ${cols - 1} * 0.25rem) / ${cols}, (100cqh - 1rem - ${rows - 1} * 0.25rem) / ${rows});` +
-      `grid-template-columns:repeat(${cols}, var(--cell));grid-auto-rows:var(--cell);`,
+
+  // セル辺の基準式＝親（container-type:size）の余白(cqw/cqh)に収まる最大正方形。
+  // 幅・高さ双方で割り、短い方に合わせる＝列数・行数のどちらが増えても親箱からはみ出さない。
+  // gap=0.25rem・padding=0.5rem(両側で1rem)を差し引く。
+  const cellFit = $derived(
+    `(100cqw - 1rem - ${cols - 1} * 0.25rem) / ${cols}, (100cqh - 1rem - ${rows - 1} * 0.25rem) / ${rows}`,
   );
-  // sm＝参照：固定 2.25rem のセルで小さく描く。
-  const smStyle = $derived(`grid-template-columns:repeat(${cols}, 2.25rem);grid-auto-rows:2.25rem;`);
+  // lg＝観戦：親箱（中央カラムの残り領域）いっぱいにフィット（上限なし・8×8/迷路化に耐える）。
+  const fitStyle = $derived(
+    `--cell:min(${cellFit});grid-template-columns:repeat(${cols}, var(--cell));grid-auto-rows:var(--cell);`,
+  );
+  // sm＝参照：高さ上限付きの小箱に、縦横どちらが長い盤面でも収まるようフィット。
+  // セル辺は 2.25rem を上限にし、横長(corridor)・縦長はレール内に縮めて全体を見せる（固定セルだとはみ出す）。
+  const smStyle = $derived(
+    `--cell:min(2.25rem, ${cellFit});grid-template-columns:repeat(${cols}, var(--cell));grid-auto-rows:var(--cell);`,
+  );
 
   // 向きシェブロン（> < ∧ ∨）。向いている側にアイコンと密着させて出す。
   function dirChevron(dir: Direction): string {
@@ -117,16 +125,10 @@
   {/each}
 {/snippet}
 
-{#if fit}
-  <!-- 観戦：親箱の残り領域いっぱいに置き、その中で盤面を中央寄せ。container-type:size で cqw/cqh を測る。 -->
-  <div class="grid size-full place-items-center [container-type:size]">
-    <div class="grid gap-1 rounded bg-gray-200 p-2" style={fitStyle}>
-      {@render cells("h-1/2 w-1/2", "h-1/4 w-1/4")}
-    </div>
+<!-- 盤面を container-type:size の箱に中央寄せでフィットさせる。lg は残り領域いっぱい、
+     sm は高さ上限付きの小箱（縦横どちらが長くてもその中へ収める）。cqw/cqh はこの箱で測る。 -->
+<div class="grid {fit ? 'size-full' : 'h-36 w-full'} place-items-center [container-type:size]">
+  <div class="grid gap-1 rounded bg-gray-200 p-2" style={fit ? fitStyle : smStyle}>
+    {@render cells("h-1/2 w-1/2", "h-1/4 w-1/4")}
   </div>
-{:else}
-  <!-- 参照：内容ぴったりの小さい固定盤面。 -->
-  <div class="inline-grid gap-1 rounded bg-gray-200 p-2" style={smStyle}>
-    {@render cells("size-5", "size-3")}
-  </div>
-{/if}
+</div>

@@ -317,7 +317,7 @@
   ></button>
 {/if}
 <aside
-  class="fixed inset-x-0 bottom-0 z-50 flex h-[92dvh] flex-col rounded-t-xl bg-surface-50 p-4 shadow-xl transition-transform duration-300 {drawerOpen
+  class="fixed inset-x-0 bottom-0 z-50 flex h-[92dvh] flex-col overflow-hidden rounded-t-xl bg-surface-50 p-4 shadow-xl transition-transform duration-300 {drawerOpen
     ? 'translate-y-0'
     : 'translate-y-full'}"
 >
