@@ -1,0 +1,1 @@
+import{n as s}from"../chunks/DcNxTHDL.js";import"../chunks/C8APIicd.js";import{t as o}from"../chunks/B5LYHSzy.js";import{t}from"../chunks/DFOOLqmk.js";import"../chunks/Tv8SfUge.js";import"../chunks/CkB-QJRk.js";var n=s({load:()=>r}),r=()=>{t(307,o("/stage-select"))};function a(s){}export{a as component,n as universal};
