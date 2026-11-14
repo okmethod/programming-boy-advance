@@ -10,7 +10,7 @@
   import ActionLogViewer from "#lib/presentation/components/inspecting/ActionLogViewer.svelte";
 
   interface SandboxRailProps {
-    // 試運転対象のビルド済みイメージ（未ビルドは null）。生の編集ではなくビルド断面を食う。
+    // 試運転対象のビルド済みイメージ（未ビルドは null）。生の編集ではなくビルド断面を入力に取る。
     image: Program | null;
     // ゲームロジックの単一窓口（runSandbox を呼ぶ）。
     facade: BattleFacade;
@@ -23,7 +23,7 @@
   let { image, facade, playing = $bindable(false), onActiveChange }: SandboxRailProps = $props();
 
   // 試運転の的：none=何もいない（移動・制御フローの確認）／stub=攻撃できる的（enemyAhead を
-  // 発火させ攻撃反応まで確認）。棚＝ビルド済みイメージだけを共有する方針なので共有ストアに載せない。
+  // 発火させ攻撃反応まで確認）。共有するのはビルド済みイメージだけという方針なので共有ストアに載せない。
   let sandboxTarget = $state<SandboxTarget>("stub");
   let frameIndex = $state(0);
 
@@ -110,7 +110,7 @@
     fill
   />
 {:else}
-  <!-- 未ビルド：生の編集は食わない方針なので、ビルドを促して試運転は出さない。 -->
+  <!-- 未ビルド：生の編集は入力に取らない方針なので、ビルドを促して試運転は出さない。 -->
   <div class="flex flex-1 flex-col items-center justify-center gap-2 text-center text-surface-500">
     <Icon icon="mdi:cog-outline" class="size-8 opacity-60" />
     <p class="text-sm">ビルドすると試運転できます</p>

@@ -80,7 +80,7 @@ describe("areProgramsEqual", () => {
     expect(areProgramsEqual(a, b)).toBe(false);
   });
 
-  it("ネスト内の差分も拾う", () => {
+  it("ネスト内の差分も検知する", () => {
     const a: Program = [{ kind: "repeat", count: 2, body: [{ kind: "call", cmd: "attack" }] }];
     const b: Program = [{ kind: "repeat", count: 3, body: [{ kind: "call", cmd: "attack" }] }];
     expect(areProgramsEqual(a, b)).toBe(false);

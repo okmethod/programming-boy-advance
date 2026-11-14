@@ -2,7 +2,7 @@
   // レジストリブラウザ＝作業台の保管文脈を見て操作する面。上＝保管済み一覧（pull/リネーム/削除）／破線／下＝カレント行（push/リネーム/削除）。
   // 下→上 push・上→下 pull で矢印の向きと空間配置が一致する。
   // ワークベンチ（workbenchDraft）とレジストリ（registryImages）を直接購読して自己完結する。
-  // 唯一の継ぎ目は pull 時の Blockly 流し込み＝編集の SSoT は親の BlocklyEditor なので onPull で親に委ねる。
+  // 唯一の境界は pull 時の Blockly 流し込み＝編集の SSoT は親の BlocklyEditor なので onPull で親に委ねる。
   import Icon from "@iconify/svelte";
   import {
     registryImages,

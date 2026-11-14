@@ -111,7 +111,7 @@
   // 試運転が走るのはビルド断面なので、観戦中は編集テキストではなく builtLines を正として見せる。
   // 切替規則は非対称：再生が始まったら自動で観戦へ入り、戻るのは明示（「編集を再開」ボタン）＝勝手に編集へ戻らない。
   let codeViewing = $state(false);
-  // 再生開始（false→true）の立ち上がりだけを拾う。保持変数は追跡不要なので $state にしない（自己再発火を避ける）。
+  // 再生開始（false→true）の立ち上がりだけを検知する。保持変数は追跡不要なので $state にしない（自己再発火を避ける）。
   let wasSandboxPlaying = false;
   $effect(() => {
     const playing = sandboxPlaying;

@@ -1,7 +1,7 @@
 /**
  * バトルポッドのアプリ層ファサード。
  *
- * プレゼン層とドメイン層の継ぎ目＝ UI からゲームロジックへの単一窓口。
+ * プレゼン層とドメイン層の境界＝ UI からゲームロジックへの単一窓口。
  * ステージ取得は Port（StageRepository）経由に限り、供給元を UI から隠す。
  * 具体 Adapter は合成ルート（プレゼン層）で createBattleFacade に注入される。
  *
@@ -39,7 +39,7 @@ export const createBattleFacade = (stages: StageRepository): BattleFacade => {
     storeWriter.update(() => ({ stage, deployed: null }));
   }
 
-  // 別イメージ（新ハッシュ）を出したら必ず先頭から＝再生リセットはプレゼン（再生状態の所有者）が畳む。
+  // 別イメージ（新ハッシュ）を出したら必ず先頭から＝再生リセットはプレゼン（再生状態の所有者）が担う。
   function deploy(image: AutomatonImage, name: string, allyHp: number): void {
     storeWriter.update((session) => ({
       ...session,
@@ -49,7 +49,7 @@ export const createBattleFacade = (stages: StageRepository): BattleFacade => {
 
   function runSandbox(program: Program, target: SandboxTarget): BattleRun {
     // 勝敗で打ち切らず、固定盤で ally のプログラムだけを走らせる（stub は反撃しない的）。
-    // 盤面・上限などの試運転パラメータは app（sandbox.ts）が供給し、回す／畳む実行は domain に委ねる。
+    // 盤面・上限などの試運転パラメータは app（sandbox.ts）が供給し、実行そのもの（開始から終了まで）は domain に委ねる。
     return runBattle(sandboxInitial(target), program, [], { maxClocks: SANDBOX_MAX_CLOCKS, ignoreWinner: true });
   }
 

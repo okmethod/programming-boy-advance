@@ -4,7 +4,7 @@
   //   Ally  = デプロイ済みイメージ（デプロイ時刻＋編集側の最新ビルドとズレたら「要再デプロイ」）
   //   Enemy = ステージ固定イメージ（時刻・ドリフト無し）
   // 両列で同じ体裁にして観戦ビューの左右対称を保つ。
-  // ベースイメージ（素質）の情報もここに載せる（content-addressable の B面の芽＝何から作ったか）。
+  // ベースイメージ（素質）の情報もここに載せる（content-addressable の B面の起点＝何から作ったか）。
   import Icon from "@iconify/svelte";
   import type { BaseImage } from "#lib/application";
   import DarkViewerPanel from "./DarkViewerPanel.svelte";

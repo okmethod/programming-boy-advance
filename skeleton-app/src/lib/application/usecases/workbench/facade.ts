@@ -1,7 +1,7 @@
 /**
  * ワークベンチ（編集中ドラフト）のアプリ層ファサード。
  *
- * プレゼン層とドラフト状態の継ぎ目＝編集操作（build/pull 等）の単一窓口。
+ * プレゼン層とドラフト状態の境界＝編集操作（build/pull 等）の単一窓口。
  * 書き込みは storeWriter 経由に限り、意味のある操作だけを通す（内部構造を UI から隠す）。
  * registry/battle と違い Port/永続化を持たない（＝DI が無い）ため合成ルートは介さず、
  * ここが直接の窓口（state はアプリ層 singleton に同居）。
@@ -62,7 +62,7 @@ export const workbenchFacade: WorkbenchFacade = {
   },
   setProgramFromText(text) {
     // 現在の素質（baseImage）の付与セットを渡し、付与対象外の命令を parse 側で行つきに弾く
-    // ＝ブロック編集のツールボックスが構造的に担う素質ガードを、テキスト編集にも効かせる。
+    // ＝ブロック編集のツールボックスが構造的に担う素質ガードを、テキスト編集にも適用する。
     // BaseImage は commands/queries/controls を持つため UsedCapabilities として素通しできる。
     const { baseImage } = storeWriter.snapshot();
     const result = parseProgram(text, baseImage);

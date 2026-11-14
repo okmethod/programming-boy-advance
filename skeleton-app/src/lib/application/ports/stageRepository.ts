@@ -1,7 +1,7 @@
 /**
  * ステージ取得の Port（アプリ層が依存する抽象）。
  *
- * ステージ定義の供給元（TS 定数・将来の JSON/DSL・API）をゲームロジックから隠す継ぎ目。
+ * ステージ定義の供給元（TS 定数・将来の JSON/DSL・API）をゲームロジックから隠す境界。
  * アプリ層はこの契約だけに依存し、具体実装（インフラ層の Adapter）は合成ルートで注入される。
  * 設計の最新断面は docs/design/architecture.md を正とする。
  * レベルデザインは docs/design/ux-level-design.md を正とする。
@@ -31,7 +31,7 @@ export interface Stage {
   // 小さくすると配分の自由度が上がり、memoryTotal=memoryGrain*2 のステージは一択＝自由度ゼロ（導入用）。
   readonly memoryGrain: number;
   // 戦闘チューニングのステージ固有上書き（未指定 knob は既定 BATTLE_PARAMS が効く）。
-  // ここを足場に「全バランス調整がステージ側で成り立つ」を担保する。
+  // ここを起点に「全バランス調整がステージ側で成り立つ」を担保する。
   readonly params?: Partial<BattleParams>;
   // プレイヤーが使える素質（系統×版）の許可集合。未指定＝無制限（カタログ全版）。
   // ラダーの段階性を縛る土台＝選択UIを許可版だけに絞り、入場時に許可外ドラフトを最上位版へクランプする。

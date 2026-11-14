@@ -44,7 +44,7 @@
   font-weight: 700;
 }
 
-/* Tailwind v4 では variant（hover: 等）を効かせるため @utility で定義する */
+/* Tailwind v4 では variant（hover: 等）を適用するため @utility で定義する */
 @utility bg-retro-dark-green {
   background-color: #0f380f;
 }
@@ -53,7 +53,7 @@
    用途で2バリアント（通常 / 強調）を使い分ける。見た目はタブ（idle / active）に合わせてある。
    Skeleton の btn は padding/角丸/hover まで強く上書きして見た目を崩すため採らない。
    preset-* は bg と文字色をまとめて当てて継承色とズレるため、色は素のトークンにする。
-   hover は色非依存の軽い暗転（brightness）で両バリアント共通に効かせる。 */
+   hover は色非依存の軽い暗転（brightness）で両バリアント共通に適用する。 */
 @utility action-btn {
   /* 通常: 淡緑＋枠（タブ idle と同じ） */
   @apply inline-flex items-center justify-center gap-1 rounded border px-3 py-1 text-sm transition hover:brightness-95;

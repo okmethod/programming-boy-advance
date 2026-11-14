@@ -1,7 +1,7 @@
 /**
  * レジストリのアプリ層ファサード。
  *
- * プレゼン層とレジストリ状態の継ぎ目＝手持ちイメージの操作（commands）の単一窓口。
+ * プレゼン層とレジストリ状態の境界＝手持ちイメージの操作（commands）の単一窓口。
  * 書き込みは storeWriter 経由に限り、永続化は Port（RegistryRepository）経由で供給元を UI から隠す。
  * 具体 Adapter は合成ルート（プレゼン層）で createRegistryFacade に注入される。
  *

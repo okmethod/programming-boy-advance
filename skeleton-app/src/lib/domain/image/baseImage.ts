@@ -57,7 +57,7 @@ export const baseImageAllowed = (base: BaseImage, allowed?: readonly BaseImage[]
 
 /**
  * 系統×版カタログを許可集合で絞る（undefined＝無制限でそのまま返す）。
- * 各系統は許可された版だけを残し、残り版が無い系統は落とす＝選択UIを許可範囲だけの同じ形に畳む。
+ * 各系統は許可された版だけを残し、残り版が無い系統は落とす＝選択UIを許可範囲だけの同じ形に絞り込む。
  */
 export const filterBaseImageFamilies = (
   families: readonly BaseImageFamily[],

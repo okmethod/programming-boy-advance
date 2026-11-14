@@ -1,7 +1,7 @@
 /**
  * 行動ログの読みモデル（観戦の派生）。
  *
- * 観戦フレーム列（対戦の実行結果＝動的）を、指定オートマトンが実行したコマンドの列に畳む。
+ * 観戦フレーム列（対戦の実行結果＝動的）を、指定オートマトンが実行したコマンドの列に集約する。
  * active ノード id → コマンド名の解決に nodeIdMap（ドメイン）を使い、その依存を app 層に閉じる
  * ＝描画部品は Program でも nodeIdMap でもなく、この View Model（行）を受け取る dumb view になる。
  */
@@ -18,8 +18,8 @@ export interface ActionLogRow {
 }
 
 /**
- * 観戦フレーム列を指定オートマトンの行動ログ（全長）に畳む。
- * frameIndex による prefix 表示は再生位置を持つ呼び出し側に委ねるため、ここでは全フレームを畳む。
+ * 観戦フレーム列を指定オートマトンの行動ログ（全長）に集約する。
+ * frameIndex による prefix 表示は再生位置を持つ呼び出し側に委ねるため、ここでは全フレームを集約する。
  */
 export function buildActionLog(frames: readonly BattleState[], program: Program, id: AutomatonId): ActionLogRow[] {
   // ノード id → コマンド名の索引（call ノードのみ。active は常に call ノードを指す）。

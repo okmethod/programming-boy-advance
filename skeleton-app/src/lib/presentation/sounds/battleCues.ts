@@ -14,7 +14,7 @@ import type { BattleCue } from "#lib/presentation/sounds/soundEffects";
  * どれにも当たらない（何もしない）クロックでも進行の手応えを出すため wait を返す（常に音が鳴る）。
  */
 export function selectBattleCue(prev: BattleState, cur: BattleState): BattleCue {
-  // 決着は最優先（勝敗ジングルが他の SE を食う）。
+  // 決着は最優先（勝敗ジングルが他の SE を上書きする）。
   if (prev.winner == null && cur.winner != null) {
     return cur.winner === "ally" ? "win" : "lose";
   }
@@ -41,7 +41,7 @@ export function selectBattleCue(prev: BattleState, cur: BattleState): BattleCue 
 
 /**
  * 再生位置から鳴らす cue と、次の「鳴らし済み位置」を決める（副作用なし）。
- * 再生ポリシー（自動再生中のみ・多重発火防止・範囲内）までを純粋側に畳み、
+ * 再生ポリシー（自動再生中のみ・多重発火防止・範囲内）までを純粋側に集約し、
  * 呼び出す $effect は〈購読→この解決→保管→再生〉の配線だけに保つ。
  */
 export function resolvePlaybackCue(

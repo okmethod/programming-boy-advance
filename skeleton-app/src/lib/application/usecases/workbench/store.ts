@@ -127,12 +127,12 @@ export function differsFromBuilt(draft: WorkbenchDraft, image: Program | null): 
 /**
  * 素質互換セレクタ＝候補の素質が編集中プログラムの命令セットを提供できるか（differsFromBuilt と同列の読み）。
  * 判定規則そのもの（命令セットの包含）はドメインに委ね、プレゼンは候補×program を引数で渡して購読する
- * ＝素質選択UIの関心を workbench の公開面へ畳む（プレゼンがドメインルールを直呼びしない）。
+ * ＝素質選択UIの関心を workbench の公開面へ集約する（プレゼンがドメインルールを直呼びしない）。
  */
 export { baseImageSupports } from "#lib/domain";
 
 /**
- * 素質カタログのステージ制限（許可集合でのフィルタ）とクランプ判定もドメインに委ね、プレゼンへ公開面を畳む。
+ * 素質カタログのステージ制限（許可集合でのフィルタ）とクランプ判定もドメインに委ね、プレゼンへ公開面として集約する。
  * 素質選択UIは許可版だけのカタログを購読し、ページはクランプ判定（許可外→最上位版）に使う。
  */
 export { filterBaseImageFamilies, baseImageAllowed, highestAllowedImage } from "#lib/domain";

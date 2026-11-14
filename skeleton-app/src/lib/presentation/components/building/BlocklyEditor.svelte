@@ -88,7 +88,7 @@
     if (ws) Blockly.svgResize(ws);
   }
 
-  // 素質（baseImage）の切替でパレットを作り直す＝コマンド解放の seam を実機で効かせる。
+  // 素質（baseImage）の切替でパレットを作り直す＝コマンド解放の seam を実機で反映する。
   // マウント時は blockly() が初期化済みなので初回は skip。フライアウト操作と選択タブの更新は
   // 副作用（＝追加の購読を作らない）なので untrack で包む（購読するのは blockCategories だけ）。
   let paletteInitialized = false;
@@ -142,7 +142,7 @@
     selectCategory(firstEnabled);
 
     // ブロックの追加・移動・値変更のたびに命令木を作り直して通知する。
-    // ドラッグ中は新ブロックが独立トップ扱いになる過渡状態（workspaceToProgram は先頭連鎖1本だけ拾う）
+    // ドラッグ中は新ブロックが独立トップ扱いになる過渡状態（workspaceToProgram は先頭連鎖1本だけ取り出す）
     // なので再構築しない。ドロップ時の最終イベントで正しい program に更新される。
     ws.addChangeListener(() => {
       if (ws && !ws.isDragging()) onProgramChange(workspaceToProgram(ws));
