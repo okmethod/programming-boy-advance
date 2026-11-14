@@ -19,7 +19,7 @@
     "format": "prettier --write .",
     "test:integration": "playwright test",
     "test:unit": "vitest run",
-    "push": "gh-pages -d build",
+    "push": "gh-pages -d build --dotfiles",
     "deploy": "npm run build && npm run push"
   },
   "devDependencies": {
