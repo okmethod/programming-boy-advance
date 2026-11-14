@@ -1,7 +1,7 @@
 // ステージ id は URL（パスパラメータ）が SSoT。不正・未知の id は選択画面へ戻す。
 import { redirect } from "@sveltejs/kit";
 import { resolve } from "$app/paths";
-import { battleFacade } from "$lib/presentation/composition";
+import { battleFacade } from "#lib/presentation/composition";
 import type { PageLoad } from "./$types";
 
 export const load: PageLoad = ({ params }) => {

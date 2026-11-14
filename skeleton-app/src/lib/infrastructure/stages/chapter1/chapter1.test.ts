@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
-import { programCost, runBattle, withAllyInitialHp } from "$lib/domain";
-import type { Program } from "$lib/domain";
+import { programCost, runBattle, withAllyInitialHp } from "#lib/domain";
+import type { Program } from "#lib/domain";
 import { STRAIGHT_CORRIDOR_STAGE } from "./straight-corridor";
 import { CORNER_TURN_STAGE } from "./corner-turn";
 import { LONG_CORRIDOR_STAGE } from "./long-corridor";

@@ -6,11 +6,11 @@
  * 章・ステージの登録順＝選択 UI の並び順。
  */
 
-import type { Chapter, Stage, StageRepository } from "$lib/application";
-import { STRAIGHT_CORRIDOR_STAGE } from "$lib/infrastructure/stages/chapter1/straight-corridor";
-import { CORNER_TURN_STAGE } from "$lib/infrastructure/stages/chapter1/corner-turn";
-import { ZIGZAG_PATH_STAGE } from "$lib/infrastructure/stages/chapter1/zigzag-path";
-import { LONG_CORRIDOR_STAGE } from "$lib/infrastructure/stages/chapter1/long-corridor";
+import type { Chapter, Stage, StageRepository } from "#lib/application";
+import { STRAIGHT_CORRIDOR_STAGE } from "#lib/infrastructure/stages/chapter1/straight-corridor";
+import { CORNER_TURN_STAGE } from "#lib/infrastructure/stages/chapter1/corner-turn";
+import { ZIGZAG_PATH_STAGE } from "#lib/infrastructure/stages/chapter1/zigzag-path";
+import { LONG_CORRIDOR_STAGE } from "#lib/infrastructure/stages/chapter1/long-corridor";
 
 // 章ごとにステージを束ねる（ディレクトリ構成 chapter1/ と対応）。
 // 章・ステージの配列順＝選択 UI の並び順。

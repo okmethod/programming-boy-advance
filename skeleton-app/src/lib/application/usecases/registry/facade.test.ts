@@ -1,7 +1,7 @@
 import { beforeEach, describe, it, expect } from "vitest";
 import { get } from "svelte/store";
-import { UNKNOWN_BASE_IMAGE, TURTLOGO_V1, TURTLOGO_V2, imageHash, type Program } from "$lib/domain";
-import type { PersistedRegistry, RegistryRepository } from "$lib/application";
+import { UNKNOWN_BASE_IMAGE, TURTLOGO_V1, TURTLOGO_V2, imageHash, type Program } from "#lib/domain";
+import type { PersistedRegistry, RegistryRepository } from "#lib/application";
 import { createRegistryFacade } from "./facade";
 import { registryImages, storeWriter } from "./store";
 

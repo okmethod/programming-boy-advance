@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { flatLines, nodeIdMap } from "./linearize";
-import { runBattle } from "$lib/domain/battle";
-import type { BattleState } from "$lib/domain/battle";
+import { runBattle } from "#lib/domain/battle";
+import type { BattleState } from "#lib/domain/battle";
 import type { Program } from "./model";
 
 describe("flatLines / nodeIdMap", () => {

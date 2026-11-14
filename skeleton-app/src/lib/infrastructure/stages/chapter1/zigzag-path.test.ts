@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
-import { runBattle, withAllyInitialHp } from "$lib/domain";
-import type { Program } from "$lib/domain";
+import { runBattle, withAllyInitialHp } from "#lib/domain";
+import type { Program } from "#lib/domain";
 import { ZIGZAG_PATH_STAGE } from "./zigzag-path";
 
 const fwd = { kind: "call", cmd: "stepForward" } as const;

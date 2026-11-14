@@ -5,7 +5,7 @@
  * センサ評価はその時点の最新状態を read() から読む＝ロックステップで公平に判断できる。
  */
 
-import type { NodeId, Program, Step, Stmt } from "$lib/domain/program";
+import type { NodeId, Program, Step, Stmt } from "#lib/domain/program";
 import type { AutomatonId, BattleState } from "./model";
 import { commandToAction } from "./engine";
 import { exprValue } from "./sensor";

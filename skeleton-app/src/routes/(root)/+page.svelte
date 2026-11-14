@@ -1,5 +1,5 @@
 <script lang="ts">
-  import CursorButton from "$lib/presentation/components/shared/CursorButton.svelte";
+  import CursorButton from "#lib/presentation/components/shared/CursorButton.svelte";
   import type { ContentButtonProps } from "./+page";
 
   let { data }: { data: { propsArray: Array<ContentButtonProps> } } = $props();

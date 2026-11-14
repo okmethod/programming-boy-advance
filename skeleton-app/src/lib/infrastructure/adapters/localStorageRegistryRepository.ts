@@ -8,7 +8,7 @@
  * ブラウザ以外（SSR/プリレンダの Node）では localStorage が無いので no-op（typeof で判定し SvelteKit に依存しない）。
  */
 
-import type { PersistedImage, PersistedRegistry, RegistryRepository } from "$lib/application";
+import type { PersistedImage, PersistedRegistry, RegistryRepository } from "#lib/application";
 
 const STORAGE_KEY = "pba:registry:v1";
 // 永続化スキーマの版（データ構造の互換性。イメージのタグ版管理(B面)とは別物）。不一致は読み捨てる。

@@ -5,8 +5,8 @@
  * docs/game-rules/base-images.md を正とする。
  */
 
-import type { Program } from "$lib/domain/program";
-import { usedCapabilities } from "$lib/domain/program";
+import type { Program } from "#lib/domain/program";
+import { usedCapabilities } from "#lib/domain/program";
 import type { BaseImage } from "./model";
 import { BASE_IMAGES } from "./catalog";
 

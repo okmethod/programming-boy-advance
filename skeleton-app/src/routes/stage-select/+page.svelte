@@ -2,8 +2,8 @@
   // ステージ選択ページ（簡易版）。モーダルと同じ中身 StageSelectList を、器だけページに載せ替える。
   // 選ぶと観戦（プレイ面）へ遷移する。
   import Icon from "@iconify/svelte";
-  import { navigateTo } from "$lib/presentation/utils/navigation";
-  import StageSelectList from "$lib/presentation/components/progression/StageSelectList.svelte";
+  import { navigateTo } from "#lib/presentation/utils/navigation";
+  import StageSelectList from "#lib/presentation/components/progression/StageSelectList.svelte";
 </script>
 
 <div class="mx-auto flex h-full max-w-3xl flex-col gap-4 p-4">

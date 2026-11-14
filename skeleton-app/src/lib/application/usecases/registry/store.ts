@@ -9,8 +9,8 @@
  */
 
 import { get, readonly, writable } from "svelte/store";
-import type { AutomatonImage } from "$lib/domain";
-import { areImagesEqual } from "$lib/domain";
+import type { AutomatonImage } from "#lib/domain";
+import { areImagesEqual } from "#lib/domain";
 import { ALLY_PRESETS } from "./presets";
 
 /**

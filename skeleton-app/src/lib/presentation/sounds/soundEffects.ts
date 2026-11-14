@@ -7,9 +7,9 @@
  * 構築フェーズの操作音は Blockly の内蔵音と馴染むよう、ノイズ系クリック（打撃質感）で作る。
  */
 
-import { audioContextProvider } from "$lib/presentation/sounds/audioStore";
-import type { NotePattern, ChordPattern, ClickPattern } from "$lib/presentation/sounds/beep";
-import { playNote, playChord, playClick } from "$lib/presentation/sounds/beep";
+import { audioContextProvider } from "#lib/presentation/sounds/audioStore";
+import type { NotePattern, ChordPattern, ClickPattern } from "#lib/presentation/sounds/beep";
+import { playNote, playChord, playClick } from "#lib/presentation/sounds/beep";
 
 // 周波数の推移だけで作る単音パターン（打撃・スイープ系）。
 const NOTE_PATTERNS = {

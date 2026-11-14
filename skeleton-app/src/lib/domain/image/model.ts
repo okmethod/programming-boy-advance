@@ -6,7 +6,7 @@
  * レジストリ／デプロイ／ビルド断面は、これにユースケース固有メタ（タグ・HP・時刻等）を足した特化形。
  */
 
-import type { CommandName, SensorName, ControlName, Program } from "$lib/domain/program";
+import type { CommandName, SensorName, ControlName, Program } from "#lib/domain/program";
 
 /** 素質（系統×版）。付与する命令セットがこの素質の「できること」を定める。 */
 export interface BaseImage {

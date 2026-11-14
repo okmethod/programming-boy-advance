@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import * as Blockly from "blockly";
-import type { Program } from "$lib/application";
+import type { Program } from "#lib/application";
 import { registerBlocks } from "./blocks";
 import { workspaceToProgram } from "./toProgram";
 import { programToWorkspace } from "./toWorkspace";

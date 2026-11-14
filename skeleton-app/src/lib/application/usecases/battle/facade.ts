@@ -10,9 +10,9 @@
  * ステージ定義の「どれを」はプレゼン（URL）が解決し、openSession で渡す（供給元の選択はプレゼンの役目）。
  */
 
-import { runBattle } from "$lib/domain";
-import type { AutomatonImage, BattleRun, Program } from "$lib/domain";
-import type { Chapter, Stage, StageRepository } from "$lib/application/ports/stageRepository";
+import { runBattle } from "#lib/domain";
+import type { AutomatonImage, BattleRun, Program } from "#lib/domain";
+import type { Chapter, Stage, StageRepository } from "#lib/application/ports/stageRepository";
 import { sandboxInitial, SANDBOX_MAX_CLOCKS, type SandboxTarget } from "./sandbox";
 import { storeWriter } from "./store";
 

@@ -4,9 +4,9 @@
  * StageRepository の Adapter からのみ参照される（供給元の切替は Port で吸収する）。
  */
 
-import type { Stage } from "$lib/application";
-import type { Program } from "$lib/domain";
-import { TURTLOGO_V2 } from "$lib/domain";
+import type { Stage } from "#lib/application";
+import type { Program } from "#lib/domain";
+import { TURTLOGO_V2 } from "#lib/domain";
 
 // まっすぐ突進し続けるだけの敵（攻撃しない）。
 const CHARGER: Program = [{ kind: "repeat", count: 100, body: [{ kind: "call", cmd: "stepForward" }] }];

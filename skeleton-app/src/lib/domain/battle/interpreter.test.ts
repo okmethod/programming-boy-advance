@@ -1,8 +1,8 @@
 import { describe, it, expect } from "vitest";
 import { interpret } from "./interpreter";
 import type { Automaton, BattleState, Direction, Position } from "./model";
-import type { Program, Step } from "$lib/domain/program";
-import { nodeIdMap } from "$lib/domain/program";
+import type { Program, Step } from "#lib/domain/program";
+import { nodeIdMap } from "#lib/domain/program";
 
 // --- テスト用ヘルパー ---
 

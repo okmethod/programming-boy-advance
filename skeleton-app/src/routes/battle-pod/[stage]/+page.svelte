@@ -9,7 +9,7 @@
   // 構築エリア（左）・試運転レール（右）はレジストリ管理ページと共有する部品に切り出した。
   // ally の編集中ドラフト（program／builtImage）はアプリ層のワークベンチ store が持つ。
   import Icon from "@iconify/svelte";
-  import { battleFacade } from "$lib/presentation/composition";
+  import { battleFacade } from "#lib/presentation/composition";
   import {
     workbenchDraft,
     workbenchFacade,
@@ -27,21 +27,21 @@
     battleParams,
     type AutomatonImage,
     type NodeId,
-  } from "$lib/application";
+  } from "#lib/application";
   import type { PageData } from "./$types";
-  import BuildingArea from "$lib/presentation/components/building/BuildingArea.svelte";
-  import BattlePodViewer from "$lib/presentation/components/spectating/BattlePodViewer.svelte";
-  import PlaybackController from "$lib/presentation/components/spectating/PlaybackController.svelte";
-  import AutomatonStatusViewer from "$lib/presentation/components/spectating/AutomatonStatusViewer.svelte";
-  import ResultOverlay from "$lib/presentation/components/spectating/ResultOverlay.svelte";
-  import SandboxRail from "$lib/presentation/components/spectating/SandboxRail.svelte";
-  import SegmentedTabs from "$lib/presentation/components/shared/SegmentedTabs.svelte";
-  import ProgramViewer from "$lib/presentation/components/inspecting/ProgramViewer.svelte";
-  import ActionLogViewer from "$lib/presentation/components/inspecting/ActionLogViewer.svelte";
-  import ImageViewer from "$lib/presentation/components/inspecting/ImageViewer.svelte";
-  import { automatonIcon } from "$lib/presentation/utils/labels";
-  import { navigateTo } from "$lib/presentation/utils/navigation";
-  import { attachPlaybackCues } from "$lib/presentation/sounds";
+  import BuildingArea from "#lib/presentation/components/building/BuildingArea.svelte";
+  import BattlePodViewer from "#lib/presentation/components/spectating/BattlePodViewer.svelte";
+  import PlaybackController from "#lib/presentation/components/spectating/PlaybackController.svelte";
+  import AutomatonStatusViewer from "#lib/presentation/components/spectating/AutomatonStatusViewer.svelte";
+  import ResultOverlay from "#lib/presentation/components/spectating/ResultOverlay.svelte";
+  import SandboxRail from "#lib/presentation/components/spectating/SandboxRail.svelte";
+  import SegmentedTabs from "#lib/presentation/components/shared/SegmentedTabs.svelte";
+  import ProgramViewer from "#lib/presentation/components/inspecting/ProgramViewer.svelte";
+  import ActionLogViewer from "#lib/presentation/components/inspecting/ActionLogViewer.svelte";
+  import ImageViewer from "#lib/presentation/components/inspecting/ImageViewer.svelte";
+  import { automatonIcon } from "#lib/presentation/utils/labels";
+  import { navigateTo } from "#lib/presentation/utils/navigation";
+  import { attachPlaybackCues } from "#lib/presentation/sounds";
   import { fade } from "svelte/transition";
 
   let { data }: { data: PageData } = $props();

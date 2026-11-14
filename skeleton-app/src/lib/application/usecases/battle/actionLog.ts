@@ -6,8 +6,8 @@
  * ＝描画部品は Program でも nodeIdMap でもなく、この View Model（行）を受け取る dumb view になる。
  */
 
-import { nodeIdMap } from "$lib/domain";
-import type { AutomatonId, BattleState, CommandName, Program } from "$lib/domain";
+import { nodeIdMap } from "#lib/domain";
+import type { AutomatonId, BattleState, CommandName, Program } from "#lib/domain";
 
 /** 行動ログの1行。ラベル・擬似コードへの整形はプレゼンに委ね、ここは生のコマンド名まで。 */
 export interface ActionLogRow {

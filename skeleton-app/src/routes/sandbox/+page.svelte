@@ -4,10 +4,10 @@
   // レジストリ（お手本/手持ちイメージの管理）は構築エリア内のタブ＝このページの一部。
   // 構築エリア・試運転レールはプレイ面の構築ドロワーと同じコンポーネントを共有する。
   // 編集中ドラフト（program／builtImage）はアプリ層のワークベンチ store が持ち、プレイ面と共有・画面跨ぎで保持する。
-  import { battleFacade } from "$lib/presentation/composition";
-  import { workbenchDraft, type NodeId } from "$lib/application";
-  import BuildingArea from "$lib/presentation/components/building/BuildingArea.svelte";
-  import SandboxRail from "$lib/presentation/components/spectating/SandboxRail.svelte";
+  import { battleFacade } from "#lib/presentation/composition";
+  import { workbenchDraft, type NodeId } from "#lib/application";
+  import BuildingArea from "#lib/presentation/components/building/BuildingArea.svelte";
+  import SandboxRail from "#lib/presentation/components/spectating/SandboxRail.svelte";
 
   // ステージを選ばない独立画面なので stage.memoryTotal/memoryGrain が無い。メモリ総量と刻み幅はこのページ固有の既定値で代替する。
   // 刻み幅 8 と噛み合う総量 32＝目盛り 0/8/16/24/32 の5段階（中央 16/16）。総量は刻み幅の倍数であること。

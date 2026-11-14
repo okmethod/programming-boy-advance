@@ -50,7 +50,7 @@ export default ts.config(
     },
   },
   // レイヤー間依存ルールの機械的強制（各バレルの @architecture コメントと対。詳細は docs/design/architecture.md）
-  // プレゼン層（src/lib/presentation・src/routes）はアプリ層バレル（$lib/application）のみを窓口にする。
+  // プレゼン層（src/lib/presentation・src/routes）はアプリ層バレル（#lib/application）のみを窓口にする。
   {
     files: ["src/lib/presentation/**", "src/routes/**"],
     rules: {
@@ -59,12 +59,12 @@ export default ts.config(
         {
           patterns: [
             {
-              group: ["$lib/domain", "$lib/domain/**"],
+              group: ["#lib/domain", "#lib/domain/**"],
               message:
-                "プレゼン層はドメイン層を直接 import しない。型/定数は $lib/application 経由（アプリ層バレルが単一窓口）。",
+                "プレゼン層はドメイン層を直接 import しない。型/定数は #lib/application 経由（アプリ層バレルが単一窓口）。",
             },
             {
-              group: ["$lib/infrastructure", "$lib/infrastructure/**"],
+              group: ["#lib/infrastructure", "#lib/infrastructure/**"],
               message: "プレゼン層はインフラ層を直接 import しない。合成ルート（composition.ts）に限る。",
             },
           ],
@@ -81,9 +81,9 @@ export default ts.config(
         {
           patterns: [
             {
-              group: ["$lib/domain", "$lib/domain/**"],
+              group: ["#lib/domain", "#lib/domain/**"],
               message:
-                "プレゼン層はドメイン層を直接 import しない。型/定数は $lib/application 経由（アプリ層バレルが単一窓口）。",
+                "プレゼン層はドメイン層を直接 import しない。型/定数は #lib/application 経由（アプリ層バレルが単一窓口）。",
             },
           ],
         },

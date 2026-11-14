@@ -3,11 +3,11 @@
   import type { Snippet } from "svelte";
   import { page } from "$app/state";
   import Icon from "@iconify/svelte";
-  import { navigateTo } from "$lib/presentation/utils/navigation";
-  import { pageTitle } from "$lib/presentation/utils/routes";
-  import { audioOn, setAudioOn, playSE } from "$lib/presentation/sounds";
-  import StageSelector from "$lib/presentation/components/progression/StageSelector.svelte";
-  import ToastLayer from "$lib/presentation/components/shared/ToastLayer.svelte";
+  import { navigateTo } from "#lib/presentation/utils/navigation";
+  import { pageTitle } from "#lib/presentation/utils/routes";
+  import { audioOn, setAudioOn, playSE } from "#lib/presentation/sounds";
+  import StageSelector from "#lib/presentation/components/progression/StageSelector.svelte";
+  import ToastLayer from "#lib/presentation/components/shared/ToastLayer.svelte";
 
   let { children }: { children: Snippet } = $props();
 

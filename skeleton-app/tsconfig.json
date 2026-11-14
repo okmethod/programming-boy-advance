@@ -17,10 +17,16 @@
     "sourceMap": true,
 
     /* 役割の明確化 */
-    "noEmit": true // コンパイルはViteに任せる
+    "noEmit": true, // コンパイルはViteに任せる
+
+    // #lib/* の型解決。
+    // 実行時/バンドルは package.json の subpath imports が解決するが、
+    // TS は imports ターゲットの拡張子/index 補完をしないため paths で別途与える
+    "paths": {
+      "#lib/*": ["./src/lib/*"]
+    }
   },
   "include": ["src", "tests", "*"],
   "exclude": ["src/service-worker"]
-  // Path aliases are handled by https://svelte.dev/docs/kit/configuration#alias
-  // except $lib which is handled by https://svelte.dev/docs/kit/configuration#files
+  // #lib/* は package.json の subpath imports で解決する（Bundler resolution が参照）
 }

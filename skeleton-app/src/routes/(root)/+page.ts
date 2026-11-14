@@ -1,5 +1,5 @@
-import { navigateTo } from "$lib/presentation/utils/navigation";
-import { GITHUB_REPO_URL } from "$lib/presentation/utils/constants";
+import { navigateTo } from "#lib/presentation/utils/navigation";
+import { GITHUB_REPO_URL } from "#lib/presentation/utils/constants";
 
 interface Content {
   title: string;

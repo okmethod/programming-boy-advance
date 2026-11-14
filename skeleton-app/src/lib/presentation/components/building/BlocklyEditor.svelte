@@ -4,7 +4,7 @@
   import { untrack } from "svelte";
   import { get } from "svelte/store";
   import * as Blockly from "blockly";
-  import type { BaseImage, Program } from "$lib/application";
+  import type { BaseImage, Program } from "#lib/application";
   import {
     registerBlocks,
     registerFixedWidthFlyout,
@@ -14,8 +14,8 @@
     workspaceToProgram,
     programToWorkspace,
     RETRO_THEME,
-  } from "$lib/presentation/blockly";
-  import { audioOn } from "$lib/presentation/sounds";
+  } from "#lib/presentation/blockly";
+  import { audioOn } from "#lib/presentation/sounds";
 
   interface BlocklyEditorProps {
     // 土台にする素質（系統×版）。付与命令セットがパレットに出せるブロックを決める（コマンド解放の seam）。

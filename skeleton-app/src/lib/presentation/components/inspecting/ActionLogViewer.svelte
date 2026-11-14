@@ -2,8 +2,8 @@
   // 行動ログ（表示専用）：指定オートマトンが起こした行動を1行ずつ蓄積し、再生に合わせて末尾へ自動スクロールする。
   // フレーム列 × program からの畳み込みは app 層（buildActionLog）が担うので、ここは行（View Model）を受け取る dumb view。
   import { tick } from "svelte";
-  import type { ActionLogRow } from "$lib/application";
-  import { commandLabel } from "$lib/presentation/utils/labels";
+  import type { ActionLogRow } from "#lib/application";
+  import { commandLabel } from "#lib/presentation/utils/labels";
   import DarkViewerPanel from "./DarkViewerPanel.svelte";
 
   interface ActionLogViewerProps {

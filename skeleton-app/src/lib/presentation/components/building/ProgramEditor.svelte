@@ -11,7 +11,7 @@
   // 観戦オーバーレイ（ProgramViewer）と重ねたとき桁がずれないよう、ガター/本文の各層で同じ 2px を透明ボーダーで確保する。
   import { untrack } from "svelte";
   import Icon from "@iconify/svelte";
-  import type { ParseError } from "$lib/application";
+  import type { ParseError } from "#lib/application";
 
   interface ProgramEditorProps {
     // マウント時の種テキスト（親が $draftText で渡す）。以後の権威はこのローカルテキスト。

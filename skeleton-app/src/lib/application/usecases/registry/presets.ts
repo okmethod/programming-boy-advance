@@ -6,8 +6,8 @@
  * Port 経由でインフラ層に移す）。
  */
 
-import type { BaseImage, Program } from "$lib/domain";
-import { TURTLOGO_V2, TURTLOGO_V3 } from "$lib/domain";
+import type { BaseImage, Program } from "#lib/domain";
+import { TURTLOGO_V2, TURTLOGO_V3 } from "#lib/domain";
 
 /** お手本プリセット：ブロックで組む前に挙動を確かめるための見本。 */
 export interface AllyPreset {

@@ -5,7 +5,7 @@
  * B面＝ローカル実行×テストダブル（stub）。「書く → ローカルで試す → 本番」の "試す" を担う。
  */
 
-import type { Automaton, BattleState } from "$lib/domain";
+import type { Automaton, BattleState } from "#lib/domain";
 
 /**
  * 試運転で ally の前に置く的。

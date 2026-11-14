@@ -32,8 +32,8 @@ export type {
   BattleRun,
   ParseError,
   ParseResult,
-} from "$lib/domain";
-export { imageHash } from "$lib/domain";
+} from "#lib/domain";
+export { imageHash } from "#lib/domain";
 
 export { createBattleFacade } from "./usecases/battle/facade";
 export type { BattleFacade } from "./usecases/battle/facade";

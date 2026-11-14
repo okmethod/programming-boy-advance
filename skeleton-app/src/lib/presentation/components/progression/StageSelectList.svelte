@@ -2,7 +2,7 @@
   // ステージ選択の「中身」。host（モーダル／進行ページ）から器を差し替えて共通利用する。
   // chrome（モーダル枠／ページ枠）は持たず、一覧表示と選択だけに責務を絞る＝器を差し替えられる。
   import Icon from "@iconify/svelte";
-  import { chapterList } from "$lib/presentation/composition";
+  import { chapterList } from "#lib/presentation/composition";
   import { stageIcon } from "./stageIcon";
 
   interface StageSelectListProps {

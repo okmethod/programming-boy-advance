@@ -6,8 +6,8 @@
    * 色・サイズ・濃淡は文脈（明地／暗地）で変わるので、呼び出し側がクラスで上書きする（CursorButton と同じ流儀）。
    */
   import Icon from "@iconify/svelte";
-  import type { BaseImage } from "$lib/application";
-  import { baseImageTag } from "$lib/presentation/utils/labels";
+  import type { BaseImage } from "#lib/application";
+  import { baseImageTag } from "#lib/presentation/utils/labels";
 
   interface BaseImageChipProps {
     base: BaseImage;

@@ -3,7 +3,7 @@
   // 中身を受けない固定層（器ではない）。アプリに1つだけ layout に置く。
   import { Portal, Toast } from "@skeletonlabs/skeleton-svelte";
   import Icon from "@iconify/svelte";
-  import { toaster } from "$lib/presentation/utils/toaster";
+  import { toaster } from "#lib/presentation/utils/toaster";
 </script>
 
 <Portal>

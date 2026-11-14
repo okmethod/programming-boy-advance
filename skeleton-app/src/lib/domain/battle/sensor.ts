@@ -4,7 +4,7 @@
  * インタプリタが if/while の条件を判断するためにその時点の最新状態へ問い合わせる入口。
  */
 
-import type { Expr, SensorName } from "$lib/domain/program";
+import type { Expr, SensorName } from "#lib/domain/program";
 import type { AutomatonId, BattleState } from "./model";
 import { frontCell, isBlocked, arePositionsEqual } from "./grid";
 

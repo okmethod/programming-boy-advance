@@ -6,7 +6,7 @@
  * コンポーネント初期化時に一度だけ呼ぶこと（$effect の制約）。
  */
 
-import type { BattleState } from "$lib/application";
+import type { BattleState } from "#lib/application";
 import { resolvePlaybackCue } from "./battleCues";
 import { playSE } from "./soundEffects";
 

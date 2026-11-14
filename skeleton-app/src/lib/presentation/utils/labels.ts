@@ -1,4 +1,4 @@
-import type { AutomatonId, BaseImage, BattleState, CommandName, ControlName, SensorName } from "$lib/application";
+import type { AutomatonId, BaseImage, BattleState, CommandName, ControlName, SensorName } from "#lib/application";
 
 /** コマンド（命令）の A面表示ラベル（実行ログなどで使う。ブロックの見た目と揃える）。 */
 export const commandLabel = (cmd: CommandName): string => {

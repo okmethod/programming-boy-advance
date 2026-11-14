@@ -7,7 +7,7 @@
  * レベルデザインは docs/design/ux-level-design.md を正とする。
  */
 
-import type { BaseImage, BattleParams, BattleState, Program } from "$lib/domain";
+import type { BaseImage, BattleParams, BattleState, Program } from "#lib/domain";
 
 /**
  * ステージ＝1 回の対戦の「お膳立て」。

@@ -11,9 +11,9 @@
  */
 
 import { derived, get, readonly, writable } from "svelte/store";
-import { runBattle, resolveBattleParams, imageHash, flatLines, withAllyInitialHp } from "$lib/domain";
-import type { AutomatonImage, BattleParams, BattleRun, FlatLine } from "$lib/domain";
-import type { Stage } from "$lib/application/ports/stageRepository";
+import { runBattle, resolveBattleParams, imageHash, flatLines, withAllyInitialHp } from "#lib/domain";
+import type { AutomatonImage, BattleParams, BattleRun, FlatLine } from "#lib/domain";
+import type { Stage } from "#lib/application/ports/stageRepository";
 import { buildActionLog, type ActionLogRow } from "./actionLog";
 
 /**

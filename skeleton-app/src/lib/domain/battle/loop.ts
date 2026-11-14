@@ -6,8 +6,8 @@
  * 対戦は決定的に進み、同入力なら必ず同結果になる。
  */
 
-import type { NodeId, Program, Step } from "$lib/domain/program";
-import { nodeIdMap } from "$lib/domain/program";
+import type { NodeId, Program, Step } from "#lib/domain/program";
+import { nodeIdMap } from "#lib/domain/program";
 import type { Automaton, AutomatonId, BattleResult, BattleState } from "./model";
 import { applyAction, advanceClock } from "./engine";
 import { BATTLE_PARAMS, type BattleParams } from "./params";

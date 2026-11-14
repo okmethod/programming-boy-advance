@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { parseProgram, programToText } from "./parse";
-import { TURTLOGO_V1, TURTLOGO_V2 } from "$lib/domain/image";
+import { TURTLOGO_V1, TURTLOGO_V2 } from "#lib/domain/image";
 import type { Program } from "./model";
 
 describe("parseProgram / programToText", () => {

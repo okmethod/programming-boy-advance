@@ -6,7 +6,7 @@
  * チャプター内の各ステージで敵の構えは共通（配置だけステージごとに変える）のでここに一度だけ置く。
  */
 
-import type { Program } from "$lib/domain";
+import type { Program } from "#lib/domain";
 
 /** 正面に立たれると自壊する脆弱な敵のプログラム（while(true){ brittleAttack }）。 */
 export const BRITTLE_ENEMY_PROGRAM: Program = [

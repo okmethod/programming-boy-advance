@@ -5,9 +5,9 @@
  * BP（ビジーポイント）管理をプレイヤーに意識させる差分。
  */
 
-import type { Stage } from "$lib/application";
-import type { Program } from "$lib/domain";
-import { TURTLOGO_V2 } from "$lib/domain";
+import type { Stage } from "#lib/application";
+import type { Program } from "#lib/domain";
+import { TURTLOGO_V2 } from "#lib/domain";
 
 // 目の前に相手がいれば負荷攻撃で過負荷を狙い、いなければ前進する妨害型の敵。
 const DISRUPTOR: Program = [

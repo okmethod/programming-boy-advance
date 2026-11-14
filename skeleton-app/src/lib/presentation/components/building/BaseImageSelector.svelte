@@ -13,10 +13,10 @@
     workbenchDraft,
     workbenchFacade,
     type BaseImage,
-  } from "$lib/application";
-  import { commandLabel, sensorLabel, controlLabel, baseImageTag, versionTag } from "$lib/presentation/utils/labels";
-  import BaseImageChip from "$lib/presentation/components/shared/BaseImageChip.svelte";
-  import ModalShell from "$lib/presentation/components/shared/ModalShell.svelte";
+  } from "#lib/application";
+  import { commandLabel, sensorLabel, controlLabel, baseImageTag, versionTag } from "#lib/presentation/utils/labels";
+  import BaseImageChip from "#lib/presentation/components/shared/BaseImageChip.svelte";
+  import ModalShell from "#lib/presentation/components/shared/ModalShell.svelte";
 
   interface BaseImageSelectorProps {
     // 非互換（使用中ブロックが残ると不整合）な切替のとき、編集中プログラムを空にする。

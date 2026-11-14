@@ -5,8 +5,8 @@
  * 再生ループ側はこの写像を購読して playSE を鳴らすだけに保つ（状態→SE の写像を純関数に閉じる）。
  */
 
-import type { BattleState } from "$lib/application";
-import type { BattleCue } from "$lib/presentation/sounds/soundEffects";
+import type { BattleState } from "#lib/application";
+import type { BattleCue } from "#lib/presentation/sounds/soundEffects";
 
 /**
  * 1クロック進んだ差分から効果音 cue を1つ返す。

@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
-import type { BattleState } from "$lib/application";
-import { selectBattleCue, resolvePlaybackCue } from "$lib/presentation/sounds/battleCues";
+import type { BattleState } from "#lib/application";
+import { selectBattleCue, resolvePlaybackCue } from "#lib/presentation/sounds/battleCues";
 
 // 差分検知に必要なフィールドだけを持つ最小盤面を組む（grid/clock 等は判定に無関係）。
 function stateWith(ally: Partial<BattleState["automatons"][number]>): BattleState {

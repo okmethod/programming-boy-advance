@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { serializeRegistry, deserializeRegistry } from "./localStorageRegistryRepository";
-import type { PersistedRegistry } from "$lib/application";
+import type { PersistedRegistry } from "#lib/application";
 
 const sample: PersistedRegistry = {
   seq: 2,

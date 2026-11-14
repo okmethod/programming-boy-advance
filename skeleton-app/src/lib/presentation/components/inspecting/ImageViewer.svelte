@@ -6,9 +6,9 @@
   // 両列で同じ体裁にして観戦ビューの左右対称を保つ。
   // ベースイメージ（素質）の情報もここに載せる（content-addressable の B面の芽＝何から作ったか）。
   import Icon from "@iconify/svelte";
-  import type { BaseImage } from "$lib/application";
+  import type { BaseImage } from "#lib/application";
   import DarkViewerPanel from "./DarkViewerPanel.svelte";
-  import BaseImageChip from "$lib/presentation/components/shared/BaseImageChip.svelte";
+  import BaseImageChip from "#lib/presentation/components/shared/BaseImageChip.svelte";
 
   interface ImageViewerProps {
     // 内容ハッシュ（content fingerprint）。null＝イメージ未確定（未デプロイ等）で空表示にする。

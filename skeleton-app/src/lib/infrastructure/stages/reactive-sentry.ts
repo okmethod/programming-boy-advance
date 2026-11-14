@@ -5,9 +5,9 @@
  * 突進型（攻撃しない）との差分でプレイヤーに読解を促す。
  */
 
-import type { Stage } from "$lib/application";
-import type { Program } from "$lib/domain";
-import { TURTLOGO_V3 } from "$lib/domain";
+import type { Stage } from "#lib/application";
+import type { Program } from "#lib/domain";
+import { TURTLOGO_V3 } from "#lib/domain";
 
 // 目の前に相手がいれば攻撃、いなければ前進し続ける反応型の敵。
 const SENTRY: Program = [

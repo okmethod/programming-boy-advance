@@ -10,9 +10,9 @@
  * （reactive に使う側は registryImages を併せて購読する）。
  */
 
-import type { AutomatonImage, BaseImage } from "$lib/domain";
-import { BASE_IMAGES, UNKNOWN_BASE_IMAGE, imageHash, areImagesEqual } from "$lib/domain";
-import type { PersistedImage, PersistedRegistry, RegistryRepository } from "$lib/application/ports/registryRepository";
+import type { AutomatonImage, BaseImage } from "#lib/domain";
+import { BASE_IMAGES, UNKNOWN_BASE_IMAGE, imageHash, areImagesEqual } from "#lib/domain";
+import type { PersistedImage, PersistedRegistry, RegistryRepository } from "#lib/application/ports/registryRepository";
 import { storeWriter, type RegistryImage } from "./store";
 
 /** UI が参照する手持ちイメージ操作の単一窓口。 */

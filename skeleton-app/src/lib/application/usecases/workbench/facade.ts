@@ -10,8 +10,8 @@
  * current() は非追跡の一発読み（Blockly への hydrate 等、reactive でない参照用）。
  */
 
-import type { BaseImage, Program, ParseResult } from "$lib/domain";
-import { parseProgram } from "$lib/domain";
+import type { BaseImage, Program, ParseResult } from "#lib/domain";
+import { parseProgram } from "#lib/domain";
 import { storeWriter, type WorkbenchDraft } from "./store";
 
 // プルで取り込む元イメージの最小形（RegistryImage の必要フィールドのみ）。

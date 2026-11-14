@@ -4,8 +4,8 @@
   // 現在ステージ id は URL（page.params.stage）が SSoT。強調の材料として直接購読する。
   import Icon from "@iconify/svelte";
   import { page } from "$app/state";
-  import { navigateTo } from "$lib/presentation/utils/navigation";
-  import ModalShell from "$lib/presentation/components/shared/ModalShell.svelte";
+  import { navigateTo } from "#lib/presentation/utils/navigation";
+  import ModalShell from "#lib/presentation/components/shared/ModalShell.svelte";
   import StageSelectList from "./StageSelectList.svelte";
 
   // 開閉状態（このセレクタが所有）。トリガで開き、選択／閉じるで閉じる。

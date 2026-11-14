@@ -13,11 +13,11 @@
     imageHash,
     type RegistryImage,
     type Program,
-  } from "$lib/application";
-  import { registryFacade } from "$lib/presentation/composition";
-  import { playSE } from "$lib/presentation/sounds";
-  import { hhmm } from "$lib/presentation/utils/labels";
-  import BaseImageChip from "$lib/presentation/components/shared/BaseImageChip.svelte";
+  } from "#lib/application";
+  import { registryFacade } from "#lib/presentation/composition";
+  import { playSE } from "#lib/presentation/sounds";
+  import { hhmm } from "#lib/presentation/utils/labels";
+  import BaseImageChip from "#lib/presentation/components/shared/BaseImageChip.svelte";
 
   interface RegistryBrowserProps {
     // パネルの背景クラス。このエリアを置く親の背景に合わせる。

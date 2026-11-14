@@ -25,16 +25,16 @@
     type BaseImage,
     type ParseError,
     type NodeId,
-  } from "$lib/application";
-  import { automatonIcon, hhmm } from "$lib/presentation/utils/labels";
-  import { playSE } from "$lib/presentation/sounds";
+  } from "#lib/application";
+  import { automatonIcon, hhmm } from "#lib/presentation/utils/labels";
+  import { playSE } from "#lib/presentation/sounds";
   import BlocklyEditor from "./BlocklyEditor.svelte";
   import BaseImageSelector from "./BaseImageSelector.svelte";
   import CapacityAllocator from "./CapacityAllocator.svelte";
   import RegistryBrowser from "./RegistryBrowser.svelte";
-  import SegmentedTabs from "$lib/presentation/components/shared/SegmentedTabs.svelte";
+  import SegmentedTabs from "#lib/presentation/components/shared/SegmentedTabs.svelte";
   import ProgramEditor from "./ProgramEditor.svelte";
-  import ProgramViewer from "$lib/presentation/components/inspecting/ProgramViewer.svelte";
+  import ProgramViewer from "#lib/presentation/components/inspecting/ProgramViewer.svelte";
 
   interface BuildingAreaProps {
     // メモリ総量＝HP↔CP 配分の原資。プレイ面=stage.memoryTotal／サンドボックス=画面ローカル既定。

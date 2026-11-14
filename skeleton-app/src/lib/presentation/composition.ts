@@ -3,9 +3,9 @@
  *
  * @architecture レイヤー間依存ルール - プレゼン層（外縁）
  * - ROLE: 描画・ブロック UI・操作の受付
- * - ALLOWED: アプリ層（$lib/application）への依存のみ
- * - FORBIDDEN: ドメイン層（$lib/domain）・インフラ層（$lib/infrastructure）への直接依存
- *   - 型/定数はアプリ層バレルの re-export 経由で取る（$lib/domain 直 import 禁止・lint で強制）
+ * - ALLOWED: アプリ層（#lib/application）への依存のみ
+ * - FORBIDDEN: ドメイン層（#lib/domain）・インフラ層（#lib/infrastructure）への直接依存
+ *   - 型/定数はアプリ層バレルの re-export 経由で取る（#lib/domain 直 import 禁止・lint で強制）
  *   - 例外: プレゼン層では、この合成ルートだけがインフラ層を直接 import してよい。
  * - 単一バレルを持たない層のため、層全体のルールは代表してこのファイルに記す
  *
@@ -19,9 +19,9 @@
  *   SSR でもリクエスト跨ぎの状態汚染が起きないため singleton で安全。
  */
 
-import { createBattleFacade, createRegistryFacade } from "$lib/application";
-import type { BattleFacade, Chapter, RegistryFacade } from "$lib/application";
-import { localStorageRegistryRepository, staticStageRepository } from "$lib/infrastructure";
+import { createBattleFacade, createRegistryFacade } from "#lib/application";
+import type { BattleFacade, Chapter, RegistryFacade } from "#lib/application";
+import { localStorageRegistryRepository, staticStageRepository } from "#lib/infrastructure";
 
 /** UI 全体で共有する単一の Facade ＝ UI からゲームロジックへの唯一の窓口。 */
 export const battleFacade: BattleFacade = createBattleFacade(staticStageRepository);

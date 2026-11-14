@@ -4,7 +4,7 @@
  * 盤面の幾何（移動先・通行判定）は grid に委ね、ここは状態の更新に徹する。
  */
 
-import type { Action, CommandName } from "$lib/domain/program";
+import type { Action, CommandName } from "#lib/domain/program";
 import type { Automaton, AutomatonId, BattleState, Winner } from "./model";
 import { frontCell, isBlocked, rotate, arePositionsEqual } from "./grid";
 import { BATTLE_PARAMS, type BattleParams } from "./params";

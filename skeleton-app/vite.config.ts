@@ -30,9 +30,7 @@ const content404 = ((base: string) => `
 `)(githubRepoName);
 
 export default defineConfig({
-  // Github Pagesで公開する場合は、base にリポジトリ名を指定
-  base: `/${githubRepoName}/`,
-  publicDir: "static",
+  // base と publicDir は SvelteKit が管理する（paths.base / static ディレクトリ）
   build: {
     minify: "terser",
     terserOptions: {
@@ -48,10 +46,7 @@ export default defineConfig({
       // Consult https://svelte.dev/docs/kit/integrations
       // for more information about preprocessors
       preprocess: vitePreprocess(),
-      // SvelteKit v3 で $lib は廃止されたが、エイリアス指定で従来どおり利用する
-      alias: {
-        $lib: "src/lib",
-      },
+      // SvelteKit v3 で $lib は廃止。package.json の subpath imports (#lib/*) に移行済み
       appDir: "app",
       adapter: adapter({
         pages: "build",

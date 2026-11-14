@@ -16,7 +16,7 @@
  */
 
 import { derived, get, readonly, writable } from "svelte/store";
-import type { AutomatonImage, BaseImage, BaseImageFamily, Program } from "$lib/domain";
+import type { AutomatonImage, BaseImage, BaseImageFamily, Program } from "#lib/domain";
 import {
   TURTLOGO_V2,
   imageHash,
@@ -25,7 +25,7 @@ import {
   flatLines,
   programToText,
   baseImageFamilies,
-} from "$lib/domain";
+} from "#lib/domain";
 
 /** 編集中のドラフト断面。program＝Blockly からの最新、builtImage＝ビルドで凍結した断面。 */
 export interface WorkbenchDraft {
@@ -129,13 +129,13 @@ export function differsFromBuilt(draft: WorkbenchDraft, image: Program | null): 
  * 判定規則そのもの（命令セットの包含）はドメインに委ね、プレゼンは候補×program を引数で渡して購読する
  * ＝素質選択UIの関心を workbench の公開面へ畳む（プレゼンがドメインルールを直呼びしない）。
  */
-export { baseImageSupports } from "$lib/domain";
+export { baseImageSupports } from "#lib/domain";
 
 /**
  * 素質カタログのステージ制限（許可集合でのフィルタ）とクランプ判定もドメインに委ね、プレゼンへ公開面を畳む。
  * 素質選択UIは許可版だけのカタログを購読し、ページはクランプ判定（許可外→最上位版）に使う。
  */
-export { filterBaseImageFamilies, baseImageAllowed, highestAllowedImage } from "$lib/domain";
+export { filterBaseImageFamilies, baseImageAllowed, highestAllowedImage } from "#lib/domain";
 
 /**
  * ドラフトへの機械的な書き込み口（facade からのみ呼ぶ・UI には公開しない）。

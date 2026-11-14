@@ -7,7 +7,7 @@ import {
   highestAllowedImage,
 } from "./baseImage";
 import { TURTLOGO_V1, TURTLOGO_V2, TURTLOGO_V3 } from "./catalog";
-import type { Program } from "$lib/domain/program";
+import type { Program } from "#lib/domain/program";
 
 describe("後方互換の原則（同一系統）", () => {
   // 規約: 同一系統では版を上げると付与集合が単調増加（上位版 ⊇ 下位版）。

@@ -6,7 +6,7 @@
  * やり取りは純シリアライズ可能な DTO に限る（リアクティブ型・ドメイン実体は持ち込まない）。
  */
 
-import type { Program } from "$lib/domain";
+import type { Program } from "#lib/domain";
 
 /**
  * 永続化する手持ちイメージ1件（DTO）。

@@ -1,6 +1,6 @@
-import type { Stage } from "$lib/application";
-import { BRITTLE_SENTRY, TURTLOGO_V1 } from "$lib/domain";
-import { BRITTLE_ENEMY_LABEL, BRITTLE_ENEMY_PROGRAM } from "$lib/infrastructure/stages/chapter1/brittle-enemy";
+import type { Stage } from "#lib/application";
+import { BRITTLE_SENTRY, TURTLOGO_V1 } from "#lib/domain";
+import { BRITTLE_ENEMY_LABEL, BRITTLE_ENEMY_PROGRAM } from "#lib/infrastructure/stages/chapter1/brittle-enemy";
 
 export const CORNER_TURN_STAGE: Stage = {
   id: "corner-turn",
