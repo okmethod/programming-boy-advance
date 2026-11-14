@@ -1,7 +1,7 @@
 <script lang="ts">
   // バトルポッドの盤面描画（表示専用）。1 フレーム分の BattleState を受けてグリッドと勝敗を描く。
   import Icon from "@iconify/svelte";
-  import type { BattleState, Direction } from "#lib/application";
+  import type { AutomatonId, BattleState, Direction } from "#lib/application";
   import { automatonIcon } from "#lib/presentation/utils/labels";
 
   interface BattlePodViewerProps {
@@ -12,9 +12,23 @@
     stubEnemy?: boolean;
     // 自キャラを非活性に見せる（開始前など）。ally スプライトをくすませて「まだ動いていない」を示す。
     allyInactive?: boolean;
+    // 直前フレーム。被弾（HP減）の差分検出に使う。省略時（先頭フレーム等）は被弾演出なし。
+    prev?: BattleState;
   }
 
-  let { state, size = "lg", stubEnemy = false, allyInactive = false }: BattlePodViewerProps = $props();
+  let { state, size = "lg", stubEnemy = false, allyInactive = false, prev }: BattlePodViewerProps = $props();
+
+  // 直前フレーム比で HP が減ったオートマトンの id＝このクロックで被弾した者。該当スプライトを1クロックだけ赤フラッシュ＋シェイクで示す。
+  const damagedIds = $derived.by<AutomatonId[]>(() => {
+    if (!prev) return [];
+    const before = prev;
+    return state.automatons
+      .filter((after) => {
+        const was = before.automatons.find((a) => a.id === after.id);
+        return was != null && after.hp < was.hp;
+      })
+      .map((after) => after.id);
+  });
 
   // stub（テストダブル）のアイコン。サンドバッグ役のゴーストで、本物の敵（怒りロボ）とは見た目で分ける。
   const STUB_ICON = "mdi:ghost";
@@ -111,10 +125,20 @@
       {@const e = automatonAt(state, x, y)}
       <div class="relative flex items-center justify-center rounded border border-gray-300 bg-white {wallClass(x, y)}">
         {#if e}
-          <!-- スプライトは中央固定。向きシェブロンだけを向いている側の縁に絶対配置（向き＝位置＋形の二重表現）。 -->
-          <!-- スプライトは重心がやや下。矢印（縦中央）との見た目のズレを埋めるため、スプライトを少し上へ寄せる。 -->
-          <!-- スプライトは黒で描く。 -->
-          <Icon icon={iconFor(e)} class="-translate-y-[10%] text-black {iconClass} {inactiveClass(e)}" />
+          {@const hurt = damagedIds.includes(e.id)}
+          <!-- clock をキーにして被弾クロックごとに作り直す＝一過性アニメ（フラッシュ/シェイク）を鳴らし直す。 -->
+          {#key state.clock}
+            {#if hurt}
+              <!-- 被弾フラッシュ：このクロックだけセルを赤く光らせ「ここで当たった」を盤面で示す。 -->
+              <span class="absolute inset-0 rounded bg-red-500 animate-hit-flash"></span>
+            {/if}
+            <!-- スプライトは中央固定。被弾時だけ親 span を揺らす（Icon の -translate-y を壊さないよう分離）。 -->
+            <!-- スプライトは重心がやや下。矢印（縦中央）との見た目のズレを埋めるため、スプライトを少し上へ寄せる。黒で描く。 -->
+            <span class="absolute inset-0 flex items-center justify-center {hurt ? 'animate-hit-shake' : ''}">
+              <Icon icon={iconFor(e)} class="-translate-y-[10%] text-black {iconClass} {inactiveClass(e)}" />
+            </span>
+          {/key}
+          <!-- 向きシェブロンは向いている側の縁に絶対配置（向き＝位置＋形の二重表現）。常時表示。 -->
           <Icon
             icon={dirChevron(e.dir)}
             class="absolute text-gray-400 {chevronClass} {dirChevronPos(e.dir)} {inactiveClass(e)}"

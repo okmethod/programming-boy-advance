@@ -30,8 +30,11 @@
   // 未ビルド（image=null）のときは実行しない。ビルドして初めて試運転できる。
   const run = $derived(image ? facade.runSandbox(image, sandboxTarget) : null);
   const frames = $derived(run?.frames ?? []);
-  const current = $derived(frames.length > 0 ? frames[Math.min(frameIndex, frames.length - 1)] : null);
+  const currentIndex = $derived(Math.min(frameIndex, Math.max(0, frames.length - 1)));
+  const current = $derived(frames.length > 0 ? frames[currentIndex] : null);
   const lastIndex = $derived(Math.max(0, frames.length - 1));
+  // 被弾演出の差分元＝直前フレーム（先頭は比較対象なしで undefined）。
+  const prevFrame = $derived(currentIndex > 0 ? frames[currentIndex - 1] : undefined);
 
   // 現在フレームの ally 実行中ノードを親へ報告する（編集面ハイライトの素通し口）。
   $effect(() => {
@@ -90,7 +93,7 @@
 {#if image && current}
   <!-- 盤面：再生は下、残りはログで埋める。 -->
   <div class="flex shrink-0 justify-center">
-    <BattlePodViewer state={current} size="sm" stubEnemy={sandboxTarget === "stub"} />
+    <BattlePodViewer state={current} size="sm" stubEnemy={sandboxTarget === "stub"} prev={prevFrame} />
   </div>
   <!-- 再生ボタンを run の発火口にする（押した近傍へ吹き出し＋発進音）。 -->
   <PlaybackController

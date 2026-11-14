@@ -49,6 +49,36 @@
   background-color: #0f380f;
 }
 
+/* 被弾演出（盤面）。1クロックだけ赤く光らせ・揺らす一過性アニメ。
+   Tailwind 組込みの animate-* は無限ループなので iteration 1 のアニメを自前で持つ。
+   組込みと同じ生成経路に乗せるため @theme の --animate-* に登録し animate-hit-* ユーティリティを生やす。
+   発火側は {#key clock} で要素を作り直して毎クロック鳴らし直す。 */
+@theme {
+  --animate-hit-flash: hit-flash 400ms ease-out 1;
+  --animate-hit-shake: hit-shake 200ms ease-in-out 1;
+
+  @keyframes hit-flash {
+    0% {
+      opacity: 0.7;
+    }
+    100% {
+      opacity: 0;
+    }
+  }
+  @keyframes hit-shake {
+    0%,
+    100% {
+      transform: translateX(0);
+    }
+    25% {
+      transform: translateX(-4%);
+    }
+    75% {
+      transform: translateX(4%);
+    }
+  }
+}
+
 /* アプリ標準ボタンをレイアウト＋配色ごと1クラスに集約し、全ボタンで共通利用して一貫性を保つ。
    用途で2バリアント（通常 / 強調）を使い分ける。見た目はタブ（idle / active）に合わせてある。
    Skeleton の btn は padding/角丸/hover まで強く上書きして見た目を崩すため採らない。

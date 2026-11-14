@@ -130,7 +130,10 @@
   const current = $derived(frames.length > 0 ? frames[Math.min(frameIndex, frames.length - 1)] : null);
   const lastIndex = $derived(Math.max(0, frames.length - 1));
   const displayFrames = $derived(frames.length > 0 ? frames : [stage.initial]);
-  const displayFrame = $derived(displayFrames[Math.min(frameIndex, displayFrames.length - 1)]);
+  const displayFrameIndex = $derived(Math.min(frameIndex, displayFrames.length - 1));
+  const displayFrame = $derived(displayFrames[displayFrameIndex]);
+  // 被弾演出の差分元＝直前フレーム（先頭は比較対象なしで undefined）。
+  const prevFrame = $derived(displayFrameIndex > 0 ? displayFrames[displayFrameIndex - 1] : undefined);
 
   // 決着の表示は「観戦が決着フレームに到達したとき」に出す（結果を先にネタバレしない）。
   const decided = $derived(current?.winner != null);
@@ -250,7 +253,7 @@
       <!-- 盤面エリア（残り高を埋める。決着時は結果オーバーレイを重ねる） -->
       <div class="relative min-h-0 w-full flex-1">
         <!-- 非活性はデプロイ前のみ（まだ自機が出ていない）。デプロイ後は実行前でも活性で描く。 -->
-        <BattlePodViewer state={displayFrame} allyInactive={deployed === null} />
+        <BattlePodViewer state={displayFrame} allyInactive={deployed === null} prev={prevFrame} />
         {#if decided && result}
           <!-- 「次へ」は勝利時かつ次ステージがあるときだけ（onNext を渡す＝条件成立）。遷移先 id はプレゼンが解決。 -->
           <ResultOverlay
