@@ -4,6 +4,7 @@
   import Icon from "@iconify/svelte";
   import { buildActionLog, type BattleFacade, type SandboxTarget, type Program, type NodeId } from "#lib/application";
   import { attachPlaybackCues } from "#lib/presentation/sounds";
+  import { resolveFrameCursor } from "#lib/presentation/utils/frameCursor";
   import BattlePodViewer from "./BattlePodViewer.svelte";
   import PlaybackController from "./PlaybackController.svelte";
   import ActionLogViewer from "#lib/presentation/components/inspecting/ActionLogViewer.svelte";
@@ -29,11 +30,8 @@
   // 未ビルド（image=null）のときは実行しない。ビルドして初めて試運転できる。
   const run = $derived(image ? facade.runSandbox(image, sandboxTarget) : null);
   const frames = $derived(run?.frames ?? []);
-  const currentIndex = $derived(Math.min(frameIndex, Math.max(0, frames.length - 1)));
-  const current = $derived(frames.length > 0 ? frames[currentIndex] : null);
-  const lastIndex = $derived(Math.max(0, frames.length - 1));
-  // 被弾演出の差分元＝直前フレーム（先頭は比較対象なしで undefined）。
-  const prevFrame = $derived(currentIndex > 0 ? frames[currentIndex - 1] : undefined);
+  const cursor = $derived(resolveFrameCursor(frames, frameIndex));
+  const current = $derived(cursor.current);
 
   // 現在フレームの ally 実行中ノードを親へ報告する（編集面ハイライトの素通し口）。
   $effect(() => {
@@ -92,10 +90,10 @@
 {#if image && current}
   <!-- 盤面：再生は下、残りはログで埋める。 -->
   <div class="flex shrink-0 justify-center">
-    <BattlePodViewer state={current} size="sm" stubEnemy={sandboxTarget === "stub"} prev={prevFrame} />
+    <BattlePodViewer state={current} size="sm" stubEnemy={sandboxTarget === "stub"} prev={cursor.prev} />
   </div>
   <!-- 再生開始の発進演出は PlaybackController 内で発火する。 -->
-  <PlaybackController bind:frameIndex bind:playing {lastIndex} clock={current.clock} />
+  <PlaybackController bind:frameIndex bind:playing lastIndex={cursor.lastIndex} clock={current.clock} />
 
   <!-- ログ：先頭〜現在フレームまでの ally の行動を蓄積表示（残り領域を埋める）。再生で末尾へ自動スクロール。 -->
   <ActionLogViewer

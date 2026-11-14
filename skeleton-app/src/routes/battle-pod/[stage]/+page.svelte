@@ -31,6 +31,7 @@
   import type { PageData } from "./$types";
   import BuildingArea from "#lib/presentation/components/building/BuildingArea.svelte";
   import BattlePodViewer from "#lib/presentation/components/spectating/BattlePodViewer.svelte";
+  import { resolveFrameCursor } from "#lib/presentation/utils/frameCursor";
   import PlaybackController from "#lib/presentation/components/spectating/PlaybackController.svelte";
   import AutomatonStatusViewer from "#lib/presentation/components/spectating/AutomatonStatusViewer.svelte";
   import ResultOverlay from "#lib/presentation/components/spectating/ResultOverlay.svelte";
@@ -127,13 +128,15 @@
   // displayFrames＝デプロイ前は route が持つ stage.initial の1フレーム、デプロイ後は実行フレーム列。
   const frames = $derived($battleRun?.frames ?? []);
   const result = $derived($battleRun?.result ?? null);
-  const current = $derived(frames.length > 0 ? frames[Math.min(frameIndex, frames.length - 1)] : null);
-  const lastIndex = $derived(Math.max(0, frames.length - 1));
+  // 実戦カーソル＝実行フレーム列（winner/active 用）。デプロイ前は空。
+  const liveCursor = $derived(resolveFrameCursor(frames, frameIndex));
+  const current = $derived(liveCursor.current);
+  const lastIndex = $derived(liveCursor.lastIndex);
+  // 表示カーソル＝盤面用。デプロイ前は stage.initial の1フレームにフォールバックして常に描ける。
   const displayFrames = $derived(frames.length > 0 ? frames : [stage.initial]);
-  const displayFrameIndex = $derived(Math.min(frameIndex, displayFrames.length - 1));
-  const displayFrame = $derived(displayFrames[displayFrameIndex]);
-  // 被弾演出の差分元＝直前フレーム（先頭は比較対象なしで undefined）。
-  const prevFrame = $derived(displayFrameIndex > 0 ? displayFrames[displayFrameIndex - 1] : undefined);
+  const displayCursor = $derived(resolveFrameCursor(displayFrames, frameIndex));
+  const displayFrame = $derived(displayCursor.current ?? stage.initial);
+  const prevFrame = $derived(displayCursor.prev);
 
   // 決着の表示は「観戦が決着フレームに到達したとき」に出す（結果を先にネタバレしない）。
   const decided = $derived(current?.winner != null);
