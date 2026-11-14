@@ -54,7 +54,10 @@
    組込みと同じ生成経路に乗せるため @theme の --animate-* に登録し animate-hit-* ユーティリティを生やす。
    発火側は {#key clock} で要素を作り直して毎クロック鳴らし直す。 */
 @theme {
-  --animate-hit-flash: hit-flash 400ms ease-out 1;
+  /* fill-mode=forwards で終端（opacity:0）を保持する。
+     命中フレームで停止すると span はマウントされ続けるため、
+     既定の fill-mode=none だと終了後に素の不透明へ戻り赤く固定される。 */
+  --animate-hit-flash: hit-flash 400ms ease-out 1 forwards;
   --animate-hit-shake: hit-shake 200ms ease-in-out 1;
 
   @keyframes hit-flash {
