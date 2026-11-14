@@ -8,27 +8,6 @@ import path from "path";
 
 const githubRepoName = "programming-boy-advance";
 
-const content404 = ((base: string) => `
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Page Not Found</title>
-  <meta http-equiv="refresh" content="0; url=/#/">
-  <script>
-    // Redirect to the root URL
-    var path = window.location.pathname;
-    var newUrl = window.location.origin + '/${base}/';
-    window.location.replace(newUrl);
-  </script>
-</head>
-<body>
-  <p>Redirecting...</p>
-</body>
-</html>
-`)(githubRepoName);
-
 export default defineConfig({
   // base と publicDir は SvelteKit が管理する（paths.base / static ディレクトリ）
   build: {
@@ -60,18 +39,6 @@ export default defineConfig({
         base: `/${githubRepoName}`,
       },
     }),
-    {
-      name: "generate-404",
-      closeBundle() {
-        const dirPath = path.resolve(import.meta.dirname, "build");
-        if (!fs.existsSync(dirPath)) {
-          fs.mkdirSync(dirPath, { recursive: true });
-        }
-        const filePath = path.resolve(dirPath, "404.html");
-        fs.writeFileSync(filePath, content404);
-        console.log("404.html generated");
-      },
-    },
     {
       name: "log-version",
       closeBundle() {
