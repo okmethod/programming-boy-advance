@@ -5,6 +5,9 @@
  * resolveBattleParams で既定へ重ねて確定する＝全バランス knob がステージ側で成り立つ構造。
  * 関数（engine/runBattle）は確定済み BattleParams を引数で受ける（デフォルト付き）。
  * TODO: 具体値は暫定。docs/game-rules/auto-battle.md に沿って調整する。
+ * TODO: 素質（baseImage）の戦闘効果＝単価上書き等は、
+ *       ここを受け皿に、AutomatonImage の imageHash を入力して配線する。
+ *       ステージ構成・数値バランスが固まるまで意図的に未配線。
  */
 
 export interface BattleParams {
