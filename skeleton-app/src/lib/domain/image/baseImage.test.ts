@@ -5,10 +5,8 @@ import {
   baseImageAllowed,
   filterBaseImageFamilies,
   highestAllowedImage,
-  TURTLOGO_V1,
-  TURTLOGO_V2,
-  TURTLOGO_V3,
 } from "./baseImage";
+import { TURTLOGO_V1, TURTLOGO_V2, TURTLOGO_V3 } from "./catalog";
 import type { Program } from "$lib/domain/program";
 
 describe("後方互換の原則（同一系統）", () => {

@@ -1,22 +1,10 @@
 /**
- * オートマトンイメージ（概念）＝素質にプログラムを載せた不変の最小実体と、その操作。
+ * オートマトンイメージの content-addressable な同一性＝内容指紋（imageHash）と内容等価（areImagesEqual）。
  *
- * ユビキタス言語の「オートマトンイメージ」＝素質（baseImage）にプログラム（program）を載せて
- * ビルドした不変スナップショット。試運転・プッシュ・デプロイはすべてこの単位を対象にする。
- * program と baseImage は常に一体で運ぶ（別々に旅させると「どの素質で組んだか」が取り違う）。
- * レジストリ／デプロイ／ビルド断面は、これにユースケース固有メタ（タグ・HP・時刻等）を足した特化形。
- *
- * イメージ概念ディレクトリ（image/）。同居の baseImage（素質）と、program 型・program/hash 操作に依存する。
+ * A面では名前（タグ）に短い指紋を並べて見せ、B面で「ダイジェスト≠ハッシュ」の種明かしに使う。
  */
 
-import type { Program } from "$lib/domain/program";
-import type { BaseImage } from "./baseImage";
-
-/** オートマトンイメージ＝素質とプログラムの不変ペア（ビルド済みの最小実体）。 */
-export interface AutomatonImage {
-  readonly program: Program;
-  readonly baseImage: BaseImage;
-}
+import type { AutomatonImage } from "./model";
 
 /**
  * イメージの content-addressable な同一性＝program の中身＋素質（系統×版）。
