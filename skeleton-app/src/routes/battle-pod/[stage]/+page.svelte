@@ -269,13 +269,7 @@
           <Icon icon="mdi:rocket-launch-outline" class="size-4" /> オートマトンをデプロイして対戦
         </div>
       {:else if started}
-        <PlaybackController
-          bind:frameIndex
-          bind:playing
-          {lastIndex}
-          clock={displayFrame.clock}
-          onStart={(anchor) => emitFeedback("run", { anchor })}
-        />
+        <PlaybackController bind:frameIndex bind:playing {lastIndex} clock={displayFrame.clock} />
       {:else}
         <!-- デプロイ済み・開始前：再生コントロールの代わりに「実行」の一押しを出す。 -->
         <button class="action-btn-strong px-6" onclick={(e) => startPlayback(e.currentTarget)}>

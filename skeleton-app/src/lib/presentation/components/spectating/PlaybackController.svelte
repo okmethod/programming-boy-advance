@@ -1,5 +1,6 @@
 <script lang="ts">
   import Icon from "@iconify/svelte";
+  import { emitFeedback } from "#lib/presentation/feedbacks";
 
   // フレーム列の再生コントロール。再生ループ（自動送り）もここに閉じ込める。
   interface PlaybackControllerProps {
@@ -7,17 +8,9 @@
     playing: boolean;
     lastIndex: number;
     clock: number;
-    // 停止→再生へ切り替える瞬間に、演出フィードバックを発火する。再開のたびに鳴る。
-    onStart?: (anchor: HTMLElement) => void;
   }
 
-  let {
-    frameIndex = $bindable(),
-    playing = $bindable(),
-    lastIndex,
-    clock,
-    onStart,
-  }: PlaybackControllerProps = $props();
+  let { frameIndex = $bindable(), playing = $bindable(), lastIndex, clock }: PlaybackControllerProps = $props();
 
   // 再生速度（倍率）。等倍は 1 フレーム 0.4 秒。選択肢はこの配列で定義する。
   const BASE_INTERVAL_MS = 400;
@@ -62,7 +55,8 @@
       aria-label={playing ? "停止" : "再生"}
       disabled={frameIndex >= lastIndex}
       onclick={(e) => {
-        if (!playing) onStart?.(e.currentTarget);
+        // 停止→再生へ切り替える瞬間に発進演出を押したボタン近傍へ出す（再開のたびに鳴る）。
+        if (!playing) emitFeedback("run", { anchor: e.currentTarget });
         playing = !playing;
       }}><Icon icon={playing ? "mdi:pause" : "mdi:play"} class="size-5" /></button
     >
