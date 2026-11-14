@@ -7,7 +7,7 @@
  * 再生位置（frameIndex/playing）は観戦 UI の状態なのでプレゼンが持つ（ここには置かない）。
  *
  * 行投影・ログ・run・hash は「所有 state の純投影」＝外部から program を受け取るラッパーではなく、
- * セッションが所有する deployedImage／stage を集約した読みモデル（draftLines が workbench 投影であるのと同じ）。
+ * セッションが所有する deployedImage／stage を集約した参照ビュー（draftLines が workbench 投影であるのと同じ）。
  */
 
 import { derived, get, readonly, writable } from "svelte/store";

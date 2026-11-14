@@ -31,7 +31,7 @@
   let { panelClass = "bg-surface-50", headerReserve = "", onPull }: RegistryBrowserProps = $props();
 
   const draft = $derived($workbenchDraft);
-  // カレントイメージの読みモデル（未ビルド/指紋）＝workbench state だけの純投影（アプリ層）。
+  // カレントイメージの参照ビュー（未ビルド/指紋）＝workbench state だけの純投影（アプリ層）。
   // 変数名は current（レジストリ各行の image と衝突させない）。
   const current = $derived($currentImage);
 

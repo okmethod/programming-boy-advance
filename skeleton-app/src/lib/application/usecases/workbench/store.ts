@@ -58,7 +58,7 @@ const draftStore = writable<WorkbenchDraft>(INITIAL_DRAFT);
 export const workbenchDraft = readonly(draftStore);
 
 /**
- * カレントイメージ（ビルド断面）の読みモデル＝この store の state だけの純投影。
+ * カレントイメージ（ビルド断面）の参照ビュー＝この store の state だけの純投影。
  * 未ビルドか／編集がビルド断面から乖離したか（要再ビルド）／内容ハッシュ（指紋）を算出する。
  * registry のラベル（表示名）や重複判定は別スライス（registry）との join になるため、ここには含めない
  * ＝クロススライスの読みはプレゼン側で registry 投影と突き合わせて解決する（4層の依存を単一スライスに閉じる）。
@@ -72,7 +72,7 @@ export interface CurrentImage {
   readonly hash: string | null;
 }
 
-/** カレントイメージの読みモデル（readonly derived）。等価・ハッシュはドメインに委ねる。 */
+/** カレントイメージの参照ビュー（readonly derived）。等価・ハッシュはドメインに委ねる。 */
 export const currentImage = derived(draftStore, (draft): CurrentImage => {
   const built = draft.builtImage;
   return {
@@ -83,26 +83,26 @@ export const currentImage = derived(draftStore, (draft): CurrentImage => {
 });
 
 /**
- * 編集中プログラムの CP 消費量（作成予算の読み投影）。draft.program だけの純投影。
+ * 編集中プログラムの CP 消費量（作成予算の参照ビュー）。draft.program だけの純投影。
  * 消費量の算出（ドメイン）をアプリ層に閉じ、UI は購読するだけにする。
  */
 export const cpUsed = derived(draftStore, (draft) => programCost(draft.program));
 
 /**
- * 編集中プログラムの擬似コード行（表示用の読み投影）。平坦化とノード id 採番はドメイン flatLines に委譲。
+ * 編集中プログラムの擬似コード行（表示用の参照ビュー）。平坦化とノード id 採番はドメイン flatLines に委譲。
  * 描画部品には Program ではなくこの View Model（FlatLine[]）を渡す＝葉を dumb に保つ。
  */
 export const draftLines = derived(draftStore, (draft) => flatLines(draft.program));
 
 /**
- * ビルド断面（凍結済み）の擬似コード行（試運転の観戦表示用の読み投影）。未ビルドは空配列。
+ * ビルド断面（凍結済み）の擬似コード行（試運転の観戦表示用の参照ビュー）。未ビルドは空配列。
  * 試運転が走るのは builtImage なので、実行行ハイライトはこの行割り（＝nodeIdMap と同採番）に合わせる
  * ＝編集中テキスト（draftText）ではなく走っている断面を正として光らせる。
  */
 export const builtLines = derived(draftStore, (draft) => (draft.builtImage ? flatLines(draft.builtImage.program) : []));
 
 /**
- * 編集中プログラムの擬似コード全文（エディタ編集面のシード用の読み投影）。draft.program だけの純投影。
+ * 編集中プログラムの擬似コード全文（エディタ編集面のシード用の参照ビュー）。draft.program だけの純投影。
  * テキスト化（programToText）はドメインに委ね、UI は入場時にこの値を種として受け取るだけにする。
  */
 export const draftText = derived(draftStore, (draft) => programToText(draft.program));
@@ -125,7 +125,7 @@ export function differsFromBuilt(draft: WorkbenchDraft, image: Program | null): 
 }
 
 /**
- * 素質互換セレクタ＝候補の素質が編集中プログラムの命令セットを提供できるか（differsFromBuilt と同列の読み）。
+ * 素質互換セレクタ＝候補の素質が編集中プログラムの命令セットを提供できるか（differsFromBuilt と同列の参照ビュー）。
  * 判定規則そのもの（命令セットの包含）はドメインに委ね、プレゼンは候補×program を引数で渡して購読する
  * ＝素質選択UIの関心を workbench の公開面へ集約する（プレゼンがドメインルールを直呼びしない）。
  */

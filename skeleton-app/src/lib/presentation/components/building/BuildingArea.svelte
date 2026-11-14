@@ -131,9 +131,9 @@
     codeErrors = result.ok ? [] : result.errors;
   }
 
-  // CP 消費量（$cpUsed）・擬似コード行（$draftLines）は workbench の読み投影を購読する
+  // CP 消費量（$cpUsed）・擬似コード行（$draftLines）は workbench の参照ビューを購読する
   // ＝算出（programCost/flatLines＝ドメイン）はアプリ層に閉じ、ここは購読・受け渡しだけ。
-  // カレントイメージの読みモデル（未ビルド/編集乖離/指紋）＝workbench state だけの純投影（アプリ層）。
+  // カレントイメージの参照ビュー（未ビルド/編集乖離/指紋）＝workbench state だけの純投影（アプリ層）。
   const current = $derived($currentImage);
 
   // メイン領域の見出し帯＝3面共通の唯一の見出し。親が1枚だけ描画し全タブで位置を固定し、
@@ -363,7 +363,7 @@
     {#if mainView === "code"}
       <!-- エディタ編集面（フル領域）：擬似コードをテキストで直接編集する。枠色は surface 系で揃える。
            見出しは親が描く帯なので持たず、本体を pt-12 下げて上端をブロック編集のキャンバス上端に揃える。
-           入場時に現在の program を $draftText（読み投影）で種として渡し、以後はテキストが権威。
+           入場時に現在の program を $draftText（参照ビュー）で種として渡し、以後はテキストが権威。
            入力は applyCodeText 経由で facade に委ね（parse 成功で program 反映）、
            構文エラーは codeErrors に受けてタブ切替・ビルドの確定をブロックする。 -->
       <div class="absolute inset-0 flex flex-col overflow-hidden rounded border border-surface-300 {panelClass}">
