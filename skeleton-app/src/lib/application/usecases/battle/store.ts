@@ -75,6 +75,18 @@ export const battleRun = derived([sessionStore, battleParams], ([session, params
   return runBattle(initial, session.deployed.program, session.stage.enemy, { params });
 });
 
+/**
+ * HP バーの満タン基準＝オートマトン id → 満タン HP の対応。
+ * enemy はステージ初期配置の HP、ally は出撃時に配分した個体値（deployed.allyHp）。
+ * 未デプロイは配分未確定なので総メモリ（上限）を基準に置く＝盤面の ally hp=0 と合わせ空バー表示。
+ * 未セッション（stage=null）は空＝購読側は満タン基準を得られないが、効果と同じく CSR では描画前に埋まる。
+ */
+export const maxHpById = derived(sessionStore, (session): Record<string, number> => {
+  if (session.stage === null) return {};
+  const byInitial = Object.fromEntries(session.stage.initial.automatons.map((a) => [a.id, a.hp]));
+  return { ...byInitial, ally: session.deployed?.allyHp ?? session.stage.memoryTotal };
+});
+
 /** ally（デプロイ済み）の擬似コード行＝ProgramViewer に渡す View Model。 */
 export const allyLines = derived(sessionStore, (session): FlatLine[] => flatLines(session.deployed?.program ?? []));
 

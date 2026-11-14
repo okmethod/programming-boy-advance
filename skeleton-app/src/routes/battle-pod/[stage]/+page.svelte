@@ -22,6 +22,7 @@
     deployedHash,
     enemyHash,
     battleParams,
+    maxHpById,
     type AutomatonImage,
   } from "#lib/application";
   import type { PageData } from "./$types";
@@ -49,13 +50,6 @@
   // デプロイ済みイメージ（出撃した実体・未デプロイは null）は battle store の所有 state を購読する。
   // program・表示名・素質・時刻は一体の集合体で、未デプロイは丸ごと null（表示メタだけ欠ける状態は起きない）。
   const deployed = $derived($battleSession.deployed);
-
-  // HP バーの満タン基準。enemy はステージ初期配置の HP、ally は出撃時に焼いた個体値（deployed.allyHp）。
-  // 未デプロイは配分未確定なので満タン基準を総メモリ（上限）に置く＝盤面の ally hp=0 と合わせ空バー表示。
-  const maxHpById = $derived<Record<string, number>>({
-    ...Object.fromEntries(stage.initial.automatons.map((a) => [a.id, a.hp])),
-    ally: deployed?.allyHp ?? stage.memoryTotal,
-  });
 
   // BP 波形の天井＝このセッションで確定した bpMax（store が既定へステージ上書きを重ねた投影）。
   const bpMax = $derived($battleParams.bpMax);
@@ -175,7 +169,7 @@
       frames={displayFrames}
       {frameIndex}
       id="ally"
-      maxHp={maxHpById.ally}
+      maxHp={$maxHpById.ally}
       {bpMax}
       inactive={deployed === null}
       lines={$allyLines}
@@ -225,7 +219,7 @@
       frames={displayFrames}
       {frameIndex}
       id="enemy"
-      maxHp={maxHpById.enemy}
+      maxHp={$maxHpById.enemy}
       {bpMax}
       lines={$enemyLines}
       activeId={current?.active?.enemy}

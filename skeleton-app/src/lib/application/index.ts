@@ -44,6 +44,7 @@ export {
   battleSession,
   battleParams,
   battleRun,
+  maxHpById,
   allyLines,
   enemyLines,
   allyLog,
