@@ -15,7 +15,7 @@
     type BaseImage,
   } from "#lib/application";
   import { commandLabel, sensorLabel, controlLabel, baseImageTag, versionTag } from "#lib/presentation/utils/labels";
-  import { playSE } from "#lib/presentation/sounds";
+  import { emitFeedback } from "#lib/presentation/feedbacks";
   import BaseImageChip from "#lib/presentation/components/shared/BaseImageChip.svelte";
   import ModalShell from "#lib/presentation/components/shared/ModalShell.svelte";
 
@@ -97,7 +97,7 @@
   function commit() {
     if (discardOnIncompatible && !supported) onClear();
     workbenchFacade.setBaseImage(focused);
-    playSE.baseImage();
+    emitFeedback("baseImage");
     onApplied?.();
     open = false;
   }

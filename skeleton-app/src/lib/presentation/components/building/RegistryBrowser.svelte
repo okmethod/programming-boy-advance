@@ -15,7 +15,7 @@
     type Program,
   } from "#lib/application";
   import { registryFacade } from "#lib/presentation/composition";
-  import { playSE } from "#lib/presentation/sounds";
+  import { emitFeedback } from "#lib/presentation/feedbacks";
   import { hhmm } from "#lib/presentation/utils/labels";
   import BaseImageChip from "#lib/presentation/components/shared/BaseImageChip.svelte";
 
@@ -50,7 +50,7 @@
     if (draft.builtImage === null) return;
     // ビルド断面（builtImage＝program＋凍結した素質）をそのまま運搬単位として積む＝ビルド後に乗り換えた素質を引きずらない。
     registryFacade.push(draft.builtImage, draft.imageName);
-    playSE.push();
+    emitFeedback("push");
   }
 
   // プル＝レジストリのイメージをカレント（ビルド断面）に取り込む。改良の起点。
@@ -60,19 +60,19 @@
   function pullImage(image: RegistryImage) {
     onPull(image.program);
     workbenchFacade.pull(image);
-    playSE.pull();
+    emitFeedback("pull");
   }
 
   // 保管済みイメージの削除（手持ちのみ）。
   function removeImage(id: string) {
     registryFacade.remove(id);
-    playSE.delete();
+    emitFeedback("delete");
   }
 
   // カレントイメージを破棄＝未ビルドに戻す（編集中の Blockly はそのまま・凍結した断面だけ捨てる）。
   function clearBuiltImage() {
     workbenchFacade.clearBuilt();
-    playSE.delete();
+    emitFeedback("delete");
   }
 
   // リネーム（インライン編集）。編集中の行 id と入力値を持ち、Enter/blur で確定・Escape で取消。
@@ -88,7 +88,7 @@
     const label = renameValue.trim();
     if (label.length > 0) {
       registryFacade.rename(renamingId, label);
-      playSE.rename();
+      emitFeedback("rename");
     }
     renamingId = null;
   }
@@ -110,7 +110,7 @@
     if (name.length > 0) {
       workbenchFacade.setName(name);
       if (duplicate?.source === "user") registryFacade.rename(duplicate.id, name);
-      playSE.rename();
+      emitFeedback("rename");
     }
     tileRenaming = false;
   }

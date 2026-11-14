@@ -5,7 +5,8 @@
   import Icon from "@iconify/svelte";
   import { navigateTo } from "#lib/presentation/utils/navigation";
   import { pageTitle } from "#lib/presentation/utils/routes";
-  import { audioOn, setAudioOn, playSE } from "#lib/presentation/sounds";
+  import { audioOn, setAudioOn } from "#lib/presentation/sounds";
+  import { emitFeedback } from "#lib/presentation/feedbacks";
   import StageSelector from "#lib/presentation/components/progression/StageSelector.svelte";
   import ToastLayer from "#lib/presentation/components/shared/ToastLayer.svelte";
 
@@ -18,7 +19,7 @@
   function toggleAudio() {
     const next = !$audioOn;
     setAudioOn(next);
-    if (next) playSE.audioOn();
+    if (next) emitFeedback("audioOn");
   }
 </script>
 

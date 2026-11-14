@@ -27,7 +27,7 @@
     type NodeId,
   } from "#lib/application";
   import { automatonIcon, hhmm } from "#lib/presentation/utils/labels";
-  import { playSE } from "#lib/presentation/sounds";
+  import { emitFeedback } from "#lib/presentation/feedbacks";
   import BlocklyEditor from "./BlocklyEditor.svelte";
   import BaseImageSelector from "./BaseImageSelector.svelte";
   import CapacityAllocator from "./CapacityAllocator.svelte";
@@ -162,13 +162,13 @@
   // ビルド＝現在の編集を凍結してイメージ化（試運転・デプロイの前提）。スナップショット化は facade が担う。
   function build() {
     workbenchFacade.build();
-    playSE.build();
+    emitFeedback("build");
   }
 
   // デプロイ＝ビルド済みイメージを対戦に反映（状態遷移は親の onDeploy が担う。ここは出撃の一打を鳴らす）。
   function deploy() {
     if (!draft.builtImage) return;
-    playSE.deploy();
+    emitFeedback("deploy");
     // ビルド断面（builtImage＝program＋凍結した素質）をそのまま運搬単位として渡す＝ビルド後に乗り換えた素質を引きずらない。
     onDeploy?.(draft.builtImage, builtName, allyHp);
   }
@@ -185,7 +185,7 @@
   function revertToBuilt() {
     const built = draft.builtImage;
     if (built === null) return;
-    playSE.revert();
+    emitFeedback("revert");
     if (mainView === "code") {
       workbenchFacade.revertToBuilt();
       codeErrors = [];

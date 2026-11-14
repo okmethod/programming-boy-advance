@@ -6,7 +6,7 @@
   // 射程は見た目＋CP 上限まで。HP 側の配分（memoryTotal − cpAllocated）は親へ bind され、デプロイ時に ally の初期 HP になる。
   import { untrack } from "svelte";
   import Icon from "@iconify/svelte";
-  import { playSE } from "#lib/presentation/sounds";
+  import { emitFeedback } from "#lib/presentation/feedbacks";
   import FractionReadout from "#lib/presentation/components/shared/FractionReadout.svelte";
 
   // 配分スライダは memoryGrain 刻みの目盛り。total=32・grain=8 なら 0/8/16/24/32 の5目盛りを軌道に見せる。
@@ -72,7 +72,7 @@
   }
   function commitAllocation() {
     cpAllocated = draft;
-    playSE.allocate();
+    emitFeedback("allocate");
     open = false;
   }
   // 右で CP 増・HP 減（スライダと同じ向き）。1目盛り（grain）単位で動かし可動域でクランプ。

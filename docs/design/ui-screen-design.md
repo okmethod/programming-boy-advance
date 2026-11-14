@@ -63,6 +63,7 @@ UI コンポーネントは、主要部品の実装単位。
 - **ステージ選択は URL が SSoT**。リロード・ディープリンクに耐える。プレイ面はステージ必須なので、動的ルート `/battle-pod/[stage]` の**パスパラメータ**で持つ（query ではない＝ステージ無しの `/battle-pod` は成立せず選択画面へリダイレクト）。
 - ステージ id は**順序非依存の安定 slug**（例 `simple-charger`）。表示番号・順序を id に載せないため、将来の並べ替えや Tier/Chapter 階層化で URL が腐らない
 - ゲームロジックの単一窓口（`BattleFacade`）は**合成ルートの module singleton**（`presentation/composition.ts`）。具体 Adapter の注入をここ一箇所に閉じ込める
+- 演出フィードバック（効果音・トースト・将来のアニメ）は**確定／コミットの節目**に出す。規律と演出ポイントの正本は `presentation/feedbacks/`（`GameAction` カタログと docstring）＝発火点は `emitFeedback(action)` を呼ぶだけで媒体に依存しない
 
 > イメージのライフサイクル（Build → Push/Pull → Deploy）は [overview.md](../game-rules/overview.md) の「オートマトンのライフサイクル」を正とする。UI での割当は下記「イメージのライフサイクル操作」を参照。
 
