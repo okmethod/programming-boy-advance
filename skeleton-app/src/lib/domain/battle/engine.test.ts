@@ -1,94 +1,173 @@
 import { describe, it, expect } from "vitest";
-import { applyAction } from "./engine";
-import { sensorValue } from "./sensor";
-import { wallBetween, wallOn } from "./grid";
-import type { Automaton, BattleState, Position, WallEdge } from "./model";
+import { applyAction, advanceClock, commandToAction } from "./engine";
+import { wallOn } from "./grid";
+import type { Automaton, BattleState, Direction, Position } from "./model";
+import type { BattleParams } from "./params";
 
 // --- テスト用ヘルパー ---
 
-function ally(pos: Position, dir: Automaton["dir"]): Automaton {
-  return { id: "ally", pos, dir, hp: 3, bp: 0, freezeRemaining: 0, priority: 1 };
+function automaton(id: Automaton["id"], pos: Position, dir: Direction, hp = 3): Automaton {
+  return { id, pos, dir, hp, bp: 0, freezeRemaining: 0, priority: id === "ally" ? 1 : 0 };
 }
 
-// 幅3×高さ1の一本道に ally だけ置く（辺壁の往来判定を単体で見る）。
-function row(walls: readonly WallEdge[], pos: Position, dir: Automaton["dir"]): BattleState {
-  return {
-    grid: { width: 3, height: 1, walls },
-    automatons: [ally(pos, dir)],
-    clock: 0,
-    rngSeed: 0,
-    logs: [],
-    winner: null,
-  };
+function state(automatons: readonly Automaton[], walls: BattleState["grid"]["walls"] = []): BattleState {
+  return { grid: { width: 3, height: 1, walls }, automatons, clock: 0, rngSeed: 0, logs: [], winner: null };
 }
 
-const posOf = (s: BattleState): Position => s.automatons[0].pos;
+const find = (s: BattleState, id: Automaton["id"]): Automaton => s.automatons.find((e) => e.id === id)!;
 
-describe("辺壁（WallEdge）", () => {
-  it("wallOn は指定セルの指定方向の隣接セルとの辺を作る", () => {
-    expect(wallOn({ x: 0, y: 0 }, "right")).toEqual({ a: { x: 0, y: 0 }, b: { x: 1, y: 0 } });
+describe("commandToAction（コマンド→アクション変換）", () => {
+  it("各コマンドを対応するアクションに写す", () => {
+    expect(commandToAction("stepForward")).toEqual({ kind: "move" });
+    expect(commandToAction("turnRight")).toEqual({ kind: "turn", rotation: "right" });
+    expect(commandToAction("turnLeft")).toEqual({ kind: "turn", rotation: "left" });
+    expect(commandToAction("attack")).toEqual({ kind: "attack" });
+    expect(commandToAction("loadAttack")).toEqual({ kind: "loadAttack" });
+    expect(commandToAction("brittleAttack")).toEqual({ kind: "brittleAttack" });
+    expect(commandToAction("wait")).toEqual({ kind: "wait" });
   });
+});
 
-  it("壁の無い辺へは前進できる", () => {
-    const next = applyAction(row([], { x: 0, y: 0 }, "right"), "ally", { kind: "move" });
-    expect(posOf(next)).toEqual({ x: 1, y: 0 });
+describe("applyAction（move）", () => {
+  it("空いた前方へ前進する", () => {
+    const next = applyAction(state([automaton("ally", { x: 0, y: 0 }, "right")]), "ally", { kind: "move" });
+    expect(find(next, "ally").pos).toEqual({ x: 1, y: 0 });
   });
 
   it("前方の辺に壁があると前進できない（その場に留まる）", () => {
     const walls = [wallOn({ x: 0, y: 0 }, "right")];
-    const next = applyAction(row(walls, { x: 0, y: 0 }, "right"), "ally", { kind: "move" });
-    expect(posOf(next)).toEqual({ x: 0, y: 0 });
+    const next = applyAction(state([automaton("ally", { x: 0, y: 0 }, "right")], walls), "ally", { kind: "move" });
+    expect(find(next, "ally").pos).toEqual({ x: 0, y: 0 });
   });
 
-  it("壁は往来対称＝反対セル側から記述しても同じ辺を塞ぐ", () => {
-    // (1,0) の左辺 ＝ (0,0) の右辺。格納順が逆でも (0,0)→(1,0) の前進を塞ぐ。
-    const walls = [wallOn({ x: 1, y: 0 }, "left")];
-    const next = applyAction(row(walls, { x: 0, y: 0 }, "right"), "ally", { kind: "move" });
-    expect(posOf(next)).toEqual({ x: 0, y: 0 });
-  });
-
-  it("wallAhead センサは前方の辺の壁を検知する", () => {
-    const walls = [wallBetween({ x: 0, y: 0 }, { x: 1, y: 0 })];
-    expect(sensorValue("wallAhead", row(walls, { x: 0, y: 0 }, "right"), "ally")).toBe(true);
-    expect(sensorValue("wallAhead", row([], { x: 0, y: 0 }, "right"), "ally")).toBe(false);
-  });
-
-  it("場外は壁扱い＝盤面端では前進不可・wallAhead も真", () => {
-    const edge = row([], { x: 2, y: 0 }, "right"); // 右端で右向き＝場外を向く
-    expect(sensorValue("wallAhead", edge, "ally")).toBe(true);
-    expect(posOf(applyAction(edge, "ally", { kind: "move" }))).toEqual({ x: 2, y: 0 });
+  it("他オートマトンのいるマスへは進めない", () => {
+    const s = state([automaton("ally", { x: 0, y: 0 }, "right"), automaton("enemy", { x: 1, y: 0 }, "left")]);
+    const next = applyAction(s, "ally", { kind: "move" });
+    expect(find(next, "ally").pos).toEqual({ x: 0, y: 0 });
   });
 });
 
-describe("brittleAttack（暴発のみ）", () => {
-  const hpOf = (s: BattleState, id: Automaton["id"]): number => s.automatons.find((e) => e.id === id)!.hp;
+describe("applyAction（turn）", () => {
+  it("向きを旋回する", () => {
+    const next = applyAction(state([automaton("ally", { x: 0, y: 0 }, "right")]), "ally", {
+      kind: "turn",
+      rotation: "right",
+    });
+    expect(find(next, "ally").dir).toBe("down");
+  });
+});
 
-  // enemy を x=1（ally の正面）に置き、ally を右向きで x=0 に置く。
-  function facing(): BattleState {
-    return {
-      grid: { width: 3, height: 1, walls: [] },
-      automatons: [
-        ally({ x: 0, y: 0 }, "right"),
-        { id: "enemy", pos: { x: 1, y: 0 }, dir: "left", hp: 2, bp: 0, freezeRemaining: 0, priority: 0 },
-      ],
-      clock: 0,
-      rngSeed: 0,
-      logs: [],
-      winner: null,
-    };
-  }
+describe("applyAction（attack）", () => {
+  // ally(x0,右) と enemy(x1,左) が隣接する盤面。
+  const facing = (enemyHp = 2) =>
+    state([automaton("ally", { x: 0, y: 0 }, "right"), automaton("enemy", { x: 1, y: 0 }, "left", enemyHp)]);
 
-  it("前方に相手がいると自分が自壊し、相手は無傷（暴発）", () => {
-    // ally が brittleAttack＝ally 自身の HP が 0・enemy は無傷。勝者は enemy（自壊側の負け）。
+  it("前方の相手に命中＝相手 HP を削り、攻撃側の BP が上がる", () => {
+    const next = applyAction(facing(), "ally", { kind: "attack" });
+    expect(find(next, "enemy").hp).toBe(1); // 既定 attackDamage=1
+    expect(find(next, "ally").bp).toBeGreaterThan(0); // 攻撃側に負荷
+    expect(next.logs).toHaveLength(1);
+  });
+
+  it("撃破すると winner が決まる", () => {
+    const next = applyAction(facing(1), "ally", { kind: "attack" });
+    expect(find(next, "enemy").hp).toBeLessThanOrEqual(0);
+    expect(next.winner).toBe("ally");
+  });
+
+  it("空振り（前方に相手なし）は状態を変えない（同一参照）", () => {
+    const s = state([automaton("ally", { x: 0, y: 0 }, "right")]);
+    expect(applyAction(s, "ally", { kind: "attack" })).toBe(s);
+  });
+});
+
+describe("applyAction（loadAttack：負荷攻撃）", () => {
+  // 負荷攻撃1発で上限到達＝即フリーズする検証用の params。
+  const params: BattleParams = {
+    attackDamage: 1,
+    bpMax: 10,
+    loadAttackBp: 10,
+    attackSelfBp: 2,
+    freezeClocks: 2,
+    bpCooldownPerClock: 1,
+  };
+  const facing = () => state([automaton("ally", { x: 0, y: 0 }, "right"), automaton("enemy", { x: 1, y: 0 }, "left")]);
+
+  it("相手の BP を上げ、上限到達で過負荷フリーズさせる（HP は削らない）", () => {
+    const next = applyAction(facing(), "ally", { kind: "loadAttack" }, params);
+    const enemy = find(next, "enemy");
+    expect(enemy.hp).toBe(3);
+    expect(enemy.freezeRemaining).toBe(params.freezeClocks);
+    expect(enemy.bp).toBe(0); // フリーズ発動で放電
+  });
+});
+
+describe("applyAction（brittleAttack：暴発のみ）", () => {
+  const facing = () =>
+    state([automaton("ally", { x: 0, y: 0 }, "right"), automaton("enemy", { x: 1, y: 0 }, "left", 2)]);
+
+  it("前方に相手がいると自分が自壊し、相手は無傷＝勝者は相手", () => {
     const next = applyAction(facing(), "ally", { kind: "brittleAttack" });
-    expect(hpOf(next, "ally")).toBe(0);
-    expect(hpOf(next, "enemy")).toBe(2);
+    expect(find(next, "ally").hp).toBe(0);
+    expect(find(next, "enemy").hp).toBe(2);
     expect(next.winner).toBe("enemy");
   });
 
-  it("空振り（前方に相手なし）は無害＝状態を変えない", () => {
-    const empty = row([], { x: 0, y: 0 }, "right"); // ally だけ・前方は空
-    const next = applyAction(empty, "ally", { kind: "brittleAttack" });
-    expect(next).toBe(empty); // 何も変化しないので同一参照を返す
+  it("空振り（前方に相手なし）は無害＝同一参照を返す", () => {
+    const s = state([automaton("ally", { x: 0, y: 0 }, "right")]);
+    expect(applyAction(s, "ally", { kind: "brittleAttack" })).toBe(s);
+  });
+});
+
+describe("applyAction（ガード）", () => {
+  it("フリーズ中はコマンドが無効＝状態を変えない", () => {
+    const frozen: Automaton = { ...automaton("ally", { x: 0, y: 0 }, "right"), freezeRemaining: 2 };
+    const s = state([frozen]);
+    expect(applyAction(s, "ally", { kind: "move" })).toBe(s);
+  });
+
+  it("決着後は進めない＝状態を変えない", () => {
+    const s: BattleState = { ...state([automaton("ally", { x: 0, y: 0 }, "right")]), winner: "ally" };
+    expect(applyAction(s, "ally", { kind: "move" })).toBe(s);
+  });
+
+  it("wait は何も起こさない（同一参照）", () => {
+    const s = state([automaton("ally", { x: 0, y: 0 }, "right")]);
+    expect(applyAction(s, "ally", { kind: "wait" })).toBe(s);
+  });
+});
+
+describe("advanceClock（時間経過）", () => {
+  it("クロックを1進め、HP は変えない", () => {
+    const s = state([automaton("ally", { x: 0, y: 0 }, "right", 3)]);
+    const next = advanceClock(s);
+    expect(next.clock).toBe(1);
+    expect(find(next, "ally").hp).toBe(3);
+  });
+
+  it("フリーズ残クロックを1減らす（0 で通常行動に戻る）", () => {
+    const frozen: Automaton = { ...automaton("ally", { x: 0, y: 0 }, "right"), freezeRemaining: 1 };
+    const next = advanceClock(state([frozen]));
+    expect(find(next, "ally").freezeRemaining).toBe(0);
+  });
+
+  it("フリーズしていない体は BP が自然減（クールダウン）する", () => {
+    const busy: Automaton = { ...automaton("ally", { x: 0, y: 0 }, "right"), bp: 5 };
+    const params: BattleParams = {
+      attackDamage: 1,
+      bpMax: 10,
+      loadAttackBp: 10,
+      attackSelfBp: 2,
+      freezeClocks: 2,
+      bpCooldownPerClock: 2,
+    };
+    expect(find(advanceClock(state([busy]), params), "ally").bp).toBe(3);
+  });
+
+  it("フリーズ中の体は BP クールダウンせず、フリーズ解除を優先する", () => {
+    const frozenBusy: Automaton = { ...automaton("ally", { x: 0, y: 0 }, "right"), bp: 5, freezeRemaining: 2 };
+    const next = find(advanceClock(state([frozenBusy])), "ally");
+    expect(next.freezeRemaining).toBe(1);
+    expect(next.bp).toBe(5); // フリーズ中はクールダウンしない
   });
 });

@@ -88,6 +88,13 @@ describe("runBattle（逐次実行・プレイヤー先手）", () => {
     const { result } = runBattle(corridor(6, 4, 3, 2), COUNTER, DUMMY);
     expect(result.winner).toBe("ally");
   });
+
+  it("各フレームに実行ノード（active）を記録する（ハイライト用）", () => {
+    const { frames } = runBattle(corridor(6, 3), COUNTER, CHARGER);
+    // 初期フレームには active が無く、2 フレーム目以降は ally が実行したノード id を持つ。
+    expect(frames[0].active).toBeUndefined();
+    expect(frames[1].active?.ally).toEqual(expect.any(Number));
+  });
 });
 
 describe("試運転（ignoreWinner：勝敗で打ち切らない）", () => {
