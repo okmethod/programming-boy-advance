@@ -4,6 +4,7 @@
   import Icon from "@iconify/svelte";
   import { buildActionLog, type BattleFacade, type SandboxTarget, type Program, type NodeId } from "#lib/application";
   import { attachPlaybackCues } from "#lib/presentation/sounds";
+  import { emitFeedback } from "#lib/presentation/feedbacks";
   import BattlePodViewer from "./BattlePodViewer.svelte";
   import PlaybackController from "./PlaybackController.svelte";
   import ActionLogViewer from "#lib/presentation/components/inspecting/ActionLogViewer.svelte";
@@ -91,7 +92,14 @@
   <div class="flex shrink-0 justify-center">
     <BattlePodViewer state={current} size="sm" stubEnemy={sandboxTarget === "stub"} />
   </div>
-  <PlaybackController bind:frameIndex bind:playing {lastIndex} clock={current.clock} />
+  <!-- 再生ボタンを run の発火口にする（押した近傍へ吹き出し＋発進音）。 -->
+  <PlaybackController
+    bind:frameIndex
+    bind:playing
+    {lastIndex}
+    clock={current.clock}
+    onStart={(anchor) => emitFeedback("run", { anchor })}
+  />
 
   <!-- ログ：先頭〜現在フレームまでの ally の行動を蓄積表示（残り領域を埋める）。再生で末尾へ自動スクロール。 -->
   <ActionLogViewer

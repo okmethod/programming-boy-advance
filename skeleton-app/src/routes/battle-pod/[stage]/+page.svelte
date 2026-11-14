@@ -42,6 +42,7 @@
   import { automatonIcon } from "#lib/presentation/utils/labels";
   import { navigateTo } from "#lib/presentation/utils/navigation";
   import { attachPlaybackCues } from "#lib/presentation/sounds";
+  import { emitFeedback } from "#lib/presentation/feedbacks";
   import { fade } from "svelte/transition";
 
   let { data }: { data: PageData } = $props();
@@ -153,10 +154,12 @@
   }
 
   // 実行＝対戦の再生を開始する（開始前の大きな一押し）。先頭から再生し、以後は再生コントロールに差し替わる。
-  function startPlayback() {
+  // anchor＝押された実行ボタン。吹き出しをその近傍へ出す（再生開始で消えるので発火の瞬間に矩形を確定）。
+  function startPlayback(anchor?: HTMLElement) {
     frameIndex = 0;
     started = true;
     playing = true;
+    emitFeedback("run", { anchor });
   }
 
   // 結果オーバーレイの「もう一度」：先頭へ戻して停止状態にする（再生はユーザーが押す。編集は「組む」に委ねる）。
@@ -263,10 +266,16 @@
           <Icon icon="mdi:rocket-launch-outline" class="size-4" /> オートマトンをデプロイして対戦
         </div>
       {:else if started}
-        <PlaybackController bind:frameIndex bind:playing {lastIndex} clock={displayFrame.clock} />
+        <PlaybackController
+          bind:frameIndex
+          bind:playing
+          {lastIndex}
+          clock={displayFrame.clock}
+          onStart={(anchor) => emitFeedback("run", { anchor })}
+        />
       {:else}
         <!-- デプロイ済み・開始前：再生コントロールの代わりに「実行」の一押しを出す。 -->
-        <button class="action-btn-strong px-6" onclick={startPlayback}>
+        <button class="action-btn-strong px-6" onclick={(e) => startPlayback(e.currentTarget)}>
           <Icon icon="mdi:play" class="size-4" /> 実行
         </button>
       {/if}

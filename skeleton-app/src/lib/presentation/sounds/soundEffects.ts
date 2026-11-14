@@ -25,6 +25,7 @@ const NOTE_PATTERNS = {
   DROP: { startFreq: 440, endFreq: 130, duration: 0.1 }, // 落とす（破棄・削除）
   SHIFT: { startFreq: 523.25, endFreq: 698.46, duration: 0.08 }, // 切り替わる4度上がり（素質切替）
   REVERT: { startFreq: 659.25, endFreq: 392, duration: 0.1 }, // 巻き戻す下降（ロールバック）
+  LAUNCH: { startFreq: 392, endFreq: 1046.5, duration: 0.14 }, // 発進の立ち上がり（実行＝ヒュン）
 } as const satisfies Record<string, NotePattern>;
 
 // 複数周波数の和音パターン（勝敗ジングル・金属リング・システム合図）。
@@ -89,6 +90,7 @@ const layers = (...defs: SoundDefinition[]): SoundDefinition => ({ type: "layers
 // 構築：ビルド＝確定のガシャン、デプロイ＝機械起動（ガコッ＋サーボ＋ラッチ）。
 // レジストリ：プル/プッシュ＝下降/上昇の対、リネーム＝軽いタップ、削除＝落とす音。軽量に揃える。
 // 確定操作：素質切替＝切り替わり、配分決定＝タップ、ロールバック＝巻き戻しの下降。
+// 実行：run＝再生開始の発進音（立ち上がる上昇＋到達のアクセント）。
 // システム：audioOn＝音声を入れた合図（控えめなプピ）。勝利は明るい上昇チャイム（ゲームクリア）。
 const SE_ASSIGNMENTS = {
   wait: note(NOTE_PATTERNS.TICK, "square", 0.05),
@@ -115,6 +117,10 @@ const SE_ASSIGNMENTS = {
   baseImage: note(NOTE_PATTERNS.SHIFT, "triangle", 0.09),
   allocate: note(NOTE_PATTERNS.TAP, "sine", 0.08),
   revert: note(NOTE_PATTERNS.REVERT, "sine", 0.08),
+  run: layers(
+    note(NOTE_PATTERNS.LAUNCH, "square", 0.1), // 発進＝立ち上がる上昇（ヒュン）
+    note(NOTE_PATTERNS.TAP, "square", 0.07, 0.1), // 到達のアクセント（ピッ）
+  ),
   audioOn: chord(CHORD_PATTERNS.PUPI, "triangle", 0.06),
 } satisfies Record<string, SoundDefinition>;
 

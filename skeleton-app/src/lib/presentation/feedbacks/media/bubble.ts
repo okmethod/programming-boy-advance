@@ -24,6 +24,7 @@ const MESSAGES: Partial<Record<GameAction, string>> = {
   baseImage: "Switched !",
   allocate: "Allocated !",
   revert: "Reverted !",
+  run: "Started !",
 };
 
 const VISIBLE_MS = 1400; // 表示を保つ時間（この後フェードアウトして除去）。

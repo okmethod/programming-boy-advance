@@ -24,5 +24,7 @@ export type GameAction =
   | "baseImage"
   | "allocate"
   | "revert"
+  // 実行フェーズの開始操作
+  | "run"
   // システム
   | "audioOn";
