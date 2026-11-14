@@ -29,7 +29,7 @@ export interface DeployedImage extends AutomatonImage {
   readonly deployedAt: number;
 }
 
-/** 観戦セッションの所有 state。stage=このセッションの舞台、deployed=出撃した ally の実体。 */
+/** 観戦セッションの所有 state。stage=このセッションのステージ、deployed=出撃した ally の実体。 */
 export interface BattleSession {
   readonly stage: Stage | null;
   // 出撃した ally の実体（未デプロイは null）。

@@ -5,7 +5,7 @@
  * ステージ取得は Port（StageRepository）経由に限り、供給元を UI から隠す。
  * 具体 Adapter は合成ルート（プレゼン層）で createBattleFacade に注入される。
  *
- * 観戦セッション（出撃した ally＝deployedImage ＋ 舞台＝stage）はアプリ層の store が所有する。
+ * 観戦セッション（出撃した ally＝deployedImage ＋ ステージ＝stage）はアプリ層の store が所有する。
  * 書き（openSession/deploy）はこの facade に集約し、読み（run/行/ログ/hash）は store の readonly 投影を購読する。
  * ステージ定義の「どれを」はプレゼン（URL）が解決し、openSession で渡す（供給元の選択はプレゼンの役目）。
  */
@@ -24,7 +24,7 @@ export interface BattleFacade {
   listStages(): readonly Stage[];
   /** ステージ選択 UI の章区切り表示用に、チャプターごとのステージ群を一覧する。 */
   listChapters(): readonly Chapter[];
-  /** 観戦セッションを開く＝舞台（stage）を据えてデプロイをリセットする（ステージ切替の起点）。 */
+  /** 観戦セッションを開く＝ステージを据えてデプロイをリセットする（ステージ切替の起点）。 */
   openSession(stage: Stage): void;
   /** デプロイ＝ビルド済みイメージ（program＋素質を一体で運ぶ運搬単位）を対戦に出す（観戦セッションの ally を差し替える）。allyHp＝配分で決めた初期 HP。 */
   deploy(image: AutomatonImage, name: string, allyHp: number): void;
@@ -34,7 +34,7 @@ export interface BattleFacade {
 
 /** StageRepository を注入してファサードを組み立てる（合成ルートから呼ぶ）。 */
 export const createBattleFacade = (stages: StageRepository): BattleFacade => {
-  // 観戦を途中で中身すげ替えさせない：openSession は毎回デプロイを捨ててクリーンな舞台にする。
+  // 観戦を途中で中身すげ替えさせない：openSession は毎回デプロイを捨ててクリーンなステージにする。
   function openSession(stage: Stage): void {
     storeWriter.update(() => ({ stage, deployed: null }));
   }

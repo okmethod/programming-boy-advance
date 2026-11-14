@@ -1,13 +1,10 @@
 <script lang="ts">
-  // 観戦（スペクテイター）PoC。
-  // 固定ステージに対し、プレイヤーの ally プログラムを「外部供給」して対戦させ、
-  // 決定的なフレーム列を再生する。ally は F1 からブロックUI（Blockly）で組む。
-  // 観戦セッション（出撃した ally＝deployedImage ＋ 舞台）はアプリ層 battle store が所有する。
-  // route は URL から stage を解決して openSession で渡し、deploy は facade コマンド、
-  // run/行/ログ/hash は store の読み投影を購読する。
-  // 再生位置（frameIndex/playing）は観戦 UI の状態なので route が持つ。
-  // 構築エリア（左）・試運転レール（右）はレジストリ管理ページと共有する部品に切り出した。
-  // ally の編集中ドラフト（program／builtImage）はアプリ層のワークベンチ store が持つ。
+  // ステージ対戦画面。
+  // 固定ステージに ally プログラムを外部供給して対戦させ、決定的なフレーム列を再生する。
+  // 状態の所有分担：
+  // - 観戦セッション（出撃した ally ＋ ステージ）＝アプリ層 battle store
+  // - 編集中ドラフト＝アプリ層 workbench store
+  // - 再生位置（frameIndex/playing）＝本 route
   import Icon from "@iconify/svelte";
   import { battleFacade } from "#lib/presentation/composition";
   import {
@@ -33,13 +30,11 @@
   import BattlePodViewer from "#lib/presentation/components/spectating/BattlePodViewer.svelte";
   import { resolveFrameCursor } from "#lib/presentation/utils/frameCursor";
   import PlaybackController from "#lib/presentation/components/spectating/PlaybackController.svelte";
-  import AutomatonStatusViewer from "#lib/presentation/components/spectating/AutomatonStatusViewer.svelte";
+  import SpectatorColumn from "#lib/presentation/components/spectating/SpectatorColumn.svelte";
   import ResultOverlay from "#lib/presentation/components/spectating/ResultOverlay.svelte";
   import SandboxRail from "#lib/presentation/components/spectating/SandboxRail.svelte";
   import SegmentedTabs from "#lib/presentation/components/shared/SegmentedTabs.svelte";
   import ProgramViewer from "#lib/presentation/components/inspecting/ProgramViewer.svelte";
-  import ActionLogViewer from "#lib/presentation/components/inspecting/ActionLogViewer.svelte";
-  import ImageViewer from "#lib/presentation/components/inspecting/ImageViewer.svelte";
   import { automatonIcon } from "#lib/presentation/utils/labels";
   import { navigateTo } from "#lib/presentation/utils/navigation";
   import { attachPlaybackCues } from "#lib/presentation/sounds";
@@ -110,20 +105,7 @@
   let sandboxPlaying = $state(false);
   let sandboxActiveId = $state<NodeId | undefined>(undefined);
 
-  // 観戦ビュー下段の表示切替：プログラム（擬似コード）／ログ（行動履歴）／イメージ（正体＝ハッシュ-名前-時刻）。
-  // 自/敵で独立して切り替える。トグルはビューワー右上にオーバーレイする。
-  // イメージは両列に出して左右対称を保つ（Ally=デプロイ済み＋ドリフト、Enemy=ステージ固定）。
-  type ColumnView = "program" | "log" | "image";
-  let allyView = $state<ColumnView>("program");
-  let enemyView = $state<ColumnView>("program");
-  // 列ごとのビュー切替タブ（イメージ＝正体 → プログラム → ログ）。ビューワーの見出しに置く。
-  const columnTabs = [
-    { value: "image", icon: "mdi:cube-outline", label: "イメージ" },
-    { value: "program", icon: "mdi:code-braces", label: "プログラム" },
-    { value: "log", icon: "mdi:table", label: "ログ" },
-  ];
-
-  // 観戦フレーム（battle 投影 $battleRun）× 再生位置（route の frameIndex）／舞台（route の stage）の
+  // 観戦フレーム（battle 投影 $battleRun）× 再生位置（route の frameIndex）／ステージ（route の stage）の
   // クロス join はプレゼンで解決する（4層の依存を単一スライスに閉じる）。
   // displayFrames＝デプロイ前は route が持つ stage.initial の1フレーム、デプロイ後は実行フレーム列。
   const frames = $derived($battleRun?.frames ?? []);
@@ -174,7 +156,7 @@
     playing = false;
   }
 
-  // 観戦セッションを「今の舞台」で開く＝プレゼンが URL から解決した stage を openSession で渡す。
+  // 観戦セッションを「今のステージ」で開く＝プレゼンが URL から解決した stage を openSession で渡す。
   // openSession はデプロイを破棄（別ステージの対戦は成立しない）、再生状態はプレゼンの所有なのでここで初期へ。
   // effect はマウント時＋ステージ切替時に走る（クライアントナビは再マウントしないため切替を effect で受ける）。
   // CSR では effect が描画前にフラッシュされるため、敵表示（battle 投影）も初回から埋まる。
@@ -212,43 +194,25 @@
        中央=盤面を主役に据える（正方形・迷路化を見越し、横長帯を前提にしない）。
        frameIndex=0 の間は初期配置、再生すると対戦経過が同じ盤面に流れる。 -->
   <section class="flex min-h-0 flex-1 gap-4">
-    <!-- 左カラム（幅比1）：Ally。ステータス／ビュー切替タブ／本体を1枚の黒パネルに統合する。
-         観戦が映すのはデプロイ済みイメージ＝「出撃した実体」。未デプロイなら ally プログラムは空。 -->
-    <div
-      class="flex min-h-0 flex-1 flex-col overflow-hidden rounded-lg border border-gray-700 bg-gray-900 text-gray-200"
-    >
-      <AutomatonStatusViewer
-        frames={displayFrames}
-        {frameIndex}
-        id="ally"
-        maxHp={maxHpById.ally}
-        {bpMax}
-        inactive={deployed === null}
-      />
-      <!-- ビュー切替タブ（ダーク）＝パネル内の区切り兼見出し。イメージ/プログラム/ログ。 -->
-      <div class="flex shrink-0 justify-center border-t border-gray-800 p-2">
-        <SegmentedTabs value={allyView} items={columnTabs} onChange={(v) => (allyView = v as ColumnView)} dense dark />
-      </div>
-      <!-- ビュー本体（パネル下段・フル高。各ビューワーの黒地が親パネルと一体に見える）。 -->
-      <div class="flex min-h-0 flex-1 flex-col p-3 pt-0">
-        {#if allyView === "program"}
-          <ProgramViewer lines={$allyLines} activeId={current?.active?.ally} fill showFollow />
-        {:else if allyView === "log"}
-          <ActionLogViewer log={$allyLog} {frameIndex} fill compact />
-        {:else}
-          <!-- イメージ＝デプロイ済みの正体。未デプロイは空表示、編集側の最新ビルドとズレたら「要再デプロイ」。 -->
-          <ImageViewer
-            hash={$deployedHash}
-            name={deployed?.name ?? ""}
-            baseImage={deployed?.baseImage}
-            timeLabel={deployedAtLabel}
-            drift={deployDrift}
-            emptyLabel="未デプロイ"
-            fill
-          />
-        {/if}
-      </div>
-    </div>
+    <!-- 左カラム（幅比1）：Ally。観戦が映すのはデプロイ済みイメージ＝「出撃した実体」。
+         未デプロイなら inactive＋空プログラム。正体は未デプロイ時に空表示＋ドリフトで「要再デプロイ」。 -->
+    <SpectatorColumn
+      frames={displayFrames}
+      {frameIndex}
+      id="ally"
+      maxHp={maxHpById.ally}
+      {bpMax}
+      inactive={deployed === null}
+      lines={$allyLines}
+      activeId={current?.active?.ally}
+      log={$allyLog}
+      hash={$deployedHash}
+      name={deployed?.name ?? ""}
+      baseImage={deployed?.baseImage}
+      timeLabel={deployedAtLabel}
+      drift={deployDrift}
+      emptyLabel="未デプロイ"
+    />
 
     <!-- 中央カラム（幅比2）：盤面（主役）＋再生コントロール。未デプロイでも初期盤面は出し、
          再生コントローラだけをデプロイ促しに差し替える（盤面・敵は隠さない）。 -->
@@ -281,31 +245,20 @@
       {/if}
     </div>
 
-    <!-- 右カラム（幅比1）：Enemy。Ally と同じ黒パネル構成（ステータス／タブ／本体）で左右対称に。 -->
-    <div
-      class="flex min-h-0 flex-1 flex-col overflow-hidden rounded-lg border border-gray-700 bg-gray-900 text-gray-200"
-    >
-      <AutomatonStatusViewer frames={displayFrames} {frameIndex} id="enemy" maxHp={maxHpById.enemy} {bpMax} />
-      <div class="flex shrink-0 justify-center border-t border-gray-800 p-2">
-        <SegmentedTabs
-          value={enemyView}
-          items={columnTabs}
-          onChange={(v) => (enemyView = v as ColumnView)}
-          dense
-          dark
-        />
-      </div>
-      <div class="flex min-h-0 flex-1 flex-col p-3 pt-0">
-        {#if enemyView === "program"}
-          <ProgramViewer lines={$enemyLines} activeId={current?.active?.enemy} fill showFollow />
-        {:else if enemyView === "log"}
-          <ActionLogViewer log={$enemyLog} {frameIndex} fill compact />
-        {:else}
-          <!-- イメージ＝ステージ固定の敵の正体（Ally と同体裁で左右対称に）。時刻・ドリフトは持たない。 -->
-          <ImageViewer hash={$enemyHash} name={stage.enemyLabel} baseImage={stage.enemyBaseImage} fill />
-        {/if}
-      </div>
-    </div>
+    <!-- 右カラム（幅比1）：Enemy。Ally と同じ陣営カラムで左右対称に。正体はステージ固定（時刻・ドリフト無し）。 -->
+    <SpectatorColumn
+      frames={displayFrames}
+      {frameIndex}
+      id="enemy"
+      maxHp={maxHpById.enemy}
+      {bpMax}
+      lines={$enemyLines}
+      activeId={current?.active?.enemy}
+      log={$enemyLog}
+      hash={$enemyHash}
+      name={stage.enemyLabel}
+      baseImage={stage.enemyBaseImage}
+    />
   </section>
 
   <!-- 下バー：構築ドロワーのトリガー。ドロワーと同じ「下から」に置き、出現場所と一致させる。 -->
