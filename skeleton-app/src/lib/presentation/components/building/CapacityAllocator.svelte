@@ -65,6 +65,11 @@
     }
   });
 
+  // 吹き出しの基準＝常時表示の歯車チップ。
+  // 決定ボタンはポップと共に消えるので、閉じた後もユーザーの目が戻る歯車（＝変化した CP ゲージの真横）に出す。
+  // bind:this で登録する。
+  let gearButton = $state<HTMLElement>();
+
   // 開くたびに確定値から下書きを採り直す（前回のキャンセル分を引きずらない）。
   function openAllocation() {
     draft = cpAllocated;
@@ -72,7 +77,7 @@
   }
   function commitAllocation() {
     cpAllocated = draft;
-    emitFeedback("allocate");
+    emitFeedback("allocate", { anchor: gearButton });
     open = false;
   }
   // 右で CP 増・HP 減（スライダと同じ向き）。1目盛り（grain）単位で動かし可動域でクランプ。
@@ -110,6 +115,7 @@
     <!-- メモリ配分（HP↔CP）＝ビルド時の新ギミック其の二。CP 側の割り当てがこの CP ゲージの上限になる
          （BP は CPU＝ステージ固定なので対象外＝3 分割ではない）。CP の予算そのものに紐づくのでゲージの真横に置く。 -->
     <button
+      bind:this={gearButton}
       type="button"
       class="inline-flex items-center rounded p-0.5 text-surface-600 hover:bg-surface-200"
       title="メモリ配分（HP↔CP）"

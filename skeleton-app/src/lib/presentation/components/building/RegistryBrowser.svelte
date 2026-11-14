@@ -46,33 +46,33 @@
   const builtAtLabel = $derived(draft.builtAt === null ? null : hhmm(draft.builtAt));
 
   // プッシュ＝ビルド済みイメージをレジストリに保存（ローカル名で保管）。生の編集ではなくビルド断面を積む。
-  function pushImage() {
+  function pushImage(anchor: HTMLElement) {
     if (draft.builtImage === null) return;
+    emitFeedback("push", { anchor });
     // ビルド断面（builtImage＝program＋凍結した素質）をそのまま運搬単位として積む＝ビルド後に乗り換えた素質を引きずらない。
     registryFacade.push(draft.builtImage, draft.imageName);
-    emitFeedback("push");
   }
 
   // プル＝レジストリのイメージをカレント（ビルド断面）に取り込む。改良の起点。
   // 編集内容（Blockly）も同じ断面に合わせてダーティーを出さず、タブは切り替えない（カレントが更新されるだけ）。
   // 素質もそのイメージが土台にした版へ乗り換える（パレットの出せるブロックも追従する）。
   // Blockly への流し込みは onPull（親の編集 SSoT）、カレント断面（builtImage/時刻/名前/素質）は facade が受ける。
-  function pullImage(image: RegistryImage) {
+  function pullImage(image: RegistryImage, anchor: HTMLElement) {
+    emitFeedback("pull", { anchor });
     onPull(image.program);
     workbenchFacade.pull(image);
-    emitFeedback("pull");
   }
 
   // 保管済みイメージの削除（手持ちのみ）。
-  function removeImage(id: string) {
+  function removeImage(id: string, anchor: HTMLElement) {
+    emitFeedback("delete", { anchor });
     registryFacade.remove(id);
-    emitFeedback("delete");
   }
 
   // カレントイメージを破棄＝未ビルドに戻す（編集中の Blockly はそのまま・凍結した断面だけ捨てる）。
-  function clearBuiltImage() {
+  function clearBuiltImage(anchor: HTMLElement) {
+    emitFeedback("delete", { anchor });
     workbenchFacade.clearBuilt();
-    emitFeedback("delete");
   }
 
   // リネーム（インライン編集）。編集中の行 id と入力値を持ち、Enter/blur で確定・Escape で取消。
@@ -83,12 +83,12 @@
     renamingId = id;
     renameValue = label;
   }
-  function commitRename() {
+  function commitRename(anchor: HTMLElement) {
     if (renamingId === null) return;
     const label = renameValue.trim();
     if (label.length > 0) {
       registryFacade.rename(renamingId, label);
-      emitFeedback("rename");
+      emitFeedback("rename", { anchor });
     }
     renamingId = null;
   }
@@ -105,12 +105,12 @@
     renameValue = draft.imageName || duplicate?.label || "";
     tileRenaming = true;
   }
-  function commitTileRename() {
+  function commitTileRename(anchor: HTMLElement) {
     const name = renameValue.trim();
     if (name.length > 0) {
       workbenchFacade.setName(name);
       if (duplicate?.source === "user") registryFacade.rename(duplicate.id, name);
-      emitFeedback("rename");
+      emitFeedback("rename", { anchor });
     }
     tileRenaming = false;
   }
@@ -138,9 +138,9 @@
               <input
                 use:autofocus
                 bind:value={renameValue}
-                onblur={commitRename}
+                onblur={(e) => commitRename(e.currentTarget)}
                 onkeydown={(e) => {
-                  if (e.key === "Enter") commitRename();
+                  if (e.key === "Enter") commitRename(e.currentTarget);
                   else if (e.key === "Escape") renamingId = null;
                 }}
                 class="w-32 rounded border border-surface-300 px-1 text-sm"
@@ -155,7 +155,7 @@
           <div class="flex shrink-0 gap-2">
             <!-- プル＝Blockly に展開して編集面へ戻る（改良の起点）。
                  デプロイは行から出さず、プル→編集→オーバーレイのデプロイに一本化する。 -->
-            <button class="action-btn-strong" onclick={() => pullImage(image)}>
+            <button class="action-btn-strong" onclick={(e) => pullImage(image, e.currentTarget)}>
               <Icon icon="mdi:tray-arrow-down" class="size-4" /> プル
             </button>
             <!-- リネーム＝名前（タグ）の付け替え。中身は不変。sample は読み取り専用なので無効。 -->
@@ -170,7 +170,7 @@
             <button
               class="action-btn disabled:opacity-40"
               disabled={image.source === "preset"}
-              onclick={() => removeImage(image.id)}
+              onclick={(e) => removeImage(image.id, e.currentTarget)}
             >
               <Icon icon="mdi:delete-outline" class="size-4" /> 削除
             </button>
@@ -208,9 +208,9 @@
             <input
               use:autofocus
               bind:value={renameValue}
-              onblur={commitTileRename}
+              onblur={(e) => commitTileRename(e.currentTarget)}
               onkeydown={(e) => {
-                if (e.key === "Enter") commitTileRename();
+                if (e.key === "Enter") commitTileRename(e.currentTarget);
                 else if (e.key === "Escape") tileRenaming = false;
               }}
               class="w-32 rounded border border-surface-300 px-1 text-sm"
@@ -225,7 +225,7 @@
           <!-- プッシュ＝カレントをレジストリ（上）へ保管。同一内容が登録済みなら重複を積まない。 -->
           <button
             class="action-btn-strong disabled:opacity-40"
-            onclick={pushImage}
+            onclick={(e) => pushImage(e.currentTarget)}
             disabled={alreadyPushed}
             title={alreadyPushed ? `「${duplicate?.label}」と重複` : "ビルド済みイメージをレジストリに保存"}
           >
@@ -236,7 +236,11 @@
             <Icon icon="mdi:pencil-outline" class="size-4" /> リネーム
           </button>
           <!-- 削除＝カレントイメージを破棄して未ビルドに戻す（編集中の Blockly はそのまま）。 -->
-          <button class="action-btn" onclick={clearBuiltImage} title="カレントイメージを破棄（未ビルドに戻す）">
+          <button
+            class="action-btn"
+            onclick={(e) => clearBuiltImage(e.currentTarget)}
+            title="カレントイメージを破棄（未ビルドに戻す）"
+          >
             <Icon icon="mdi:delete-outline" class="size-4" /> 削除
           </button>
         </div>

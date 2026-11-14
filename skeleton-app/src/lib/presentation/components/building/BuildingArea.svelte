@@ -160,15 +160,16 @@
   const builtAtLabel = $derived(draft.builtAt === null ? null : hhmm(draft.builtAt));
 
   // ビルド＝現在の編集を凍結してイメージ化（試運転・デプロイの前提）。スナップショット化は facade が担う。
-  function build() {
+  // emit を先に出す＝ビルドで「戻す」ボタンが出現してボタン列がずれる前に、押したボタンの矩形を確定する。
+  function build(anchor: HTMLElement) {
+    emitFeedback("build", { anchor });
     workbenchFacade.build();
-    emitFeedback("build");
   }
 
   // デプロイ＝ビルド済みイメージを対戦に反映（状態遷移は親の onDeploy が担う。ここは出撃の一打を鳴らす）。
-  function deploy() {
+  function deploy(anchor: HTMLElement) {
     if (!draft.builtImage) return;
-    emitFeedback("deploy");
+    emitFeedback("deploy", { anchor });
     // ビルド断面（builtImage＝program＋凍結した素質）をそのまま運搬単位として渡す＝ビルド後に乗り換えた素質を引きずらない。
     onDeploy?.(draft.builtImage, builtName, allyHp);
   }
@@ -182,10 +183,10 @@
   //  - ブロック編集：program は Blockly が SSoT。load() で流し込むと onProgramChange が順方向で同じ戻しを起こす（program の facade 直書きはしない＝二重 write 回避）。
   //    ただし素質（baseImage）は Blockly が持たず順方向に流れないため、断面の素質へ facade で別途戻す（パレットが追従する）。
   //  - エディタ編集：テキスト欄は dumb leaf で順方向に流せない。facade で store（program／baseImage）を戻し、エラーを払って ProgramEditor を種から貼り直す。
-  function revertToBuilt() {
+  function revertToBuilt(anchor: HTMLElement) {
     const built = draft.builtImage;
     if (built === null) return;
-    emitFeedback("revert");
+    emitFeedback("revert", { anchor });
     if (mainView === "code") {
       workbenchFacade.revertToBuilt();
       codeErrors = [];
@@ -269,7 +270,7 @@
              副作用のある命令なのでビルドと同じ強調色（action-btn-strong）で揃える。 -->
         <button
           class="action-btn-strong disabled:opacity-40"
-          onclick={deploy}
+          onclick={(event) => deploy(event.currentTarget)}
           disabled={current.notBuilt}
           title={current.notBuilt ? "先にビルド" : "ビルド済みイメージを対戦に反映"}
         >
@@ -334,7 +335,11 @@
              （壊れたテキストは BuildingArea から見えない）。戻し動線が一番要る瞬間なので codeHasErrors でも出す。 -->
         {#if current.dirty || (mainView === "code" && codeHasErrors && !current.notBuilt)}
           <!-- ロールバック＝編集を捨てて前回ビルド時へ戻す。この表示自体がダーティーの合図。破壊寄りなので淡色。 -->
-          <button class="action-btn" onclick={revertToBuilt} title="編集を捨てて前回ビルド時に戻す">
+          <button
+            class="action-btn"
+            onclick={(event) => revertToBuilt(event.currentTarget)}
+            title="編集を捨てて前回ビルド時に戻す"
+          >
             <Icon icon="mdi:history" class="size-4" /> 前回ビルドに戻す
           </button>
         {:else if !current.notBuilt}
@@ -346,7 +351,7 @@
         <!-- ビルドは両編集面で可。code モードは構文エラーがある間だけ押せない（確定をブロック）。 -->
         <button
           class="action-btn-strong disabled:opacity-40"
-          onclick={build}
+          onclick={(event) => build(event.currentTarget)}
           disabled={codeHasErrors}
           title={codeHasErrors ? "構文エラーを直してからビルド" : "現在の編集をイメージ化"}
         >

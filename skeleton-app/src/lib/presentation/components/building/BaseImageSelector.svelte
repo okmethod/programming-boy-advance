@@ -93,11 +93,16 @@
     if (fam) pick(fam.versions[fam.versions.length - 1]);
   }
 
+  // 吹き出しの基準＝常時表示のトリガチップ（現在の素質）。
+  // 確定ボタンはモーダルと共に消えるので、閉じた後もユーザーの目が戻るトリガ（＝切り替わった素質が映る場所）に出す。
+  // bind:this で登録する。
+  let triggerButton = $state<HTMLElement>();
+
   // 候補を確定して素質を乗り換える。破棄モードの非互換は編集を空に（親へ委譲）してから適用する。
   function commit() {
     if (discardOnIncompatible && !supported) onClear();
     workbenchFacade.setBaseImage(focused);
-    emitFeedback("baseImage");
+    emitFeedback("baseImage", { anchor: triggerButton });
     onApplied?.();
     open = false;
   }
@@ -112,6 +117,7 @@
 
 <!-- トリガ＝現在のベースイメージ（系統アイコン＋タグ）。押すと2軸カタログで解放内容を見て選び直せる。 -->
 <button
+  bind:this={triggerButton}
   type="button"
   onclick={() => (open = true)}
   class="inline-flex items-center gap-1.5 rounded border border-surface-300 bg-surface-50/95 px-2 py-1 text-xs text-surface-700 shadow-sm hover:bg-surface-100"
