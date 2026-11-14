@@ -22,6 +22,8 @@ export interface BattleFacade {
   getStage(stageId: string): Stage;
   /** ステージ選択 UI 用に全ステージ定義を一覧する（章を跨いで平坦）。 */
   listStages(): readonly Stage[];
+  /** 登録順（章を跨ぐ平坦列）での後続ステージ id。終端・未知の id は null（並び順の正は StageRepository）。 */
+  nextStageId(stageId: string): string | null;
   /** ステージ選択 UI の章区切り表示用に、チャプターごとのステージ群を一覧する。 */
   listChapters(): readonly Chapter[];
   /** 観戦セッションを開く＝ステージを据えてデプロイをリセットする（ステージ切替の起点）。 */
@@ -47,6 +49,13 @@ export const createBattleFacade = (stages: StageRepository): BattleFacade => {
     }));
   }
 
+  // 登録順の後続＝平坦列で現在位置の直後。終端・未知の id は null（「次へ」を出さない合図）。
+  function nextStageId(stageId: string): string | null {
+    const list = stages.list();
+    const index = list.findIndex((s) => s.id === stageId);
+    return index >= 0 ? (list[index + 1]?.id ?? null) : null;
+  }
+
   function runSandbox(program: Program, target: SandboxTarget): BattleRun {
     // 勝敗で打ち切らず、固定盤で ally のプログラムだけを走らせる（stub は反撃しない的）。
     // 盤面・上限などの試運転パラメータは app（sandbox.ts）が供給し、実行そのもの（開始から終了まで）は domain に委ねる。
@@ -56,6 +65,7 @@ export const createBattleFacade = (stages: StageRepository): BattleFacade => {
   return {
     getStage: (stageId) => stages.get(stageId),
     listStages: () => stages.list(),
+    nextStageId,
     listChapters: () => stages.listChapters(),
     openSession,
     deploy,

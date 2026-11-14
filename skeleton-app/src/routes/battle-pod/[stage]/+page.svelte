@@ -43,13 +43,8 @@
   const stageId = $derived(data.stageId);
   const stage = $derived(facade.getStage(stageId));
 
-  // 次ステージ＝登録順（listStages の平坦列）で現ステージの直後。終端は null＝「次へ」を出さない。
-  // 章を跨ぐ前進もこの平坦列が吸収する（並び順は StageRepository が正）。
-  const nextStageId = $derived.by(() => {
-    const stages = facade.listStages();
-    const index = stages.findIndex((s) => s.id === stageId);
-    return index >= 0 ? (stages[index + 1]?.id ?? null) : null;
-  });
+  // 次ステージ＝登録順の後続（並び順の正と後続の解決はアプリ層 facade に委ねる）。終端は null＝「次へ」を出さない。
+  const nextStageId = $derived(facade.nextStageId(stageId));
 
   // デプロイ済みイメージ（出撃した実体・未デプロイは null）は battle store の所有 state を購読する。
   // program・表示名・素質・時刻は一体の集合体で、未デプロイは丸ごと null（表示メタだけ欠ける状態は起きない）。
