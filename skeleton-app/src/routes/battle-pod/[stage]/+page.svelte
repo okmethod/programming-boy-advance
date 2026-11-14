@@ -363,11 +363,9 @@
           <div class="flex h-7 shrink-0 items-center gap-1 text-xs font-bold opacity-70">
             <Icon icon="mdi:view-grid-outline" class="size-4" /> 初期配置
           </div>
-          <!-- 盤面：試運転と同じラッパー（同じ形なら位置が一致する）。デプロイ前でも見られるよう
+          <!-- 盤面：試運転と同じ size="sm" なので位置も構造的に一致する。デプロイ前でも見られるよう
                実行結果ではなくステージ定義の初期状態（stage.initial）を直接描く。 -->
-          <div class="flex shrink-0 justify-center">
-            <BattlePodViewer state={stage.initial} size="sm" />
-          </div>
+          <BattlePodViewer state={stage.initial} size="sm" />
 
           <ProgramViewer
             title="敵プログラム"

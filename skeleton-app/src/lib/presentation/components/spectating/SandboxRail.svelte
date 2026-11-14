@@ -88,10 +88,8 @@
 </div>
 
 {#if image && current}
-  <!-- 盤面：再生は下、残りはログで埋める。 -->
-  <div class="flex shrink-0 justify-center">
-    <BattlePodViewer state={current} size="sm" stubEnemy={sandboxTarget === "stub"} prev={cursor.prev} />
-  </div>
+  <!-- 盤面：再生は下、残りはログで埋める（sm は自身で位置を取るのでラッパー不要）。 -->
+  <BattlePodViewer state={current} size="sm" stubEnemy={sandboxTarget === "stub"} prev={cursor.prev} />
   <!-- 再生開始の発進演出は PlaybackController 内で発火する。 -->
   <PlaybackController bind:frameIndex bind:playing lastIndex={cursor.lastIndex} clock={current.clock} />
 

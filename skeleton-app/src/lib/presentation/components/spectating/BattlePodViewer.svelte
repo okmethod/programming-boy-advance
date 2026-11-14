@@ -150,8 +150,9 @@
 {/snippet}
 
 <!-- 盤面を container-type:size の箱に中央寄せでフィットさせる。lg は残り領域いっぱい、
-     sm は高さ上限付きの小箱（縦横どちらが長くてもその中へ収める）。cqw/cqh はこの箱で測る。 -->
-<div class="grid {fit ? 'size-full' : 'h-36 w-full'} place-items-center [container-type:size]">
+     sm は高さ上限付きの小箱（縦横どちらが長くてもその中へ収める）。cqw/cqh はこの箱で測る。
+     sm は自身で shrink-0＝親の flex カラムで潰れず、呼び出し側の位置合わせラッパーを不要にする。 -->
+<div class="grid {fit ? 'size-full' : 'h-36 w-full shrink-0'} place-items-center [container-type:size]">
   <div class="grid gap-1 rounded bg-gray-200 p-2" style={fit ? fitStyle : smStyle}>
     {@render cells("h-1/2 w-1/2", "h-1/4 w-1/4")}
   </div>
