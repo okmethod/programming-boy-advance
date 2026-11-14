@@ -3,5 +3,5 @@
  */
 
 export { audioOn, setAudioOn } from "./audioStore";
-export { playSE } from "./soundEffects";
+export { playSE, type SoundCue } from "./soundEffects";
 export { attachPlaybackCues } from "./playbackCues.svelte";

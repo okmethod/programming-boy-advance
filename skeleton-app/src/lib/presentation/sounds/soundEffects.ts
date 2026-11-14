@@ -124,8 +124,8 @@ const SE_ASSIGNMENTS = {
   audioOn: chord(CHORD_PATTERNS.PUPI, "triangle", 0.06),
 } satisfies Record<string, SoundDefinition>;
 
-/** SE の識別子（割り当てキー全体）。 */
-type Cue = keyof typeof SE_ASSIGNMENTS;
+/** SE の識別子（割り当てキー全体）。フィードバック媒体・再生 cue が共にこの名前で引く。 */
+export type SoundCue = keyof typeof SE_ASSIGNMENTS;
 /** バトルイベントの識別子（再生差分から選ぶ cue）。SE_ASSIGNMENTS のうちバトル側の部分集合。 */
 export type BattleCue = "wait" | "move" | "turn" | "damage" | "freeze" | "win" | "lose";
 
@@ -149,4 +149,4 @@ function createPlay(def: SoundDefinition): () => void {
 /** イベント別の SE 再生関数。例: playSE.damage() / playSE.deploy()。 */
 export const playSE = Object.fromEntries(
   Object.entries(SE_ASSIGNMENTS).map(([cue, def]) => [cue, createPlay(def)]),
-) as Record<Cue, () => void>;
+) as Record<SoundCue, () => void>;
