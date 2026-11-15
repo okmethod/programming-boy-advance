@@ -37,6 +37,29 @@ describe("sensorValue（enemyAhead）", () => {
   });
 });
 
+describe("sensorValue（左右の壁）", () => {
+  // 3×3 盤の中央(1,1)で右向き＝左は上セル・右は下セル。左右の辺を独立に見る。
+  const at = (walls: readonly WallEdge[]): BattleState => ({
+    grid: { width: 3, height: 3, walls },
+    automatons: [automaton("ally", { x: 1, y: 1 }, "right")],
+    clock: 0,
+    rngSeed: 0,
+    logs: [],
+    winner: null,
+  });
+
+  it("wallLeft＝進行方向の左の辺に壁があれば真", () => {
+    expect(sensorValue("wallLeft", at([wallOn({ x: 1, y: 1 }, "up")]), "ally")).toBe(true);
+    expect(sensorValue("wallLeft", at([wallOn({ x: 1, y: 1 }, "down")]), "ally")).toBe(false); // 右の辺は左に効かない
+    expect(sensorValue("wallLeft", at([]), "ally")).toBe(false);
+  });
+
+  it("wallRight＝進行方向の右の辺に壁があれば真", () => {
+    expect(sensorValue("wallRight", at([wallOn({ x: 1, y: 1 }, "down")]), "ally")).toBe(true);
+    expect(sensorValue("wallRight", at([]), "ally")).toBe(false);
+  });
+});
+
 describe("sensorValue（境界）", () => {
   it("自分が盤上にいなければ偽", () => {
     expect(sensorValue("wallAhead", row([], []), "ally")).toBe(false);

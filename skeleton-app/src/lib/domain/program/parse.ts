@@ -42,6 +42,8 @@ const COMMAND_NAMES = {
 
 const SENSOR_NAMES = {
   wallAhead: true,
+  wallLeft: true,
+  wallRight: true,
   enemyAhead: true,
 } satisfies Record<SensorName, true>;
 

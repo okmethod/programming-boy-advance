@@ -25,6 +25,10 @@ export const sensorLabel = (sensor: SensorName): string => {
   switch (sensor) {
     case "wallAhead":
       return "壁が前にある";
+    case "wallLeft":
+      return "壁が左にある";
+    case "wallRight":
+      return "壁が右にある";
     case "enemyAhead":
       return "敵が前にいる";
   }

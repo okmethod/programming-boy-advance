@@ -11,7 +11,7 @@ export type NodeId = number;
 
 export type CommandName = "stepForward" | "turnRight" | "turnLeft" | "attack" | "loadAttack" | "brittleAttack" | "wait";
 
-export type SensorName = "wallAhead" | "enemyAhead";
+export type SensorName = "wallAhead" | "wallLeft" | "wallRight" | "enemyAhead";
 
 export type ControlName = "if" | "repeat" | "while";
 

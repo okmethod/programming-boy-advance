@@ -6,7 +6,7 @@
 
 import type { Expr, SensorName } from "#lib/domain/program";
 import type { AutomatonId, BattleState } from "./model";
-import { frontCell, isBlocked, arePositionsEqual } from "./grid";
+import { frontCell, isBlocked, arePositionsEqual, rotate } from "./grid";
 
 /** 式（クエリ）を評価して真偽を返す。状態は変えない。 */
 export const exprValue = (expr: Expr, state: BattleState, selfId: AutomatonId): boolean => {
@@ -30,6 +30,10 @@ export const sensorValue = (sensor: SensorName, state: BattleState, selfId: Auto
   switch (sensor) {
     case "wallAhead":
       return isBlocked(state.grid, self.pos, front);
+    case "wallLeft":
+      return isBlocked(state.grid, self.pos, frontCell(self.pos, rotate(self.dir, "left")));
+    case "wallRight":
+      return isBlocked(state.grid, self.pos, frontCell(self.pos, rotate(self.dir, "right")));
     case "enemyAhead": {
       const other = state.automatons.find((e) => e.id !== selfId && arePositionsEqual(e.pos, front));
       return other !== undefined;
