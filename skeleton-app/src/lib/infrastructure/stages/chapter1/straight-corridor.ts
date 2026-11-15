@@ -1,5 +1,5 @@
 import type { Stage } from "#lib/application";
-import { BRITTLE_SENTRY, TURTLOGO_V1 } from "#lib/domain";
+import { BRITTLE_SENTRY, TURTLE_V1 } from "#lib/domain";
 import { BRITTLE_ENEMY_LABEL, BRITTLE_ENEMY_PROGRAM } from "#lib/infrastructure/stages/chapter1/brittle-enemy";
 
 export const STRAIGHT_CORRIDOR_STAGE: Stage = {
@@ -11,7 +11,7 @@ export const STRAIGHT_CORRIDOR_STAGE: Stage = {
   enemyBaseImage: BRITTLE_SENTRY,
   memoryTotal: 16, // memoryGrain の倍数であること（CapacityAllocator の invariant）
   memoryGrain: 8,
-  allowedImages: [TURTLOGO_V1], // 移動のみ。制御・攻撃は持たせない（v1 で解く導入面）。
+  allowedImages: [TURTLE_V1], // 移動のみ。制御・攻撃は持たせない（v1 で解く導入面）。
 
   initial: {
     grid: { width: 6, height: 1, walls: [] },

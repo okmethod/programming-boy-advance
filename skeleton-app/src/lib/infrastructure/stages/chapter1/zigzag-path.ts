@@ -1,5 +1,5 @@
 import type { Stage } from "#lib/application";
-import { BRITTLE_SENTRY, TURTLOGO_V1, wallOn } from "#lib/domain";
+import { BRITTLE_SENTRY, TURTLE_V1, wallOn } from "#lib/domain";
 import { BRITTLE_ENEMY_LABEL, BRITTLE_ENEMY_PROGRAM } from "#lib/infrastructure/stages/chapter1/brittle-enemy";
 
 // 4x4 の盤面を九十九折りにする辺壁。各行境界を1列だけ開けて一本道にする。
@@ -25,7 +25,7 @@ export const ZIGZAG_PATH_STAGE: Stage = {
   enemyBaseImage: BRITTLE_SENTRY,
   memoryTotal: 24, // memoryGrain の倍数であること（CapacityAllocator の invariant）
   memoryGrain: 8,
-  allowedImages: [TURTLOGO_V1], // 移動＋向き変えの連鎖のみ（v1 で解く）。
+  allowedImages: [TURTLE_V1], // 移動＋向き変えの連鎖のみ（v1 で解く）。
 
   initial: {
     grid: { width: 4, height: 4, walls: MAZE_WALLS },

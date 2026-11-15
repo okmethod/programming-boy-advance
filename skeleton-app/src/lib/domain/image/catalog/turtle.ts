@@ -13,7 +13,7 @@ import type { BaseImage } from "../model";
  *
  * 移動・向き変え・待機のみ。Chap1 は攻撃不可で、位置取りのみでクリア可能。
  */
-export const TURTLOGO_V1: BaseImage = {
+export const TURTLE_V1: BaseImage = {
   imageName: "turtlogo",
   family: "カメの歩み",
   version: "1.0",
@@ -29,8 +29,8 @@ export const TURTLOGO_V1: BaseImage = {
  *
  * v1.0 の基本行動に、クエリ（センサ）と制御構文（条件分岐・くりかえし）を足す。
  */
-export const TURTLOGO_V2: BaseImage = {
-  ...TURTLOGO_V1,
+export const TURTLE_V2: BaseImage = {
+  ...TURTLE_V1,
   version: "2.0",
   summary: "まわりを見て、条件分岐とくりかえしで判断できる",
   queries: ["enemyAhead", "wallAhead"],
@@ -43,9 +43,12 @@ export const TURTLOGO_V2: BaseImage = {
  * 移動（v1）・制御（v2）を経て、最後に攻撃を覚える。
  * 移動系統に攻撃を足す当面の措置＝将来「攻撃系統」を分けるなら attack をそちらへ移す余地あり（YAGNI）。
  */
-export const TURTLOGO_V3: BaseImage = {
-  ...TURTLOGO_V2,
+export const TURTLE_V3: BaseImage = {
+  ...TURTLE_V2,
   version: "3.0",
   summary: "攻撃を覚える。移動・制御に加えて戦える",
-  commands: [...TURTLOGO_V2.commands, "attack"],
+  commands: [...TURTLE_V2.commands, "attack"],
 };
+
+/** カメの歩み（turtlogo）系統の版ラダー（版の昇順）。系統単位で束ねた列。 */
+export const TURTLE_IMAGES: readonly BaseImage[] = [TURTLE_V1, TURTLE_V2, TURTLE_V3];

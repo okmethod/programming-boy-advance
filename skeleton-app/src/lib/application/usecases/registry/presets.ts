@@ -7,7 +7,7 @@
  */
 
 import type { BaseImage, Program } from "#lib/domain";
-import { TURTLOGO_V2, TURTLOGO_V3 } from "#lib/domain";
+import { TURTLE_V2, TURTLE_V3 } from "#lib/domain";
 
 /** お手本プリセット：ブロックで組む前に挙動を確かめるための見本。 */
 export interface AllyPreset {
@@ -24,11 +24,11 @@ export const ALLY_PRESETS: Record<string, AllyPreset> = {
   forward: {
     label: "前進する",
     program: [{ kind: "while", cond: { kind: "literal", value: true }, body: [{ kind: "call", cmd: "stepForward" }] }],
-    baseImage: TURTLOGO_V2,
+    baseImage: TURTLE_V2,
   },
   forwardAttack: {
     label: "前進し、攻撃する",
-    baseImage: TURTLOGO_V3,
+    baseImage: TURTLE_V3,
     program: [
       {
         kind: "while",

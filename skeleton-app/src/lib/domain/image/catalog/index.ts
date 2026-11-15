@@ -4,10 +4,10 @@
  */
 
 import type { BaseImage } from "../model";
-import { TURTLOGO_V1, TURTLOGO_V2, TURTLOGO_V3 } from "./turtle";
+import { TURTLE_IMAGES } from "./turtle";
 
-export { TURTLOGO_V1, TURTLOGO_V2, TURTLOGO_V3 } from "./turtle";
+export { TURTLE_V1, TURTLE_V2, TURTLE_V3, TURTLE_IMAGES } from "./turtle";
 export { BRITTLE_SENTRY } from "./enemy";
 
-/** 素質カタログ（プレイヤーの選択候補）。版が上がるほど使える命令が広がる（v1=基本行動 → v2=クエリ＋制御 → v3=攻撃）。 */
-export const BASE_IMAGES: readonly BaseImage[] = [TURTLOGO_V1, TURTLOGO_V2, TURTLOGO_V3];
+/** 素質カタログ（プレイヤーの選択候補）＝系統ごとの版ラダーを連結した全体。将来の系統はここに足す。 */
+export const BASE_IMAGES: readonly BaseImage[] = [...TURTLE_IMAGES];

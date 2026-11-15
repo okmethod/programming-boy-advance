@@ -6,7 +6,7 @@
 
 import type { Stage } from "#lib/application";
 import type { Program } from "#lib/domain";
-import { TURTLOGO_V2 } from "#lib/domain";
+import { TURTLE_V2 } from "#lib/domain";
 
 // まっすぐ突進し続けるだけの敵（攻撃しない）。
 const CHARGER: Program = [{ kind: "repeat", count: 100, body: [{ kind: "call", cmd: "stepForward" }] }];
@@ -19,7 +19,7 @@ export const SIMPLE_CHARGER_STAGE: Stage = {
   goal: "まっすぐ突進してくる敵を、近づいたら攻撃して倒そう",
   enemy: CHARGER,
   enemyLabel: "突進",
-  enemyBaseImage: TURTLOGO_V2,
+  enemyBaseImage: TURTLE_V2,
   memoryTotal: 16, // memoryGrain の倍数であること（CapacityAllocator の invariant）
   memoryGrain: 8, // total=grain*2 ＝ 配分は一択（導入用）
 

@@ -16,6 +16,6 @@ export {
   UNKNOWN_BASE_IMAGE,
 } from "./baseImage";
 
-export { TURTLOGO_V1, TURTLOGO_V2, TURTLOGO_V3, BRITTLE_SENTRY, BASE_IMAGES } from "./catalog";
+export { TURTLE_V1, TURTLE_V2, TURTLE_V3, TURTLE_IMAGES, BRITTLE_SENTRY, BASE_IMAGES } from "./catalog";
 
 export { imageHash, areImagesEqual } from "./hash";

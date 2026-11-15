@@ -1,5 +1,5 @@
 import type { Stage } from "#lib/application";
-import { BRITTLE_SENTRY, TURTLOGO_V1 } from "#lib/domain";
+import { BRITTLE_SENTRY, TURTLE_V1 } from "#lib/domain";
 import { BRITTLE_ENEMY_LABEL, BRITTLE_ENEMY_PROGRAM } from "#lib/infrastructure/stages/chapter1/brittle-enemy";
 
 export const CORNER_TURN_STAGE: Stage = {
@@ -11,7 +11,7 @@ export const CORNER_TURN_STAGE: Stage = {
   enemyBaseImage: BRITTLE_SENTRY,
   memoryTotal: 16, // memoryGrain の倍数であること（CapacityAllocator の invariant）
   memoryGrain: 8,
-  allowedImages: [TURTLOGO_V1], // 移動＋向き変えのみ（v1 で解く）。
+  allowedImages: [TURTLE_V1], // 移動＋向き変えのみ（v1 で解く）。
 
   initial: {
     // 壁は無いが、移動は前方1マスのみ＝斜めに詰められず、敵は直進線上に居ないので turn が要る L 字。

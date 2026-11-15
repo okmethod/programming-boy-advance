@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { parseProgram, programToText } from "./parse";
-import { TURTLOGO_V1, TURTLOGO_V2 } from "#lib/domain/image";
+import { TURTLE_V1, TURTLE_V2 } from "#lib/domain/image";
 import type { Program } from "./model";
 
 describe("parseProgram / programToText", () => {
@@ -63,13 +63,13 @@ describe("parseProgram（素質ガード）", () => {
 
   it("付与セット内なら通る（V2 は制御・センサを許可）", () => {
     // 内側コマンドは V2 が賄う stepForward（attack は v3 以降）。判定を制御(if)・センサ許可に絞る。
-    const result = parseProgram("if enemyAhead:\n  stepForward()", TURTLOGO_V2);
+    const result = parseProgram("if enemyAhead:\n  stepForward()", TURTLE_V2);
     expect(result.ok).toBe(true);
   });
 
   it("付与対象外の制御・センサを元テキスト行つきで弾く（V1）", () => {
     // V1 は制御（if）もセンサ（enemyAhead）も未獲得＝2 行目の両方を弾く。1 行目の空白はそのまま行番号に効く。
-    const result = parseProgram("\nif enemyAhead:\n  attack()", TURTLOGO_V1);
+    const result = parseProgram("\nif enemyAhead:\n  attack()", TURTLE_V1);
     expect(result.ok).toBe(false);
     if (!result.ok) {
       expect(result.errors).toContainEqual({
@@ -86,7 +86,7 @@ describe("parseProgram（素質ガード）", () => {
   });
 
   it("付与対象外のコマンドを行つきで弾く（loadAttack はブロック未提供で V1/V2 とも非付与）", () => {
-    const result = parseProgram("stepForward()\nloadAttack()", TURTLOGO_V2);
+    const result = parseProgram("stepForward()\nloadAttack()", TURTLE_V2);
     expect(result.ok).toBe(false);
     if (!result.ok) {
       expect(result.errors).toContainEqual({
