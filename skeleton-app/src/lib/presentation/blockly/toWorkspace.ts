@@ -10,7 +10,7 @@
 import * as Blockly from "blockly";
 import type { Workspace } from "blockly";
 import type { Expr, Program, Stmt } from "#lib/application";
-import { COMMAND_PREFIX, QUERY_PREFIX } from "./blocks";
+import { COMMAND_PREFIX, OPERATOR_PREFIX, QUERY_PREFIX } from "./blocks";
 
 // Blockly の serialization が受け取るブロック状態（必要な部分だけを型付け）。
 // x / y は先頭ブロックの配置座標（省略時は原点＝左上ぴったりに出る）。
@@ -54,11 +54,23 @@ function putInput(state: BlockState, inputName: string, body: Program): void {
   state.inputs = { ...state.inputs, [inputName]: { block: child } };
 }
 
-// 条件スロット（COND）へクエリ値ブロックを載せる（blockToStmt 側の condToExpr の鏡写し）。
+// 式（Expr）を値ブロック状態にする（exprFromBlock の鏡写し）。not はオペランドを再帰的に載せる。
+// literal（ずっとくりかえす由来の while(true)）は値ブロックを持たないので undefined を返す。
+function exprToState(expr: Expr): BlockState | undefined {
+  if (expr.kind === "sensor") return { type: `${QUERY_PREFIX}${expr.sensor}` };
+  if (expr.kind === "not") {
+    const state: BlockState = { type: `${OPERATOR_PREFIX}not` };
+    const operand = exprToState(expr.operand);
+    if (operand) state.inputs = { OPERAND: { block: operand } };
+    return state;
+  }
+  return undefined;
+}
+
+// 条件スロット（COND）へ値ブロックを載せる（blockToStmt 側の condToExpr の鏡写し）。
 function putCond(state: BlockState, cond: Expr): void {
-  // literal（ずっとくりかえす由来の while(true)）はクエリブロックを持たないので載せない。
-  if (cond.kind !== "sensor") return;
-  const block: BlockState = { type: `${QUERY_PREFIX}${cond.sensor}` };
+  const block = exprToState(cond);
+  if (!block) return;
   state.inputs = { ...state.inputs, COND: { block } };
 }
 

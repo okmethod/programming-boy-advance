@@ -7,11 +7,11 @@
 
 import type { Block, Workspace } from "blockly";
 import type { CommandName, Expr, Program, SensorName, Stmt } from "#lib/application";
-import { COMMAND_PREFIX, QUERY_PREFIX } from "./blocks";
+import { COMMAND_PREFIX, OPERATOR_PREFIX, QUERY_PREFIX } from "./blocks";
 
 /** ワークスペースの先頭連鎖を Program に変換する。空なら空配列。 */
 export const workspaceToProgram = (ws: Workspace): Program => {
-  // PoC では「入力元を持たない連鎖」の最初の1本だけを対象にする。
+  // プログラムは1本の連鎖。入力元を持たない先頭ブロックの連鎖だけを対象にし、置き去りのブロックは無視する。
   const top = ws.getTopBlocks(true).find((b) => b.previousConnection && !b.previousConnection.targetBlock());
   return top ? blockChainToStmts(top) : [];
 };
@@ -34,14 +34,24 @@ function inputToStmts(block: Block, inputName: string): Stmt[] {
   return child ? blockChainToStmts(child) : [];
 }
 
-// 条件スロット（COND）に繋がるクエリ値ブロックを Expr に変換する。
-// 未選択（＜クエリ＞プレースホルダや未接続）なら既定センサにフォールバックし Program を有効に保つ（PoC）。
+// 条件スロット（COND）に繋がる値ブロックを Expr に変換する。
 function condToExpr(block: Block): Expr {
-  const cond = block.getInputTargetBlock("COND");
-  const sensor = cond?.type.startsWith(QUERY_PREFIX)
-    ? (cond.type.slice(QUERY_PREFIX.length) as SensorName)
-    : ("enemyAhead" as SensorName);
-  return { kind: "sensor", sensor };
+  return exprFromBlock(block.getInputTargetBlock("COND"));
+}
+
+// 値ブロックを Expr に変換する。not（演算子）はオペランドを再帰的にたどる。
+// 未選択（＜クエリ＞プレースホルダや未接続）なら既定センサにフォールバックし、Program を常に有効に保つ。
+function exprFromBlock(block: Block | null): Expr {
+  if (block?.type.startsWith(OPERATOR_PREFIX)) {
+    const op = block.type.slice(OPERATOR_PREFIX.length);
+    if (op === "not") {
+      return { kind: "not", operand: exprFromBlock(block.getInputTargetBlock("OPERAND")) };
+    }
+  }
+  if (block?.type.startsWith(QUERY_PREFIX)) {
+    return { kind: "sensor", sensor: block.type.slice(QUERY_PREFIX.length) as SensorName };
+  }
+  return { kind: "sensor", sensor: "enemyAhead" as SensorName };
 }
 
 function blockToStmt(block: Block): Stmt | null {

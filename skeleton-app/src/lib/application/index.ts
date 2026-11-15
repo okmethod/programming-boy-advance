@@ -20,6 +20,7 @@ export type {
   CommandName,
   SensorName,
   ControlName,
+  OperatorName,
   NodeId,
   FlatLine,
   AutomatonImage,

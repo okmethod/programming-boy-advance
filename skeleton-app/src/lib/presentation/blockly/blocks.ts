@@ -9,22 +9,22 @@
  */
 
 import * as Blockly from "blockly";
-import type { BaseImage, ControlName } from "#lib/application";
+import type { BaseImage, CommandName, ControlName, OperatorName, SensorName } from "#lib/application";
+import { commandLabel, operatorLabel, sensorLabel } from "#lib/presentation/utils/labels";
 
 // 配色（Blockly の HSV 色相）。コマンド=緑系 / クエリ=青系 / 制御=橙系。
 const COLOUR_COMMAND = 160;
 const COLOUR_QUERY = 210;
 const COLOUR_CONTROL = 30;
 
-// クエリ（センサ）。値（Boolean）を返す式ブロックで、if/while の条件スロットに差し込む。
-// { type, label }：label は A面（プレイヤー向け）、type の接尾辞が B面の SensorName。
-const QUERY_BLOCKS: { type: string; label: string }[] = [
-  { type: "qry_enemyAhead", label: "敵が近い?" },
-  { type: "qry_wallAhead", label: "壁がある?" },
-];
-
 // block.type からセンサ名を取り出す接頭辞（toProgram でも使う）。
 export const QUERY_PREFIX = "qry_";
+
+// クエリ（センサ）ブロックを出すセンサ。値（Boolean）を返す式ブロックで、if/while/not に差し込む。
+// ここは登録対象の全センサ。版が解放するのはこの部分集合（base.queries）。
+// A面ラベルは labels.ts の sensorLabel を唯一の出所にする（ブロックの見た目＝実行ログ表示を揃える）。
+const QUERY_SENSORS: readonly SensorName[] = ["enemyAhead", "wallAhead", "wallLeft", "wallRight"];
+const QUERY_BLOCKS = QUERY_SENSORS.map((sensor) => ({ type: QUERY_PREFIX + sensor, label: sensorLabel(sensor) }));
 
 // 条件スロットの初期表示＝「クエリを差し込む穴」を示すプレースホルダ shadow。
 // 具体的なクエリ（敵が近い?）を既定にすると「選択済み」に見えるため、空の目印にする。
@@ -47,17 +47,14 @@ const QUERY_DEFS = [
   },
 ];
 
-// コマンド5種。previous/next 接続のみ持つ単純ブロック。block.type → CommandName に対応。
-const COMMAND_BLOCKS: { type: string; label: string }[] = [
-  { type: "cmd_stepForward", label: "前に進む" },
-  { type: "cmd_turnRight", label: "右を向く" },
-  { type: "cmd_turnLeft", label: "左を向く" },
-  { type: "cmd_attack", label: "攻撃する" },
-  { type: "cmd_wait", label: "待機する" },
-];
-
 // block.type からコマンド名を取り出す接頭辞（toProgram でも使う）。
 export const COMMAND_PREFIX = "cmd_";
+
+// コマンドブロックを出す命令。previous/next 接続のみ持つ単純ブロック。
+// loadAttack/brittleAttack は敵専用でプレイヤーには出さないため、ここには並べない。
+// A面ラベルは labels.ts の commandLabel を唯一の出所にする。
+const COMMAND_NAMES: readonly CommandName[] = ["stepForward", "turnRight", "turnLeft", "attack", "wait"];
+const COMMAND_BLOCKS = COMMAND_NAMES.map((cmd) => ({ type: COMMAND_PREFIX + cmd, label: commandLabel(cmd) }));
 
 const COMMAND_DEFS = COMMAND_BLOCKS.map(({ type, label }) => ({
   type,
@@ -65,6 +62,21 @@ const COMMAND_DEFS = COMMAND_BLOCKS.map(({ type, label }) => ({
   previousStatement: null,
   nextStatement: null,
   colour: COLOUR_COMMAND,
+}));
+
+// block.type から演算子名を取り出す接頭辞（toProgram / toWorkspace でも使う）。
+export const OPERATOR_PREFIX = "op_";
+
+// 演算子（クエリを合成する論理演算）。Boolean 入力(OPERAND)を1つ受けて Boolean を返す式ブロック。
+// not は「＜クエリ＞ ではない」の後置語で組む（A面ラベルは operatorLabel が唯一の出所）。
+// クエリと同じ条件スロットに差す値ブロックなので、独立タブは設けずクエリ族に同居させる（配色もクエリと揃える）。
+const OPERATOR_NAMES: readonly OperatorName[] = ["not"];
+const OPERATOR_DEFS = OPERATOR_NAMES.map((op) => ({
+  type: OPERATOR_PREFIX + op,
+  message0: `%1 ${operatorLabel(op)}`,
+  args0: [{ type: "input_value", name: "OPERAND", check: "Boolean" }],
+  output: "Boolean",
+  colour: COLOUR_QUERY,
 }));
 
 const CONTROL_DEFS = [
@@ -134,7 +146,7 @@ let registered = false;
 /** カスタムブロックを Blockly に登録する。inject / headless Workspace の前に呼ぶ（冪等）。 */
 export function registerBlocks(): void {
   if (registered) return;
-  Blockly.defineBlocksWithJsonArray([...COMMAND_DEFS, ...QUERY_DEFS, ...CONTROL_DEFS]);
+  Blockly.defineBlocksWithJsonArray([...COMMAND_DEFS, ...QUERY_DEFS, ...OPERATOR_DEFS, ...CONTROL_DEFS]);
   registered = true;
 }
 
@@ -153,6 +165,14 @@ const withCondShadow = (type: string): FlyoutBlock => ({
   kind: "block",
   type,
   inputs: { COND: { shadow: { type: COND_PLACEHOLDER_TYPE } } },
+});
+
+// 演算子（not）は演算対象スロット（OPERAND）に「＜クエリ＞」プレースホルダ shadow を載せて出す
+// （クエリを差し込む穴だと一目で分かるように）。
+const withOperandShadow = (type: string): FlyoutBlock => ({
+  kind: "block",
+  type,
+  inputs: { OPERAND: { shadow: { type: COND_PLACEHOLDER_TYPE } } },
 });
 
 /** パレットのカテゴリ。上部タブで1つ選び、その中身だけを固定幅フライアウトに表示する。 */
@@ -176,9 +196,10 @@ const CONTROL_BLOCKS: Record<ControlName, FlyoutBlock[]> = {
 
 /**
  * 素質（BaseImage）の付与命令セットからパレットのカテゴリを生成する（コマンド/クエリ/制御の3ファミリー＝CQS）。
+ * 演算子（not）は独立タブを設けず、条件スロットに差す値ブロックとしてクエリ族に同居させる。
  *
  * 固定定義をやめ、ここを「コマンド解放の seam」にする＝素質・版を替えれば出せるブロックが変わる。
- * block.type は接頭辞（cmd_/qry_）で命令名に対応。1つも付与しない族は中身が空＝非活性タブで残す
+ * block.type は接頭辞（cmd_/qry_/op_）で命令名に対応。1つも付与しない族は中身が空＝非活性タブで残す
  * （タブごと落とすと「将来解放される枠」が見えないため、非表示ではなく非活性で存在だけ示す）。
  *
  * カテゴリ式ツールボックス（クリックでポップアップ）は開閉で横幅が変わり盤面と重なるため使わない。
@@ -195,7 +216,15 @@ export const categoriesForBaseImage = (base: BaseImage): BlockCategory[] => {
       label: "コマンド",
       contents: toFlyoutBlocks(base.commands.map((c) => COMMAND_PREFIX + c)),
     }),
-    withEnabled({ id: "query", label: "クエリ", contents: toFlyoutBlocks(base.queries.map((s) => QUERY_PREFIX + s)) }),
+    withEnabled({
+      id: "query",
+      label: "クエリ",
+      // クエリ族には、センサ（葉）に加えて演算子（not）も同居させる＝どちらも条件スロットに差す値ブロック。
+      contents: [
+        ...toFlyoutBlocks(base.queries.map((s) => QUERY_PREFIX + s)),
+        ...base.operators.map((op) => withOperandShadow(OPERATOR_PREFIX + op)),
+      ],
+    }),
     withEnabled({
       id: "control",
       label: "制御",

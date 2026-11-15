@@ -12,6 +12,7 @@
 export type {
   CommandName,
   ControlName,
+  OperatorName,
   Expr,
   NodeId,
   Program,

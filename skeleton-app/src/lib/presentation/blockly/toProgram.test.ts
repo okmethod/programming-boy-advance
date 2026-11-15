@@ -56,6 +56,26 @@ describe("workspaceToProgram", () => {
     ]);
   });
 
+  it("COND に not(センサ) を持つ while を否定式に変換する", () => {
+    const ws = new Blockly.Workspace();
+    const whileBlock = ws.newBlock("ctrl_while");
+
+    // COND に not ブロック、その OPERAND にクエリを差し込む。
+    const notBlock = ws.newBlock("op_not");
+    whileBlock.getInput("COND")!.connection!.connect(notBlock.outputConnection!);
+    notBlock.getInput("OPERAND")!.connection!.connect(ws.newBlock("qry_wallLeft").outputConnection!);
+
+    attachTo(whileBlock, "BODY", ws.newBlock("cmd_stepForward"));
+
+    expect(workspaceToProgram(ws)).toEqual([
+      {
+        kind: "while",
+        cond: { kind: "not", operand: { kind: "sensor", sensor: "wallLeft" } },
+        body: [{ kind: "call", cmd: "stepForward" }],
+      },
+    ]);
+  });
+
   it("if の else が空なら else を省く", () => {
     const ws = new Blockly.Workspace();
     const ifBlock = ws.newBlock("ctrl_if");

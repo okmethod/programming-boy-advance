@@ -51,6 +51,17 @@ describe("programToWorkspace", () => {
     expect(roundTrip(program)).toEqual(program);
   });
 
+  it("not(センサ) 条件を復元できる（否定式の往復）", () => {
+    const program: Program = [
+      {
+        kind: "while",
+        cond: { kind: "not", operand: { kind: "sensor", sensor: "wallRight" } },
+        body: [{ kind: "call", cmd: "stepForward" }],
+      },
+    ];
+    expect(roundTrip(program)).toEqual(program);
+  });
+
   it("既存ブロックを消してから読み込む（連続 load で前回が残らない）", () => {
     const ws = new Blockly.Workspace();
     programToWorkspace(ws, [{ kind: "call", cmd: "attack" }]);

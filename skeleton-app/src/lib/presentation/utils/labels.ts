@@ -1,4 +1,12 @@
-import type { AutomatonId, BaseImage, BattleState, CommandName, ControlName, SensorName } from "#lib/application";
+import type {
+  AutomatonId,
+  BaseImage,
+  BattleState,
+  CommandName,
+  ControlName,
+  OperatorName,
+  SensorName,
+} from "#lib/application";
 
 /** コマンド（命令）の A面表示ラベル（実行ログなどで使う。ブロックの見た目と揃える）。 */
 export const commandLabel = (cmd: CommandName): string => {
@@ -31,6 +39,17 @@ export const sensorLabel = (sensor: SensorName): string => {
       return "壁が右にある";
     case "enemyAhead":
       return "敵が前にいる";
+  }
+};
+
+/**
+ * 演算子（クエリを合成する論理演算）の A面表示ラベル。
+ * 後置語として使う＝ブロックは「＜クエリ＞ ではない」の語順で組む（配置は blocks.ts 側の責務）。
+ */
+export const operatorLabel = (op: OperatorName): string => {
+  switch (op) {
+    case "not":
+      return "ではない";
   }
 };
 
