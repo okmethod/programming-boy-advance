@@ -4,8 +4,8 @@ import { BRITTLE_ENEMY_LABEL, BRITTLE_ENEMY_PROGRAM } from "#lib/infrastructure/
 
 export const STRAIGHT_CORRIDOR_STAGE: Stage = {
   id: "straight-corridor",
-  label: "前に進む",
-  goal: "前に進んで、敵の正面に立とう（この敵は正面に立たれると自壊する）",
+  label: "一本道", // 形状由来の名前。指示は goal に書く（高さ1＝元から幅1の一本道で壁は不要）
+  goal: "前に進んで、敵の正面まで移動しよう（この敵は、正面に立たれると自壊する）",
   enemy: BRITTLE_ENEMY_PROGRAM,
   enemyLabel: BRITTLE_ENEMY_LABEL,
   enemyBaseImage: BRITTLE_SENTRY,

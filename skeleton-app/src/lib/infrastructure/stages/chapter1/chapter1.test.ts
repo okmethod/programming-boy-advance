@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import { programCost, runBattle, withAllyInitialHp } from "#lib/domain";
 import type { Program } from "#lib/domain";
 import { STRAIGHT_CORRIDOR_STAGE } from "./straight-corridor";
-import { CORNER_TURN_STAGE } from "./corner-turn";
+import { L_CURVE_STAGE } from "./l-curve";
 import { LONG_CORRIDOR_STAGE } from "./long-corridor";
 
 const fwd = { kind: "call", cmd: "stepForward" } as const;
@@ -27,13 +27,13 @@ describe("STRAIGHT_CORRIDOR_STAGE（まっすぐ）", () => {
   });
 });
 
-describe("CORNER_TURN_STAGE（かどを曲がる）", () => {
+describe("L_CURVE_STAGE（L字カーブ）", () => {
   it("向き変えで角を曲がって勝てる／直進だけでは正面に立てない", () => {
     const solution: Program = [fwd, fwd, fwd, right, fwd, fwd];
-    expect(programCost(solution)).toBeLessThanOrEqual(cpMax(CORNER_TURN_STAGE));
-    expect(winsWith(CORNER_TURN_STAGE, solution)).toBe("ally");
+    expect(programCost(solution)).toBeLessThanOrEqual(cpMax(L_CURVE_STAGE));
+    expect(winsWith(L_CURVE_STAGE, solution)).toBe("ally");
     // 直進し続けるだけ＝敵は別の列・行に居るので正面に立てない。
-    expect(winsWith(CORNER_TURN_STAGE, [{ kind: "repeat", count: 100, body: [fwd] }])).not.toBe("ally");
+    expect(winsWith(L_CURVE_STAGE, [{ kind: "repeat", count: 100, body: [fwd] }])).not.toBe("ally");
   });
 });
 

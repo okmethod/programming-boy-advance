@@ -2,10 +2,10 @@ import type { Stage } from "#lib/application";
 import { BRITTLE_SENTRY, TURTLE_V1 } from "#lib/domain";
 import { BRITTLE_ENEMY_LABEL, BRITTLE_ENEMY_PROGRAM } from "#lib/infrastructure/stages/chapter1/brittle-enemy";
 
-export const CORNER_TURN_STAGE: Stage = {
-  id: "corner-turn",
-  label: "角を曲がる",
-  goal: "角で向きを変えて、敵の正面に移動しよう",
+export const L_CURVE_STAGE: Stage = {
+  id: "l-curve",
+  label: "L字カーブ", // 形状由来の名前。指示（角で向きを変える）は goal に書く
+  goal: "角で向きを変えて、敵の正面まで移動しよう",
   enemy: BRITTLE_ENEMY_PROGRAM,
   enemyLabel: BRITTLE_ENEMY_LABEL,
   enemyBaseImage: BRITTLE_SENTRY,

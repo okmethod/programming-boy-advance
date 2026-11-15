@@ -16,10 +16,10 @@ const MAZE_WALLS = [
   wallOn({ x: 2, y: 2 }, "down"),
 ];
 
-export const ZIGZAG_PATH_STAGE: Stage = {
-  id: "zigzag-path",
-  label: "ジグザグ道",
-  goal: "壁に沿って進み、奥の敵の正面に立とう",
+export const SWITCHBACK_STAGE: Stage = {
+  id: "switchback",
+  label: "つづら折り道", // 形状由来の名前。指示は goal に書く
+  goal: "壁に沿って折り返し、奥の敵の正面まで移動しよう",
   enemy: BRITTLE_ENEMY_PROGRAM,
   enemyLabel: BRITTLE_ENEMY_LABEL,
   enemyBaseImage: BRITTLE_SENTRY,
