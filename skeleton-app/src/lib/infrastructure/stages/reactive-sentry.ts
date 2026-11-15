@@ -1,10 +1,3 @@
-/**
- * 反応する番人のステージ定義（インフラ層・TS 定数版）。
- *
- * 盤面を 8x8 に広げ、敵は「近づいたら攻撃・そうでなければ前進」する反応型にする。
- * 突進型（攻撃しない）との差分でプレイヤーに読解を促す。
- */
-
 import type { Stage } from "#lib/application";
 import type { Program } from "#lib/domain";
 import { TURTLE_V3 } from "#lib/domain";
@@ -25,10 +18,9 @@ const SENTRY: Program = [
   },
 ];
 
-/** 8x8 の広い盤面。反応型の敵との対戦。 */
 export const REACTIVE_SENTRY_STAGE: Stage = {
   id: "reactive-sentry",
-  label: "反応する番人",
+  label: "攻撃する敵",
   goal: "近づくと攻撃してくる敵を、間合いを読んで先に倒そう",
   enemy: SENTRY,
   enemyLabel: "番人",
@@ -37,11 +29,11 @@ export const REACTIVE_SENTRY_STAGE: Stage = {
   memoryGrain: 8,
 
   initial: {
-    grid: { width: 8, height: 8, walls: [] },
+    grid: { width: 8, height: 6, walls: [] },
     automatons: [
       // ally の hp=0 はデプロイ前の表示（未出撃＝空バー）用。対戦時は memoryTotal から配分した個体値で上書きされる。
       { id: "ally", pos: { x: 0, y: 4 }, dir: "right", hp: 0, bp: 0, freezeRemaining: 0, priority: 1 },
-      { id: "enemy", pos: { x: 7, y: 4 }, dir: "left", hp: 3, bp: 0, freezeRemaining: 0, priority: 0 },
+      { id: "enemy", pos: { x: 7, y: 4 }, dir: "left", hp: 8, bp: 0, freezeRemaining: 0, priority: 0 },
     ],
     clock: 0,
     rngSeed: 0,
