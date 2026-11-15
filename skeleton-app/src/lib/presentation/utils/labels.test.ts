@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { stageIcon } from "./stageIcon";
+import { stageIcon } from "./labels";
 
 describe("stageIcon", () => {
   it("open は選択で塗り、非選択で outline になる", () => {

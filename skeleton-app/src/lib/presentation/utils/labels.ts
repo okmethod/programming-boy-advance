@@ -51,6 +51,26 @@ export const automatonIcon = (id: AutomatonId, defeated = false): string => {
 /** オートマトンの陣営名（ステータス見出し用の短いラベル）。 */
 export const automatonName = (id: AutomatonId): string => (id === "ally" ? "Ally" : "Enemy");
 
+/** ステージの進行状態（表示用）。 */
+export type StageStatus = "locked" | "open" | "cleared";
+
+/**
+ * ステージ状態×選択 → file 系 mdi アイコン名（本=章／ページ=ステージのメタファーに沿え file 系で表す）。
+ * locked/cleared は進行モデル導入時の拡張口として表だけ先に用意する
+ * （現状は全ステージ "open" が流れる＝アンロック/クリアの材料がまだ無い）。
+ * locked は選択不可のため selected 分岐を持たない。
+ */
+export const stageIcon = (status: StageStatus, selected: boolean): string => {
+  switch (status) {
+    case "locked":
+      return "mdi:file-lock-outline";
+    case "open":
+      return selected ? "mdi:file" : "mdi:file-outline";
+    case "cleared":
+      return selected ? "mdi:file-check" : "mdi:file-check-outline";
+  }
+};
+
 /** エポック時刻を HH:MM のローカル表記に整形する（ビルド／プッシュ時刻の版ラベル。復元点の目印）。 */
 export const hhmm = (ts: number): string =>
   new Date(ts).toLocaleTimeString("ja-JP", { hour: "2-digit", minute: "2-digit" });

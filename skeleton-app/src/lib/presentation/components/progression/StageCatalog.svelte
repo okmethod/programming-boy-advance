@@ -11,7 +11,7 @@
   import type { Chapter } from "#lib/application";
   import MemoryPill from "#lib/presentation/components/shared/MemoryPill.svelte";
   import BaseImagePill from "#lib/presentation/components/shared/BaseImagePill.svelte";
-  import { stageIcon } from "./stageIcon";
+  import { stageIcon } from "#lib/presentation/utils/labels";
 
   interface StageCatalogProps {
     // 選択後に host（モーダル／ページ）が反応するためのフック（モーダルを閉じる・遷移する等）。
