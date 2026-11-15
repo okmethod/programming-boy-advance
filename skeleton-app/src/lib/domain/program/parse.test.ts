@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { parseProgram, programToText } from "./parse";
-import { TURTLE_V1, TURTLE_V2, TURTLE_V3 } from "#lib/domain/image";
+import { TURTLE_V1, TURTLE_V2, TURTLE_V3, TURTLE_V4 } from "#lib/domain/image";
 import type { Program } from "./model";
 
 describe("parseProgram / programToText", () => {
@@ -79,6 +79,21 @@ describe("parseProgram（素質ガード）", () => {
     // センサは V3 が賄う空間センサ wallAhead を使う（敵センサ enemyAhead は攻撃版 v4 から）。
     const result = parseProgram("if wallAhead:\n  stepForward()", TURTLE_V3);
     expect(result.ok).toBe(true);
+  });
+
+  it("not は operators 未付与版(V3)では弾かれ、迷路版(V4)で通る", () => {
+    // wallAhead/while は V3 も賄うので、唯一の未付与＝否定(not)だけが capability エラーになる。
+    const text = "while not wallAhead:\n  stepForward()";
+    const v3 = parseProgram(text, TURTLE_V3);
+    expect(v3.ok).toBe(false);
+    if (!v3.ok) {
+      expect(v3.errors).toContainEqual({
+        line: 1,
+        message: "Operator not available in this base image: not",
+        kind: "capability",
+      });
+    }
+    expect(parseProgram(text, TURTLE_V4).ok).toBe(true);
   });
 
   it("付与対象外の制御・センサを元テキスト行つきで弾く（V1）", () => {

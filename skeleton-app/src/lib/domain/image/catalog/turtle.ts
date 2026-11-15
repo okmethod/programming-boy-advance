@@ -54,19 +54,33 @@ export const TURTLE_V3: BaseImage = {
 };
 
 /**
- * 4.0: 攻撃の獲得。
+ * 4.0: 周囲認識と否定の獲得（迷路）。
  *
- * 移動（v1）・くりかえし（v2）・条件分岐＋クエリ（v3）を経て、最後に攻撃を覚える。
- * 攻撃と対になる敵センサ（enemyAhead）もこの版で開花する（「前に敵がいれば攻撃」が組める）。
- * 移動系統に攻撃を足す当面の措置＝将来「攻撃系統」を分けるなら attack をそちらへ移す余地あり（YAGNI）。
+ * v3.0 の前方センサ（wallAhead）に、左右の壁センサ（wallLeft/wallRight）と否定（not）を足す。
+ * 入れ子の条件分岐と組み合わせ、壁沿い法で任意の単純迷路を抜けられる。
  */
 export const TURTLE_V4: BaseImage = {
   ...TURTLE_V3,
   version: "4.0",
+  summary: "左右も見て、否定で条件を組める。迷路を抜けられる",
+  queries: [...TURTLE_V3.queries, "wallLeft", "wallRight"],
+  operators: ["not"],
+};
+
+/**
+ * 5.0: 攻撃の獲得。
+ *
+ * 移動（v1）・くりかえし（v2）・条件分岐＋クエリ（v3）・迷路（v4）を経て、最後に攻撃を覚える。
+ * 攻撃と対になる敵センサ（enemyAhead）もこの版で開花する（「前に敵がいれば攻撃」が組める）。
+ * 移動系統に攻撃を足す当面の措置＝将来「攻撃系統」を分けるなら attack をそちらへ移す余地あり（YAGNI）。
+ */
+export const TURTLE_V5: BaseImage = {
+  ...TURTLE_V4,
+  version: "5.0",
   summary: "攻撃を覚える。移動・制御・クエリに加えて戦える",
-  queries: [...TURTLE_V3.queries, "enemyAhead"],
-  commands: [...TURTLE_V3.commands, "attack"],
+  queries: [...TURTLE_V4.queries, "enemyAhead"],
+  commands: [...TURTLE_V4.commands, "attack"],
 };
 
 /** カメの歩み（turtlogo）系統の版ラダー（版の昇順）。系統単位で束ねた列。 */
-export const TURTLE_IMAGES: readonly BaseImage[] = [TURTLE_V1, TURTLE_V2, TURTLE_V3, TURTLE_V4];
+export const TURTLE_IMAGES: readonly BaseImage[] = [TURTLE_V1, TURTLE_V2, TURTLE_V3, TURTLE_V4, TURTLE_V5];
