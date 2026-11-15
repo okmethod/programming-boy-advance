@@ -32,6 +32,8 @@
   import SpectatorColumn from "#lib/presentation/components/spectating/SpectatorColumn.svelte";
   import ResultOverlay from "#lib/presentation/components/spectating/ResultOverlay.svelte";
   import ProgrammingDrawer from "#lib/presentation/components/building/ProgrammingDrawer.svelte";
+  import MemoryPill from "#lib/presentation/components/shared/MemoryPill.svelte";
+  import BaseImagePill from "#lib/presentation/components/shared/BaseImagePill.svelte";
   import { navigateTo } from "#lib/presentation/utils/navigation";
   import { attachPlaybackCues } from "#lib/presentation/sounds";
   import { emitFeedback } from "#lib/presentation/feedbacks";
@@ -155,8 +157,18 @@
 
 <!-- 一画面（iPad 横向き前提・スクロール無し）：ヘッダーの残り高を埋め、はみ出しは内側で吸収。 -->
 <div class="mx-auto flex h-full max-w-6xl flex-col gap-3 overflow-hidden p-3">
-  <!-- ステージ文脈：枠なしの細い1行（名前＋ゴール）。選択はヘッダーの「ステージ選択」に委ねる。 -->
-  <p class="shrink-0 text-center text-sm"><span class="font-bold">{stage.label}</span> — {stage.goal}</p>
+  <!-- ステージ文脈：枠なしの細い帯（名前＋ゴール＋持ち分ブリーフ）。選択はヘッダーの「ステージ選択」に委ねる。 -->
+  <div class="shrink-0 text-center text-sm">
+    <p><span class="font-bold">{stage.label}</span> — {stage.goal}</p>
+    <!-- 入場後も制約（メモリ・使える版）を常時出す。配分操作自体は構築ドロワーに委ねる。
+         allowedImages 未指定＝無制限はデフォルト状態なので版ピルを出さない（メモリのみ）。 -->
+    <div class="mt-0.5 flex flex-wrap items-center justify-center gap-1.5">
+      <MemoryPill memoryTotal={stage.memoryTotal} memoryGrain={stage.memoryGrain} />
+      {#each stage.allowedImages ?? [] as img (img.imageName + img.version)}
+        <BaseImagePill base={img} />
+      {/each}
+    </div>
+  </div>
 
   <!-- 観戦ビュー（常時表示）。横向き一画面を 1:2:1 の3カラムに割る。
        左=Ally／右=Enemy は各陣営の「ステータス＋プログラム」を縦に積む（コードは縦伸びなので縦カラムが噛み合う）。

@@ -9,6 +9,8 @@
   import { Carousel } from "@skeletonlabs/skeleton-svelte";
   import { chapterList } from "#lib/presentation/composition";
   import type { Chapter } from "#lib/application";
+  import MemoryPill from "#lib/presentation/components/shared/MemoryPill.svelte";
+  import BaseImagePill from "#lib/presentation/components/shared/BaseImagePill.svelte";
   import { stageIcon } from "./stageIcon";
 
   interface StageCatalogProps {
@@ -68,6 +70,14 @@
           {#if !compact}
             <!-- goal は 2 行で高さ固定（h-10＝leading-5×2 行）。長短に依らずカード高さを揃える。ラベル位置へ字下げ。 -->
             <p class="line-clamp-2 h-10 pl-6 text-sm leading-5 opacity-70">{s.goal}</p>
+            <!-- 持ち分ピル＝入場前に制約（メモリ・使える版）を予告する。goal と同じ字下げで添える。
+                 allowedImages 未指定＝無制限はデフォルト状態なので版ピルを出さない（メモリのみ）。 -->
+            <div class="flex flex-wrap items-center gap-1.5 pl-6">
+              <MemoryPill memoryTotal={s.memoryTotal} memoryGrain={s.memoryGrain} />
+              {#each s.allowedImages ?? [] as img (img.imageName + img.version)}
+                <BaseImagePill base={img} />
+              {/each}
+            </div>
           {/if}
         </button>
       </li>
