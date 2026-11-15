@@ -17,6 +17,8 @@ function exprToText(expr: Expr): string {
       return expr.sensor;
     case "literal":
       return String(expr.value);
+    case "not":
+      return `not ${exprToText(expr.operand)}`;
   }
 }
 

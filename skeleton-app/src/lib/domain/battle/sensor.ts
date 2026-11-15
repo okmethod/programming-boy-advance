@@ -15,6 +15,8 @@ export const exprValue = (expr: Expr, state: BattleState, selfId: AutomatonId): 
       return sensorValue(expr.sensor, state, selfId);
     case "literal":
       return expr.value;
+    case "not":
+      return !exprValue(expr.operand, state, selfId);
     default: {
       const _exhaustive: never = expr;
       throw new Error(`Unknown expr: ${JSON.stringify(_exhaustive)}`);

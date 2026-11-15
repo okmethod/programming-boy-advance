@@ -22,4 +22,5 @@ export const BRITTLE_SENTRY: BaseImage = {
   commands: ["brittleAttack"],
   queries: [],
   controls: ["while"],
+  operators: [],
 };

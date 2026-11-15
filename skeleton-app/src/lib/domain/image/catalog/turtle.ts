@@ -23,6 +23,7 @@ export const TURTLE_V1: BaseImage = {
   commands: ["stepForward", "turnRight", "turnLeft", "wait"],
   queries: [],
   controls: [],
+  operators: [],
 };
 
 /**

@@ -4,7 +4,18 @@
  * 同階層のファイル同士は、バレルを介さず直接参照する（バレル自己循環の回避）。
  */
 
-export type { NodeId, CommandName, SensorName, ControlName, Expr, Stmt, Program, Action, Step } from "./model";
+export type {
+  NodeId,
+  CommandName,
+  SensorName,
+  ControlName,
+  OperatorName,
+  Expr,
+  Stmt,
+  Program,
+  Action,
+  Step,
+} from "./model";
 
 export { programCost, usedCapabilities, areProgramsEqual } from "./derive";
 

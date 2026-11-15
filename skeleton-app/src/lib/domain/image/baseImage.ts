@@ -96,7 +96,8 @@ export const baseImageSupports = (base: BaseImage, program: Program): boolean =>
   return (
     used.commands.every((c) => base.commands.includes(c)) &&
     used.queries.every((q) => base.queries.includes(q)) &&
-    used.controls.every((c) => base.controls.includes(c))
+    used.controls.every((c) => base.controls.includes(c)) &&
+    used.operators.every((o) => base.operators.includes(o))
   );
 };
 
@@ -115,4 +116,5 @@ export const UNKNOWN_BASE_IMAGE: BaseImage = {
   commands: [],
   queries: [],
   controls: [],
+  operators: [],
 };

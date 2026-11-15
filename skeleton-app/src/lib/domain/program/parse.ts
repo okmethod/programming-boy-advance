@@ -98,8 +98,13 @@ export const parseProgram = (text: string, granted?: UsedCapabilities): ParseRes
 
   let cursor = 0;
 
-  // <cond> を Expr にする。true/false は literal、それ以外は sensor 名として検証する。
+  // <cond> を Expr にする。`not <cond>` は否定、true/false は literal、それ以外は sensor 名として検証する。
   const parseCond = (raw: string, n: number): Expr => {
+    const notMatch = /^not\s+(.+)$/.exec(raw);
+    if (notMatch) {
+      denyIfUngranted(granted?.operators, "not", n, "Operator");
+      return { kind: "not", operand: parseCond(notMatch[1].trim(), n) };
+    }
     if (raw === "true") return { kind: "literal", value: true };
     if (raw === "false") return { kind: "literal", value: false };
     if (raw in SENSOR_NAMES) {

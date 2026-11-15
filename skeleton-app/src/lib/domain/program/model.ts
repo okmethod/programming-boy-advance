@@ -15,8 +15,13 @@ export type SensorName = "wallAhead" | "wallLeft" | "wallRight" | "enemyAhead";
 
 export type ControlName = "if" | "repeat" | "while";
 
+// 式の論理演算子（クエリを合成する）。センサ（葉）と違い、式を1つ受けて変換する節。
+export type OperatorName = "not";
+
 export type Expr =
-  { readonly kind: "sensor"; readonly sensor: SensorName } | { readonly kind: "literal"; readonly value: boolean };
+  | { readonly kind: "sensor"; readonly sensor: SensorName }
+  | { readonly kind: "literal"; readonly value: boolean }
+  | { readonly kind: "not"; readonly operand: Expr };
 
 export type Stmt =
   | { readonly kind: "call"; readonly cmd: CommandName }

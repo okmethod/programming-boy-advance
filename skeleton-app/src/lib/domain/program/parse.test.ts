@@ -30,6 +30,19 @@ describe("parseProgram / programToText", () => {
     if (result.ok) expect(result.program).toEqual(program);
   });
 
+  it("round-trip: not を含む条件も往復する", () => {
+    const p: Program = [
+      {
+        kind: "while",
+        cond: { kind: "not", operand: { kind: "sensor", sensor: "wallAhead" } },
+        body: [{ kind: "call", cmd: "stepForward" }],
+      },
+    ];
+    const result = parseProgram(programToText(p));
+    expect(result.ok).toBe(true);
+    if (result.ok) expect(result.program).toEqual(p);
+  });
+
   it("空テキストは空プログラム", () => {
     const result = parseProgram("");
     expect(result).toEqual({ ok: true, program: [] });

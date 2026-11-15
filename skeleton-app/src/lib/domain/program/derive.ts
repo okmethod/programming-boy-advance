@@ -3,7 +3,7 @@
  * いずれも Program を再帰で走査し値を返すだけ（状態を持たず決定的）。
  */
 
-import type { CommandName, ControlName, Expr, Program, SensorName, Stmt } from "./model";
+import type { CommandName, ControlName, Expr, OperatorName, Program, SensorName, Stmt } from "./model";
 
 /**
  * プログラム全体の CP 消費量を返す。CP は実行ステップ数ではなく「組んだブロック総数」。
@@ -36,16 +36,23 @@ export interface UsedCapabilities {
   readonly commands: readonly CommandName[];
   readonly queries: readonly SensorName[];
   readonly controls: readonly ControlName[];
+  readonly operators: readonly OperatorName[];
 }
 
-/** 命令木を走査して、使用中のコマンド／クエリ（センサ）／制御構文を集める。 */
+/** 命令木を走査して、使用中のコマンド／クエリ（センサ）／制御構文／論理演算子を集める。 */
 export const usedCapabilities = (program: Program): UsedCapabilities => {
   const commands = new Set<CommandName>();
   const queries = new Set<SensorName>();
   const controls = new Set<ControlName>();
+  const operators = new Set<OperatorName>();
 
+  // 式を再帰で辿る。not は演算子として記録しつつ、包む式（葉のセンサ等）も辿る。
   const visitExpr = (expr: Expr): void => {
     if (expr.kind === "sensor") queries.add(expr.sensor);
+    if (expr.kind === "not") {
+      operators.add("not");
+      visitExpr(expr.operand);
+    }
   };
   const visit = (stmts: readonly Stmt[]): void => {
     for (const s of stmts) {
@@ -73,7 +80,7 @@ export const usedCapabilities = (program: Program): UsedCapabilities => {
   };
   visit(program);
 
-  return { commands: [...commands], queries: [...queries], controls: [...controls] };
+  return { commands: [...commands], queries: [...queries], controls: [...controls], operators: [...operators] };
 };
 
 /**

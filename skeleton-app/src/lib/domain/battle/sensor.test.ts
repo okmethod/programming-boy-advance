@@ -77,4 +77,10 @@ describe("exprValue（式評価）", () => {
   it("センサ式はセンサ評価に委譲する", () => {
     expect(exprValue({ kind: "sensor", sensor: "wallAhead" }, state, "ally")).toBe(true);
   });
+
+  it("not は内側の式を反転する", () => {
+    expect(exprValue({ kind: "not", operand: { kind: "literal", value: false } }, state, "ally")).toBe(true);
+    // 前方は場外＝壁あり → not で偽。
+    expect(exprValue({ kind: "not", operand: { kind: "sensor", sensor: "wallAhead" } }, state, "ally")).toBe(false);
+  });
 });

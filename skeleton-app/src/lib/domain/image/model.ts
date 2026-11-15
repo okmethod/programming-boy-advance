@@ -6,7 +6,7 @@
  * レジストリ／デプロイ／ビルド断面は、これにユースケース固有メタ（タグ・HP・時刻等）を足した特化形。
  */
 
-import type { CommandName, SensorName, ControlName, Program } from "#lib/domain/program";
+import type { CommandName, SensorName, ControlName, OperatorName, Program } from "#lib/domain/program";
 
 /** 素質（系統×版）。付与する命令セットがこの素質の「できること」を定める。 */
 export interface BaseImage {
@@ -24,6 +24,8 @@ export interface BaseImage {
   readonly commands: readonly CommandName[];
   readonly queries: readonly SensorName[];
   readonly controls: readonly ControlName[];
+  // 式の論理演算子（not 等）。クエリを合成する能力。空＝センサ単体でしか条件を書けない。
+  readonly operators: readonly OperatorName[];
 }
 
 /** オートマトンイメージ＝素質とプログラムの不変ペア（ビルド済みの最小実体）。 */
