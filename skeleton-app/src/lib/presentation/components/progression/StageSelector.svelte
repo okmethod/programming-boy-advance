@@ -32,7 +32,7 @@
   {/snippet}
   <!-- カルーセルが内部スクロールを持つため、body 側は min-h-0 で高さを渡すだけ（スクロールは各スライドが担う）。 -->
   <div class="flex min-h-0 flex-1 flex-col">
-    <!-- モーダルは狭いクイック切替＝compact（単列・説明文なし・番号なし）で現在地強調だけ担う。 -->
+    <!-- モーダルは狭いクイック切替＝compact（説明行 goal だけ落とす）。識別行・ピル・番号はページと共通。 -->
     <StageCatalog onSelect={select} {selectedId} compact />
   </div>
 </ModalShell>
