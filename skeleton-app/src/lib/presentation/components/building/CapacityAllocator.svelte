@@ -7,7 +7,7 @@
   import { untrack } from "svelte";
   import Icon from "@iconify/svelte";
   import { emitFeedback } from "#lib/presentation/feedbacks";
-  import FractionReadout from "#lib/presentation/components/shared/FractionReadout.svelte";
+  import FractionReadout from "#lib/presentation/components/atoms/FractionReadout.svelte";
 
   // 配分スライダは memoryGrain 刻みの目盛り。total=32・grain=8 なら 0/8/16/24/32 の5目盛りを軌道に見せる。
   // ただし両端（CP0/HP全 と 全CP/HP0）は選ばせない＝可動域は [grain, total-grain]=[8,24]（中央16/16）。

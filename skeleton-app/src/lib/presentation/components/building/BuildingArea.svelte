@@ -32,7 +32,7 @@
   import BaseImageSelector from "./BaseImageSelector.svelte";
   import CapacityAllocator from "./CapacityAllocator.svelte";
   import RegistryBrowser from "./RegistryBrowser.svelte";
-  import SegmentedTabs from "#lib/presentation/components/shared/SegmentedTabs.svelte";
+  import SegmentedTabs from "#lib/presentation/components/atoms/SegmentedTabs.svelte";
   import ProgramEditor from "./ProgramEditor.svelte";
   import ProgramViewer from "#lib/presentation/components/inspecting/ProgramViewer.svelte";
 

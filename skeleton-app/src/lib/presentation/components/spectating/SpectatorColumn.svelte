@@ -4,7 +4,7 @@
   // 本体は「正体（イメージ）→ プログラム → ログ」をカラム内で切り替える（切替状態は各列が独立に持つ）。
   import type { AutomatonId, BattleState, FlatLine, NodeId, ActionLogRow, BaseImage } from "#lib/application";
   import AutomatonStatusViewer from "./AutomatonStatusViewer.svelte";
-  import SegmentedTabs from "#lib/presentation/components/shared/SegmentedTabs.svelte";
+  import SegmentedTabs from "#lib/presentation/components/atoms/SegmentedTabs.svelte";
   import ProgramViewer from "#lib/presentation/components/inspecting/ProgramViewer.svelte";
   import ActionLogViewer from "#lib/presentation/components/inspecting/ActionLogViewer.svelte";
   import ImageViewer from "#lib/presentation/components/inspecting/ImageViewer.svelte";

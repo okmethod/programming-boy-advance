@@ -3,7 +3,7 @@
   // 版だけの compact 表示（系統は icon で担保）。フルタグ（imageName:v版）が要る技術文脈は BaseImageChip を使う。
   import type { BaseImage } from "#lib/application";
   import { versionTag } from "#lib/presentation/utils/labels";
-  import IconPill from "./IconPill.svelte";
+  import IconPill from "#lib/presentation/components/atoms/IconPill.svelte";
 
   interface BaseImagePillProps {
     base: BaseImage;

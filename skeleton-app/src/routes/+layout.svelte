@@ -8,7 +8,7 @@
   import { audioOn, setAudioOn } from "#lib/presentation/sounds";
   import { emitFeedback } from "#lib/presentation/feedbacks";
   import StageSelector from "#lib/presentation/components/progression/StageSelector.svelte";
-  import ToastLayer from "#lib/presentation/components/shared/ToastLayer.svelte";
+  import ToastLayer from "#lib/presentation/components/atoms/ToastLayer.svelte";
 
   let { children }: { children: Snippet } = $props();
 

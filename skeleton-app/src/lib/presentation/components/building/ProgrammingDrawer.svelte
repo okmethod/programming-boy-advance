@@ -16,7 +16,7 @@
   import BuildingArea from "./BuildingArea.svelte";
   import BattlePodViewer from "#lib/presentation/components/spectating/BattlePodViewer.svelte";
   import SandboxRail from "#lib/presentation/components/spectating/SandboxRail.svelte";
-  import SegmentedTabs from "#lib/presentation/components/shared/SegmentedTabs.svelte";
+  import SegmentedTabs from "#lib/presentation/components/atoms/SegmentedTabs.svelte";
   import ProgramViewer from "#lib/presentation/components/inspecting/ProgramViewer.svelte";
   import { automatonIcon } from "#lib/presentation/utils/labels";
   import { fade } from "svelte/transition";

@@ -10,7 +10,7 @@
   import Icon from "@iconify/svelte";
   import type { AutomatonId, BattleState } from "#lib/application";
   import { automatonIcon, automatonName } from "#lib/presentation/utils/labels";
-  import FractionReadout from "#lib/presentation/components/shared/FractionReadout.svelte";
+  import FractionReadout from "#lib/presentation/components/atoms/FractionReadout.svelte";
 
   interface AutomatonStatusViewerProps {
     frames: readonly BattleState[];

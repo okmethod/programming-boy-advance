@@ -5,7 +5,7 @@
   import Icon from "@iconify/svelte";
   import { page } from "$app/state";
   import { navigateTo } from "#lib/presentation/utils/navigation";
-  import ModalShell from "#lib/presentation/components/shared/ModalShell.svelte";
+  import ModalShell from "#lib/presentation/components/atoms/ModalShell.svelte";
   import StageCatalog from "./StageCatalog.svelte";
 
   // 開閉状態（このセレクタが所有）。トリガで開き、選択／閉じるで閉じる。
