@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { runBattle, withAllyInitialHp } from "#lib/domain";
+import { programCost, runBattle, withAllyInitialHp } from "#lib/domain";
 import type { Program } from "#lib/domain";
 import { SWITCHBACK_STAGE } from "./switchback";
 
@@ -7,12 +7,21 @@ const fwd = { kind: "call", cmd: "stepForward" } as const;
 const right = { kind: "call", cmd: "turnRight" } as const;
 const left = { kind: "call", cmd: "turnLeft" } as const;
 
-// 九十九折りを順にたどり、奥の敵の正面セル (3,2) で終わる手書きの道順（攻撃は使わない）。
-// 上段を右へ→右端で下へ→中段を左へ→左端で下へ→下段を右へ→敵の正面で停止＝敵が自壊。
-const SOLUTION: Program = [fwd, fwd, fwd, right, fwd, right, fwd, fwd, fwd, left, fwd, left, fwd, fwd, fwd];
+const cpMax = SWITCHBACK_STAGE.memoryTotal - SWITCHBACK_STAGE.memoryGrain;
 
-describe("SWITCHBACK_STAGE", () => {
-  it("攻撃を使わず正面に到達するだけで勝てる（敵が自壊・迷路が連結）", () => {
+// 2行ぶんの折り返し（右へ→右端で下へ→左へ→左端で下へ）を1単位にして while で回す想定解。
+// 高さに依らず同じ本体を使い回せる＝向き変えの手組みを while 1 つに畳める（13 CP）。
+const SOLUTION: Program = [
+  {
+    kind: "while",
+    cond: { kind: "literal", value: true },
+    body: [fwd, fwd, fwd, right, fwd, right, fwd, fwd, fwd, left, fwd, left],
+  },
+];
+
+describe("SWITCHBACK_STAGE（折り返し道）", () => {
+  it("while で折り返しを回し、奥の敵の正面に到達して勝てる（想定解が CP 上限に収まる）", () => {
+    expect(programCost(SOLUTION)).toBeLessThanOrEqual(cpMax);
     const state = withAllyInitialHp(SWITCHBACK_STAGE.initial, 3);
     const { result } = runBattle(state, SOLUTION, SWITCHBACK_STAGE.enemy);
     expect(result.winner).toBe("ally");

@@ -1,5 +1,5 @@
 import type { Stage } from "#lib/application";
-import { BRITTLE_SENTRY } from "#lib/domain";
+import { BRITTLE_SENTRY, TURTLE_V2 } from "#lib/domain";
 import { BRITTLE_ENEMY_LABEL, BRITTLE_ENEMY_PROGRAM } from "#lib/infrastructure/stages/chapter1/brittle-enemy";
 
 export const LONG_CORRIDOR_STAGE: Stage = {
@@ -9,6 +9,7 @@ export const LONG_CORRIDOR_STAGE: Stage = {
   enemy: BRITTLE_ENEMY_PROGRAM,
   enemyLabel: BRITTLE_ENEMY_LABEL,
   enemyBaseImage: BRITTLE_SENTRY,
+  allowedImages: [TURTLE_V2], // くりかえし（v2）。センサ・攻撃は持たせない（repeat で解く導入面）。
   // CP 上限＝memoryTotal−memoryGrain＝8（HP に 1 目盛り残す）＝直進ベタ書き（10 歩）が収まらず、
   // くりかえし（repeat/while＝v2 の制御・2 CP）に手を伸ばさせる＝CP の壁で v2 を動機づける。
   memoryTotal: 16, // memoryGrain の倍数であること（CapacityAllocator の invariant）

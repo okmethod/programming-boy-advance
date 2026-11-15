@@ -1,6 +1,16 @@
 import type { Stage } from "#lib/application";
-import { BRITTLE_SENTRY, TURTLE_V1 } from "#lib/domain";
+import { BRITTLE_SENTRY, TURTLE_V1, wallOn } from "#lib/domain";
 import { BRITTLE_ENEMY_LABEL, BRITTLE_ENEMY_PROGRAM } from "#lib/infrastructure/stages/chapter1/brittle-enemy";
+
+// 上辺（y=0）→右辺（x=3）の L 字通路を壁で彫る。上辺は x=3 以外で下へ降りられず、右辺は左へ逸れられない。
+const L_CURVE_WALLS = [
+  wallOn({ x: 0, y: 0 }, "down"),
+  wallOn({ x: 1, y: 0 }, "down"),
+  wallOn({ x: 2, y: 0 }, "down"),
+  wallOn({ x: 3, y: 1 }, "left"),
+  wallOn({ x: 3, y: 2 }, "left"),
+  wallOn({ x: 3, y: 3 }, "left"),
+];
 
 export const L_CURVE_STAGE: Stage = {
   id: "l-curve",
@@ -14,8 +24,7 @@ export const L_CURVE_STAGE: Stage = {
   allowedImages: [TURTLE_V1], // 移動＋向き変えのみ（v1 で解く）。
 
   initial: {
-    // 壁は無いが、移動は前方1マスのみ＝斜めに詰められず、敵は直進線上に居ないので turn が要る L 字。
-    grid: { width: 4, height: 4, walls: [] },
+    grid: { width: 4, height: 4, walls: L_CURVE_WALLS },
     automatons: [
       // ally の hp=0 はデプロイ前の表示（未出撃＝空バー）用。対戦時は memoryTotal から配分した個体値で上書きされる。
       { id: "ally", pos: { x: 0, y: 0 }, dir: "right", hp: 0, bp: 0, freezeRemaining: 0, priority: 1 },
