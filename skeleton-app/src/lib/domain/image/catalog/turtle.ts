@@ -1,6 +1,7 @@
 /**
  * カメの歩み（turtlogo）系統の版ラダー。
- * 移動 → 制御 → 攻撃の順に開花するプレイヤー素質。
+ * 基本行動 → くりかえし → 条件分岐＋クエリ → 攻撃 の順に、
+ * 1版につき新ブロックを1系統ずつ開花するプレイヤー素質。
  *
  * 版を上げるほど付与命令が広がる（後方互換: 上位版 ⊇ 下位版）。
  * 各版の「できること」は docs/game-rules/base-images.md を正とする。
@@ -11,7 +12,7 @@ import type { BaseImage } from "../model";
 /**
  * 1.0: 基本の行動のみ。
  *
- * 移動・向き変え・待機のみ。Chap1 は攻撃不可で、位置取りのみでクリア可能。
+ * 移動・向き変え・待機のみ。決まった順に動く（制御・クエリ・攻撃は持たない）。
  */
 export const TURTLE_V1: BaseImage = {
   imageName: "turtlogo",
@@ -25,30 +26,43 @@ export const TURTLE_V1: BaseImage = {
 };
 
 /**
- * 2.0: 制御の獲得。
+ * 2.0: くりかえしの獲得。
  *
- * v1.0 の基本行動に、クエリ（センサ）と制御構文（条件分岐・くりかえし）を足す。
+ * v1.0 の基本行動に制御構文（くりかえし）を足す。条件は literal のみ（`ずっとくりかえす`＝while(true)）で、
+ * クエリで分岐するのは v3.0 から。
  */
 export const TURTLE_V2: BaseImage = {
   ...TURTLE_V1,
   version: "2.0",
-  summary: "まわりを見て、条件分岐とくりかえしで判断できる",
-  queries: ["enemyAhead", "wallAhead"],
-  controls: ["if", "repeat", "while"],
+  summary: "くりかえしを覚える。同じ動きをまとめられる",
+  controls: ["repeat", "while"],
 };
 
 /**
- * 3.0: 攻撃の獲得。
+ * 3.0: 条件分岐とクエリの獲得。
  *
- * 移動（v1）・制御（v2）を経て、最後に攻撃を覚える。
- * 移動系統に攻撃を足す当面の措置＝将来「攻撃系統」を分けるなら attack をそちらへ移す余地あり（YAGNI）。
+ * v2.0 のくりかえしに、クエリ（センサ）と条件分岐（if）を足す。まわりを読んで判断して動ける。
  */
 export const TURTLE_V3: BaseImage = {
   ...TURTLE_V2,
   version: "3.0",
-  summary: "攻撃を覚える。移動・制御に加えて戦える",
-  commands: [...TURTLE_V2.commands, "attack"],
+  summary: "まわりを見て、条件分岐で判断できる",
+  queries: ["enemyAhead", "wallAhead"],
+  controls: ["repeat", "while", "if"],
+};
+
+/**
+ * 4.0: 攻撃の獲得。
+ *
+ * 移動（v1）・くりかえし（v2）・条件分岐＋クエリ（v3）を経て、最後に攻撃を覚える。
+ * 移動系統に攻撃を足す当面の措置＝将来「攻撃系統」を分けるなら attack をそちらへ移す余地あり（YAGNI）。
+ */
+export const TURTLE_V4: BaseImage = {
+  ...TURTLE_V3,
+  version: "4.0",
+  summary: "攻撃を覚える。移動・制御・クエリに加えて戦える",
+  commands: [...TURTLE_V3.commands, "attack"],
 };
 
 /** カメの歩み（turtlogo）系統の版ラダー（版の昇順）。系統単位で束ねた列。 */
-export const TURTLE_IMAGES: readonly BaseImage[] = [TURTLE_V1, TURTLE_V2, TURTLE_V3];
+export const TURTLE_IMAGES: readonly BaseImage[] = [TURTLE_V1, TURTLE_V2, TURTLE_V3, TURTLE_V4];

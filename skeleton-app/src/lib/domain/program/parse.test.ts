@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { parseProgram, programToText } from "./parse";
-import { TURTLE_V1, TURTLE_V2 } from "#lib/domain/image";
+import { TURTLE_V1, TURTLE_V2, TURTLE_V3 } from "#lib/domain/image";
 import type { Program } from "./model";
 
 describe("parseProgram / programToText", () => {
@@ -61,9 +61,9 @@ describe("parseProgram（素質ガード）", () => {
     expect(result.ok).toBe(true);
   });
 
-  it("付与セット内なら通る（V2 は制御・センサを許可）", () => {
-    // 内側コマンドは V2 が賄う stepForward（attack は v3 以降）。判定を制御(if)・センサ許可に絞る。
-    const result = parseProgram("if enemyAhead:\n  stepForward()", TURTLE_V2);
+  it("付与セット内なら通る（V3 は条件分岐・センサを許可）", () => {
+    // 内側コマンドは V3 が賄う stepForward（attack は v4 以降）。判定を条件分岐(if)・センサ許可に絞る。
+    const result = parseProgram("if enemyAhead:\n  stepForward()", TURTLE_V3);
     expect(result.ok).toBe(true);
   });
 

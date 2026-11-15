@@ -18,7 +18,7 @@
 import { derived, get, readonly, writable } from "svelte/store";
 import type { AutomatonImage, BaseImage, BaseImageFamily, Program } from "#lib/domain";
 import {
-  TURTLE_V2,
+  TURTLE_V3,
   imageHash,
   areProgramsEqual,
   programCost,
@@ -47,8 +47,8 @@ const INITIAL_DRAFT: WorkbenchDraft = {
   builtImage: null,
   builtAt: null,
   imageName: "",
-  // 編集の出発点となる素質。現状はフル機能の v2.0 から始める（版切替UIでユーザが変更できる）。
-  baseImage: TURTLE_V2,
+  // 編集の出発点となる素質。制御＋クエリまで使える v3.0 から始める（攻撃 v4.0 は版切替UIで選ぶ）。
+  baseImage: TURTLE_V3,
 };
 
 // 内部の可変ドラフト。writable を外に晒さず、読みは readonly、書きは storeWriter 経由に限る。

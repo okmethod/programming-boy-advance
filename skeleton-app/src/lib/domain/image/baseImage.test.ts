@@ -46,20 +46,31 @@ describe("baseImageSupports（互換性ガード）", () => {
     expect(baseImageSupports(TURTLE_V1, p)).toBe(true);
   });
 
-  it("制御(if)を使うと v1 は非互換・v2 は互換（ダウングレードで失われる）", () => {
-    // 内側コマンドは v2 が賄える stepForward にし、判定を「制御(if)の有無」だけに絞る（attack は v3 以降）。
+  it("くりかえし(while/literal)は v1 は非互換・v2 で互換（条件が literal なら分岐不要）", () => {
+    // ずっとくりかえす（while(true)）＝折り返し道の想定解。制御はあるがクエリ・条件分岐は要らない。
     const p: Program = [
-      { kind: "if", cond: { kind: "sensor", sensor: "enemyAhead" }, then: [{ kind: "call", cmd: "stepForward" }] },
+      { kind: "while", cond: { kind: "literal", value: true }, body: [{ kind: "call", cmd: "stepForward" }] },
     ];
     expect(baseImageSupports(TURTLE_V1, p)).toBe(false);
     expect(baseImageSupports(TURTLE_V2, p)).toBe(true);
   });
 
-  it("クエリ(センサ)を使うと v1 は非互換", () => {
+  it("条件分岐(if)＋センサは v1/v2 では非互換・v3 で互換（ダウングレードで失われる）", () => {
+    // 内側コマンドは v3 が賄える stepForward にし、判定を「条件分岐(if)＋センサの有無」に絞る（attack は v4 以降）。
+    const p: Program = [
+      { kind: "if", cond: { kind: "sensor", sensor: "enemyAhead" }, then: [{ kind: "call", cmd: "stepForward" }] },
+    ];
+    expect(baseImageSupports(TURTLE_V1, p)).toBe(false);
+    expect(baseImageSupports(TURTLE_V2, p)).toBe(false);
+    expect(baseImageSupports(TURTLE_V3, p)).toBe(true);
+  });
+
+  it("クエリ(センサ)を使うと v1/v2 は非互換（クエリは v3 から）", () => {
     const p: Program = [
       { kind: "while", cond: { kind: "sensor", sensor: "wallAhead" }, body: [{ kind: "call", cmd: "turnRight" }] },
     ];
     expect(baseImageSupports(TURTLE_V1, p)).toBe(false);
+    expect(baseImageSupports(TURTLE_V2, p)).toBe(false);
   });
 });
 
