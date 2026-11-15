@@ -6,6 +6,7 @@
   // 系統が増え・版が伸びても同じレイアウトのまま拡張できる。
   // 現在値（適用中の素質）と編集中プログラムは workbenchDraft を直接購読し、確定は workbenchFacade.setBaseImage で行う。
   import Icon from "@iconify/svelte";
+  import { Carousel } from "@skeletonlabs/skeleton-svelte";
   import {
     baseImageCatalog,
     baseImageSupports,
@@ -14,7 +15,14 @@
     workbenchFacade,
     type BaseImage,
   } from "#lib/application";
-  import { commandLabel, sensorLabel, controlLabel, baseImageTag, versionTag } from "#lib/presentation/utils/labels";
+  import {
+    commandLabel,
+    sensorLabel,
+    operatorLabel,
+    controlLabel,
+    baseImageTag,
+    versionTag,
+  } from "#lib/presentation/utils/labels";
   import { emitFeedback } from "#lib/presentation/feedbacks";
   import BaseImageChip from "#lib/presentation/components/shared/BaseImageChip.svelte";
   import ModalShell from "#lib/presentation/components/atoms/ModalShell.svelte";
@@ -56,6 +64,12 @@
 
   // プレビュー中の版が属する系統（版ラダーの描画元）。
   const focusedFamily = $derived(families.find((f) => f.imageName === focused.imageName) ?? families[0]);
+
+  // 版ラダーで一度に見せる版数。これを超えた分は Carousel のページ送りで送る（器を横に伸ばさない）。
+  const VERSIONS_PER_PAGE = 4;
+  // プレビュー中の版を含むページを初期表示にする（最新版が後方ページでも開いた瞬間に見える）。
+  const focusedIndex = $derived(focusedFamily.versions.findIndex((v) => baseImageTag(v) === baseImageTag(focused)));
+  const focusedPage = $derived(Math.max(0, Math.floor(focusedIndex / VERSIONS_PER_PAGE)));
 
   // 候補が現適用と同じか＝切替不要（ボタン無効）。
   const isCurrent = $derived(baseImageTag(focused) === baseImageTag(draft.baseImage));
@@ -160,41 +174,80 @@
       {/each}
     </ul>
 
-    <!-- 右：選んだ系統の版ラダー＋解放コマンドリスト。 -->
+    <!-- 右：選んだ系統の版ラダー＋解放コマンドリスト。
+         min-w-0: sm:flex-row の子として、カルーセルのトラック幅でこのカラムが押し広げられないようにする。 -->
     <div
-      class="flex min-h-0 flex-1 flex-col gap-3 border-t border-gray-200 pt-3 sm:border-l sm:border-t-0 sm:pt-0 sm:pl-3"
+      class="flex min-h-0 min-w-0 flex-1 flex-col gap-3 border-t border-gray-200 pt-3 sm:border-l sm:border-t-0 sm:pt-0 sm:pl-3"
     >
       <!-- 版ラダー：左から右へ開花の進行。前版との間に矢印を入れて「上げると広がる」を示す。
                選択＝ラジオ的に候補を1つ（枠で強調）。現適用には控えめに「使用中」を添えて基準点を示す。
-               実際の切替はフッターのボタンが担う（選択と確定を分離）。 -->
-      <div class="flex shrink-0 items-stretch gap-2 overflow-x-auto pb-1">
-        {#each focusedFamily.versions as ver, i (baseImageTag(ver))}
-          {#if i > 0}
-            <div class="flex shrink-0 items-center text-gray-300">
+               実際の切替はフッターのボタンが担う（選択と確定を分離）。
+               版が増えても器が横に伸びないよう Carousel で一度の表示数（VERSIONS_PER_PAGE）に固定し、
+               超過分はページ送り（左右の釦）で送る。系統を切り替えると版数（slideCount）が変わるので、
+               系統キーで作り直して再初期化する。 -->
+      {#key focusedFamily.imageName}
+        <Carousel
+          slideCount={focusedFamily.versions.length}
+          slidesPerPage={VERSIONS_PER_PAGE}
+          defaultPage={focusedPage}
+          spacing="1.5rem"
+          padding="0.5rem"
+          class="shrink-0"
+        >
+          <div class="flex items-center gap-2">
+            <!-- ページ送りは常時表示。これ以上先が無い端では自動で無効化される（disabled:opacity-30）。 -->
+            <Carousel.PrevTrigger
+              class="shrink-0 rounded border border-gray-200 p-1 text-gray-500 hover:bg-gray-50 disabled:opacity-30"
+            >
+              <Icon icon="mdi:chevron-left" class="size-5" />
+            </Carousel.PrevTrigger>
+            <!-- min-w-0: flex-1 の最小幅をトラック内容幅ではなく 0 にし、送り釦を右へ押し出さない（端で切れるのを防ぐ）。 -->
+            <Carousel.ItemGroup class="min-w-0 flex-1">
+              {#each focusedFamily.versions as ver, i (baseImageTag(ver))}
+                <!-- 一致判定はタグ（値）で行う。$state はオブジェクトを Proxy 化するため参照比較は当てにならない。 -->
+                {@const isFocused = baseImageTag(ver) === baseImageTag(focused)}
+                {@const isApplied = baseImageTag(ver) === baseImageTag(draft.baseImage)}
+                <Carousel.Item index={i} class="relative flex items-stretch">
+                  <!-- 進行矢印（次の版へ）は前版とのギャップ中央に absolute で浮かせる。
+                       レイアウト幅を食わないのでボタンは Item 全幅＝ラベルが完全中央、タイル幅も均一になる。
+                       表示窓の端で出るのは許容。isInView で判定するとスクロール毎フレームの再描画でガタつくため避ける。 -->
+                  {#if i > 0}
+                    <div
+                      class="pointer-events-none absolute top-1/2 right-full mr-0.5 flex -translate-y-1/2 items-center text-gray-300"
+                    >
+                      <Icon icon="mdi:chevron-right" class="size-5" />
+                    </div>
+                  {/if}
+                  <!-- タイルは版番号のみ中央表示（説明は下の説明欄に集約）。候補（選択中）は枠色で示す。 -->
+                  <button
+                    type="button"
+                    onclick={() => pick(ver)}
+                    class="relative flex flex-1 items-center justify-center rounded-lg border-1 px-3 py-2 text-center text-xs {isFocused
+                      ? 'border-success-200 bg-success-100'
+                      : 'border-gray-200 hover:bg-gray-50'}"
+                  >
+                    <span class="font-mono text-sm font-bold mr-1">{versionTag(ver)}</span>
+                    <!-- 使用中（＝現在キャラに積まれている版）は右上のチェックバッジで示す。選択中（枠色）とは別チャンネル。 -->
+                    {#if isApplied}
+                      <span
+                        class="absolute top-1 right-1 flex size-4 items-center justify-center rounded-full bg-success-600 text-white"
+                        title="使用中"
+                      >
+                        <Icon icon="mdi:check" class="size-3" />
+                      </span>
+                    {/if}
+                  </button>
+                </Carousel.Item>
+              {/each}
+            </Carousel.ItemGroup>
+            <Carousel.NextTrigger
+              class="shrink-0 rounded border border-gray-200 p-1 text-gray-500 hover:bg-gray-50 disabled:opacity-30"
+            >
               <Icon icon="mdi:chevron-right" class="size-5" />
-            </div>
-          {/if}
-          <!-- 一致判定はタグ（値）で行う。$state はオブジェクトを Proxy 化するため参照比較は当てにならない。 -->
-          {@const isFocused = baseImageTag(ver) === baseImageTag(focused)}
-          {@const isApplied = baseImageTag(ver) === baseImageTag(draft.baseImage)}
-          <!-- タイルは版番号＋状態だけに絞る（説明は下の説明欄に集約）。
-                   固定幅＋左詰めで「使用中」の有無に依らず全タイルの幅を揃える。
-                   候補（選択中）は色をかえる。 -->
-          <button
-            type="button"
-            onclick={() => pick(ver)}
-            class="flex w-32 shrink-0 items-center gap-2 rounded-lg border-1 px-3 py-2 text-left text-xs {isFocused
-              ? 'border-success-200 bg-success-100'
-              : 'border-gray-200 hover:bg-gray-50'}"
-          >
-            <span class="font-mono text-sm font-bold">{versionTag(ver)}</span>
-            <!-- 現適用の基準点＝控えめなグレーのバッジ。候補強調は枠で表すので色は重ねない。 -->
-            {#if isApplied}
-              <span class="rounded bg-gray-100 px-1.5 py-0.5 text-[10px] font-medium text-gray-500">使用中</span>
-            {/if}
-          </button>
-        {/each}
-      </div>
+            </Carousel.NextTrigger>
+          </div>
+        </Carousel>
+      {/key}
 
       <!-- 説明欄＝プレビュー中の版の「できること」を一言で（版タイルから外に出して集約）。 -->
       <p class="shrink-0 text-sm text-gray-600">> {focused.summary}</p>
@@ -221,10 +274,18 @@
           </div>
           <div class="flex flex-col gap-1">
             <span class="text-xs font-bold text-gray-500">クエリ</span>
-            {#if focused.queries.length > 0}
+            <!-- クエリ節はセンサ（queries）に加えて論理演算子（operators＝否定）も並べる。
+                 Blockly パレットが「演算子は独立タブを設けずクエリ族に同居」する括りに揃える。
+                 否定は後置語なので「〜ではない」と前に「〜」を添えてクエリに付く演算子だと示す。 -->
+            {#if focused.queries.length > 0 || focused.operators.length > 0}
               <div class="flex flex-wrap gap-1.5">
                 {#each focused.queries as q (q)}
                   <span class="rounded border border-gray-200 bg-white px-1.5 py-0.5 text-xs">{sensorLabel(q)}</span>
+                {/each}
+                {#each focused.operators as op (op)}
+                  <span class="rounded border border-gray-200 bg-white px-1.5 py-0.5 text-xs"
+                    >〜{operatorLabel(op)}</span
+                  >
                 {/each}
               </div>
             {:else}
