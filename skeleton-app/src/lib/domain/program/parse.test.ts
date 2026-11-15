@@ -63,7 +63,8 @@ describe("parseProgram（素質ガード）", () => {
 
   it("付与セット内なら通る（V3 は条件分岐・センサを許可）", () => {
     // 内側コマンドは V3 が賄う stepForward（attack は v4 以降）。判定を条件分岐(if)・センサ許可に絞る。
-    const result = parseProgram("if enemyAhead:\n  stepForward()", TURTLE_V3);
+    // センサは V3 が賄う空間センサ wallAhead を使う（敵センサ enemyAhead は攻撃版 v4 から）。
+    const result = parseProgram("if wallAhead:\n  stepForward()", TURTLE_V3);
     expect(result.ok).toBe(true);
   });
 

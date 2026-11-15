@@ -57,8 +57,9 @@ describe("baseImageSupports（互換性ガード）", () => {
 
   it("条件分岐(if)＋センサは v1/v2 では非互換・v3 で互換（ダウングレードで失われる）", () => {
     // 内側コマンドは v3 が賄える stepForward にし、判定を「条件分岐(if)＋センサの有無」に絞る（attack は v4 以降）。
+    // センサは v3 が賄う空間センサ wallAhead を使う（敵センサ enemyAhead は攻撃版 v4 から）。
     const p: Program = [
-      { kind: "if", cond: { kind: "sensor", sensor: "enemyAhead" }, then: [{ kind: "call", cmd: "stepForward" }] },
+      { kind: "if", cond: { kind: "sensor", sensor: "wallAhead" }, then: [{ kind: "call", cmd: "stepForward" }] },
     ];
     expect(baseImageSupports(TURTLE_V1, p)).toBe(false);
     expect(baseImageSupports(TURTLE_V2, p)).toBe(false);

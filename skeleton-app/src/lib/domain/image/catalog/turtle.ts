@@ -41,13 +41,14 @@ export const TURTLE_V2: BaseImage = {
 /**
  * 3.0: 条件分岐とクエリの獲得。
  *
- * v2.0 のくりかえしに、クエリ（センサ）と条件分岐（if）を足す。まわりを読んで判断して動ける。
+ * v2.0 のくりかえしに、空間センサ（wallAhead）と条件分岐（if）を足す。まわりを読んで判断して動ける。
+ * 敵センサ（enemyAhead）は攻撃と組んで初めて効く戦闘の道具なので、この版ではなく攻撃版(v4)で開花する。
  */
 export const TURTLE_V3: BaseImage = {
   ...TURTLE_V2,
   version: "3.0",
   summary: "まわりを見て、条件分岐で判断できる",
-  queries: ["enemyAhead", "wallAhead"],
+  queries: ["wallAhead"],
   controls: ["repeat", "while", "if"],
 };
 
@@ -55,12 +56,14 @@ export const TURTLE_V3: BaseImage = {
  * 4.0: 攻撃の獲得。
  *
  * 移動（v1）・くりかえし（v2）・条件分岐＋クエリ（v3）を経て、最後に攻撃を覚える。
+ * 攻撃と対になる敵センサ（enemyAhead）もこの版で開花する（「前に敵がいれば攻撃」が組める）。
  * 移動系統に攻撃を足す当面の措置＝将来「攻撃系統」を分けるなら attack をそちらへ移す余地あり（YAGNI）。
  */
 export const TURTLE_V4: BaseImage = {
   ...TURTLE_V3,
   version: "4.0",
   summary: "攻撃を覚える。移動・制御・クエリに加えて戦える",
+  queries: [...TURTLE_V3.queries, "enemyAhead"],
   commands: [...TURTLE_V3.commands, "attack"],
 };
 
