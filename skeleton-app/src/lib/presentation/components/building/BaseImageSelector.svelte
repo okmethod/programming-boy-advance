@@ -252,64 +252,37 @@
       <!-- 説明欄＝プレビュー中の版の「できること」を一言で（版タイルから外に出して集約）。 -->
       <p class="shrink-0 text-sm text-gray-600">> {focused.summary}</p>
 
+      <!-- 解放ブロックの1節＝見出し＋ラベルのチップ列。未解放は「無し」。
+           コマンド/クエリ/制御で同型なので snippet に畳む（チップと同じ box 高さで有無の行高ぶれを防ぐ）。 -->
+      {#snippet capabilitySection(heading: string, labels: readonly string[])}
+        <div class="flex flex-col gap-1">
+          <span class="text-xs font-bold text-gray-500">{heading}</span>
+          {#if labels.length > 0}
+            <div class="flex flex-wrap gap-1.5">
+              {#each labels as label (label)}
+                <span class="rounded border border-gray-200 bg-white px-1.5 py-0.5 text-xs">{label}</span>
+              {/each}
+            </div>
+          {:else}
+            <span class="inline-block w-fit rounded border border-transparent px-1.5 py-0.5 text-xs text-gray-400"
+              >無し</span
+            >
+          {/if}
+        </div>
+      {/snippet}
+
       <!-- 解放ブロック一覧（プレビュー中の版）：コマンド／クエリ／制御をカテゴリ別に A面語で並べる。
-               見出しは Blockly パレットのタブ名（コマンド/クエリ/制御）に揃える。未解放は「無し」。 -->
+               見出しは Blockly パレットのタブ名（コマンド/クエリ/制御）に揃える。
+               クエリにはセンサ(queries)に加え演算子(operators＝否定)も同居させる＝パレットの括りに揃える。 -->
       <div class="flex min-h-0 flex-1 flex-col gap-2">
         <span class="shrink-0 text-xs font-bold text-gray-500">使えるブロック</span>
         <div class="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto rounded-lg bg-gray-50 p-3 text-sm">
-          <div class="flex flex-col gap-1">
-            <span class="text-xs font-bold text-gray-500">コマンド</span>
-            {#if focused.commands.length > 0}
-              <div class="flex flex-wrap gap-1.5">
-                {#each focused.commands as cmd (cmd)}
-                  <span class="rounded border border-gray-200 bg-white px-1.5 py-0.5 text-xs">{commandLabel(cmd)}</span>
-                {/each}
-              </div>
-            {:else}
-              <!-- チップと同じ box 高さ（border-transparent+同 padding）にして、有無で行高がぶれないようにする。 -->
-              <span class="inline-block w-fit rounded border border-transparent px-1.5 py-0.5 text-xs text-gray-400"
-                >無し</span
-              >
-            {/if}
-          </div>
-          <div class="flex flex-col gap-1">
-            <span class="text-xs font-bold text-gray-500">クエリ</span>
-            <!-- クエリ節はセンサ（queries）に加えて論理演算子（operators＝否定）も並べる。
-                 Blockly パレットが「演算子は独立タブを設けずクエリ族に同居」する括りに揃える。
-                 否定は後置語なので「〜ではない」と前に「〜」を添えてクエリに付く演算子だと示す。 -->
-            {#if focused.queries.length > 0 || focused.operators.length > 0}
-              <div class="flex flex-wrap gap-1.5">
-                {#each focused.queries as q (q)}
-                  <span class="rounded border border-gray-200 bg-white px-1.5 py-0.5 text-xs">{sensorLabel(q)}</span>
-                {/each}
-                {#each focused.operators as op (op)}
-                  <span class="rounded border border-gray-200 bg-white px-1.5 py-0.5 text-xs"
-                    >〜{operatorLabel(op)}</span
-                  >
-                {/each}
-              </div>
-            {:else}
-              <!-- チップと同じ box 高さ（border-transparent+同 padding）にして、有無で行高がぶれないようにする。 -->
-              <span class="inline-block w-fit rounded border border-transparent px-1.5 py-0.5 text-xs text-gray-400"
-                >無し</span
-              >
-            {/if}
-          </div>
-          <div class="flex flex-col gap-1">
-            <span class="text-xs font-bold text-gray-500">制御</span>
-            {#if focused.controls.length > 0}
-              <div class="flex flex-wrap gap-1.5">
-                {#each focused.controls as c (c)}
-                  <span class="rounded border border-gray-200 bg-white px-1.5 py-0.5 text-xs">{controlLabel(c)}</span>
-                {/each}
-              </div>
-            {:else}
-              <!-- チップと同じ box 高さ（border-transparent+同 padding）にして、有無で行高がぶれないようにする。 -->
-              <span class="inline-block w-fit rounded border border-transparent px-1.5 py-0.5 text-xs text-gray-400"
-                >無し</span
-              >
-            {/if}
-          </div>
+          {@render capabilitySection("コマンド", focused.commands.map(commandLabel))}
+          {@render capabilitySection("クエリ", [
+            ...focused.queries.map(sensorLabel),
+            ...focused.operators.map((op) => `〜${operatorLabel(op)}`),
+          ])}
+          {@render capabilitySection("制御", focused.controls.map(controlLabel))}
         </div>
       </div>
     </div>
