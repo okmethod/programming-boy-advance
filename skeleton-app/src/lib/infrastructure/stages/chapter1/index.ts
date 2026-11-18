@@ -1,5 +1,5 @@
 /**
- * チャプター1 のステージを束ねるバレル。
+ * チャプター1（基本移動）のステージを束ねるバレル。
  */
 
 import type { Stage } from "#lib/application";
@@ -40,5 +40,4 @@ export const CHAPTER1_STAGES: readonly Stage[] = [
   // 要センサ
   RING_STAGE, // 壁の前で曲がる
   SPIRAL_STAGE, // 壁の前で曲がる（その2）
-  // TODO: 迷路（壁クエリ一家の締め＝壁を読まないと解けないステージ）を追加する
 ];

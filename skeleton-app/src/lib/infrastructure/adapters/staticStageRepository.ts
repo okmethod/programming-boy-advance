@@ -9,6 +9,7 @@
 
 import type { Chapter, Stage, StageRepository } from "#lib/application";
 import { CHAPTER1_STAGES } from "#lib/infrastructure/stages/chapter1";
+import { CHAPTER2_STAGES } from "#lib/infrastructure/stages/chapter2";
 import { REACTIVE_SENTRY_STAGE } from "#lib/infrastructure/stages/reactive-sentry";
 import { LOAD_DISRUPTOR_STAGE } from "#lib/infrastructure/stages/load-disruptor";
 
@@ -18,6 +19,11 @@ const CHAPTERS: readonly Chapter[] = [
     id: "chapter1",
     label: "チャプター1", // TODO: チャプターの表示名は暫定
     stages: CHAPTER1_STAGES,
+  },
+  {
+    id: "chapter2",
+    label: "チャプター2", // TODO: チャプターの表示名は暫定
+    stages: CHAPTER2_STAGES,
   },
   {
     id: "test",
