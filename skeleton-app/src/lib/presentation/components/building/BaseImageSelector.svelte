@@ -71,6 +71,18 @@
   const focusedIndex = $derived(focusedFamily.versions.findIndex((v) => baseImageTag(v) === baseImageTag(focused)));
   const focusedPage = $derived(Math.max(0, Math.floor(focusedIndex / VERSIONS_PER_PAGE)));
 
+  // 解放ブロックを Blockly パレットのタブ（コマンド/クエリ/制御）別に A面語ラベルへ写す。
+  // クエリにはセンサ(queries)に加え演算子(operators＝否定)も同居させる＝パレットの括りに揃える。
+  const capabilityLabels = (base: BaseImage) => ({
+    commands: base.commands.map(commandLabel),
+    queries: [...base.queries.map(sensorLabel), ...base.operators.map((op) => `〜${operatorLabel(op)}`)],
+    controls: base.controls.map(controlLabel),
+  });
+  const focusedLabels = $derived(capabilityLabels(focused));
+  // 同系統の直前の版の解放ラベル。これに無いラベル＝この版で追加されたブロック（new バッジ対象）。
+  // 系統の初版は比較元が無いので null（new バッジを出さない）。
+  const previousLabels = $derived(focusedIndex > 0 ? capabilityLabels(focusedFamily.versions[focusedIndex - 1]) : null);
+
   // 候補が現適用と同じか＝切替不要（ボタン無効）。
   const isCurrent = $derived(baseImageTag(focused) === baseImageTag(draft.baseImage));
   // 候補へ切り替えても使用中ブロックが失われないか（互換性ガード）。
@@ -253,14 +265,25 @@
       <p class="shrink-0 text-sm text-gray-600">> {focused.summary}</p>
 
       <!-- 解放ブロックの1節＝見出し＋ラベルのチップ列。未解放は「無し」。
-           コマンド/クエリ/制御で同型なので snippet に畳む（チップと同じ box 高さで有無の行高ぶれを防ぐ）。 -->
-      {#snippet capabilitySection(heading: string, labels: readonly string[])}
+           コマンド/クエリ/制御で同型なので snippet に集約する（チップと同じ box 高さで有無の行高ぶれを防ぐ）。
+           previous（直前の版の同カテゴリのラベル）に無いラベルには new アイコンを添え、版を上げて増えた分を示す。 -->
+      {#snippet capabilitySection(heading: string, labels: readonly string[], previous: readonly string[] | undefined)}
         <div class="flex flex-col gap-1">
           <span class="text-xs font-bold text-gray-500">{heading}</span>
           {#if labels.length > 0}
             <div class="flex flex-wrap gap-1.5">
               {#each labels as label (label)}
-                <span class="rounded border border-gray-200 bg-white px-1.5 py-0.5 text-xs">{label}</span>
+                {@const isNew = previous !== undefined && !previous.includes(label)}
+                <span
+                  class="inline-flex items-center gap-1 rounded border border-gray-200 px-1.5 py-0.5 text-xs {isNew
+                    ? 'bg-yellow-200'
+                    : 'bg-white'}"
+                >
+                  {label}
+                  {#if isNew}
+                    <Icon icon="mdi:new-box" class="size-4 text-primary-600" aria-label="この版で追加" />
+                  {/if}
+                </span>
               {/each}
             </div>
           {:else}
@@ -272,17 +295,13 @@
       {/snippet}
 
       <!-- 解放ブロック一覧（プレビュー中の版）：コマンド／クエリ／制御をカテゴリ別に A面語で並べる。
-               見出しは Blockly パレットのタブ名（コマンド/クエリ/制御）に揃える。
-               クエリにはセンサ(queries)に加え演算子(operators＝否定)も同居させる＝パレットの括りに揃える。 -->
+               見出しは Blockly パレットのタブ名（コマンド/クエリ/制御）に揃える。 -->
       <div class="flex min-h-0 flex-1 flex-col gap-2">
         <span class="shrink-0 text-xs font-bold text-gray-500">使えるブロック</span>
         <div class="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto rounded-lg bg-gray-50 p-3 text-sm">
-          {@render capabilitySection("コマンド", focused.commands.map(commandLabel))}
-          {@render capabilitySection("クエリ", [
-            ...focused.queries.map(sensorLabel),
-            ...focused.operators.map((op) => `〜${operatorLabel(op)}`),
-          ])}
-          {@render capabilitySection("制御", focused.controls.map(controlLabel))}
+          {@render capabilitySection("コマンド", focusedLabels.commands, previousLabels?.commands)}
+          {@render capabilitySection("クエリ", focusedLabels.queries, previousLabels?.queries)}
+          {@render capabilitySection("制御", focusedLabels.controls, previousLabels?.controls)}
         </div>
       </div>
     </div>
