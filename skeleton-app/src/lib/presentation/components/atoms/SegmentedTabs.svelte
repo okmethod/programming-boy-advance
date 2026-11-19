@@ -27,9 +27,12 @@
     dense?: boolean;
     // ダーク配色（黒パネルに溶け込む見出しタブ用）。既定は retro 淡色。
     dark?: boolean;
+    // xl 未満ではラベルを隠してアイコンのみにする。横幅の限られた画面（iPad 横向き等）でヘッダー行のはみ出しを防ぐ。
+    // ラベルは title / aria-label に残し、ホバー・支援技術からは引き続き名前が分かるようにする。
+    iconOnlyBelowXl?: boolean;
   }
 
-  let { value, items, onChange, dense = false, dark = false }: SegmentedTabsProps = $props();
+  let { value, items, onChange, dense = false, dark = false, iconOnlyBelowXl = false }: SegmentedTabsProps = $props();
 </script>
 
 <SegmentedControl class="inline-flex" {value} onValueChange={(d) => d.value && onChange(d.value)}>
@@ -47,13 +50,15 @@
            色は ItemText に明示して、選択状態で別色に上書きされないようにする。 -->
       <SegmentedControl.Item
         value={item.value}
+        title={item.label}
+        aria-label={item.label}
         class="relative z-10 inline-flex cursor-pointer items-center gap-1 rounded transition select-none {dense
           ? 'px-2 py-0.5 text-xs'
           : 'px-3 py-1 text-sm'}"
       >
         <SegmentedControl.ItemText class="inline-flex items-center gap-1 {dark ? 'text-gray-200' : 'text-surface-900'}">
           <Icon icon={item.icon} class={dense ? "size-3.5" : "size-4"} />
-          {item.label}
+          <span class={iconOnlyBelowXl ? "hidden xl:inline" : ""}>{item.label}</span>
         </SegmentedControl.ItemText>
         <SegmentedControl.ItemHiddenInput />
       </SegmentedControl.Item>

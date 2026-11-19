@@ -241,7 +241,7 @@
        左＝ビュー切替タブ（副作用なしのナビ＝セグメントタブ）／右＝イメージタイル＋資源配分（属性）＋デプロイ（起動）。
        右群は ml-auto で寄せ、イメージ（成果物）→配分（起動時パラメータ）→デプロイ（起動）の順に並べる。 -->
   <div class="flex h-9 shrink-0 items-center gap-3">
-    <SegmentedTabs value={mainView} items={mainTabs} onChange={(v) => changeMainView(v as MainView)} />
+    <SegmentedTabs value={mainView} items={mainTabs} onChange={(v) => changeMainView(v as MainView)} iconOnlyBelowXl />
     <div class="ml-auto flex items-center gap-2">
       <!-- カレントイメージタイル＝現在のビルド断面の表示（ハッシュ-名前-ビルド時刻／レジストリ行と同体裁・表示専用）。
            ダーティーに依らず一定。改名・プッシュ・削除はレジストリタブのカレント行に集約する。 -->
