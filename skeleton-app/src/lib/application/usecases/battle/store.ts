@@ -11,7 +11,7 @@
  */
 
 import { derived, get, readonly, writable } from "svelte/store";
-import { runBattle, resolveBattleParams, imageHash, flatLines, withAllyInitialHp } from "#lib/domain";
+import { runBattle, resolveBattleParams, imageHash, flatLines, withAllyInitialHp, programCost } from "#lib/domain";
 import type { AutomatonImage, BattleParams, BattleRun, FlatLine } from "#lib/domain";
 import type { Stage } from "#lib/application/ports/stageRepository";
 import { buildActionLog, type ActionLogRow } from "./actionLog";
@@ -67,24 +67,53 @@ export const battleParams = derived(sessionStore, (session): BattleParams =>
   resolveBattleParams(session.stage?.params),
 );
 
-/** 対戦結果（観戦フレーム列＋勝敗）＝所有 state の投影。未デプロイ／未セッションは null。 */
-export const battleRun = derived([sessionStore, battleParams], ([session, params]): BattleRun | null => {
-  if (session.stage === null || session.deployed === null) return null;
-  // ally の初期 HP はステージ固有値ではなく配分の個体値＝初期盤面へデプロイ値を差し込んでから回す。
-  const initial = withAllyInitialHp(session.stage.initial, session.deployed.allyHp);
-  return runBattle(initial, session.deployed.program, session.stage.enemy, { params });
+/** 起動エラーの内訳。CP 超過＝デプロイ済みイメージの消費 CP が割り当て CP を上回り、自動機が起動できない。 */
+export interface LaunchError {
+  // 割り当て CP を上回った量（構築側の配分 UI の「超過」と同じ量）。
+  readonly cpOverflow: number;
+}
+
+/** デプロイ済みイメージの消費 CP（ブロック総数）。未デプロイは null。 */
+export const deployedCpUsed = derived(sessionStore, (session): number | null =>
+  session.deployed === null ? null : programCost(session.deployed.program),
+);
+
+/** enemy（ステージ固定）イメージの消費 CP。ally と同じ算出で左右対称に見せる。未セッションは null。 */
+export const enemyCpUsed = derived(sessionStore, (session): number | null =>
+  session.stage === null ? null : programCost(session.stage.enemy),
+);
+
+/**
+ * 起動エラー＝デプロイは受け付けたが起動に失敗した状態の投影（docker run がメモリ不足で起動しない相当）。
+ * 割り当て CP は配分の裏返し（総メモリ − 配分 HP）なので、デプロイ時の allyHp から復元できる。未デプロイ／起動成功は null。
+ */
+export const launchError = derived([sessionStore, deployedCpUsed], ([session, cpUsed]): LaunchError | null => {
+  if (session.stage === null || session.deployed === null || cpUsed === null) return null;
+  const cpAllocated = session.stage.memoryTotal - session.deployed.allyHp;
+  return cpUsed > cpAllocated ? { cpOverflow: cpUsed - cpAllocated } : null;
 });
+
+/** 対戦結果（観戦フレーム列＋勝敗）＝所有 state の投影。未デプロイ／起動エラー／未セッションは null。 */
+export const battleRun = derived(
+  [sessionStore, battleParams, launchError],
+  ([session, params, error]): BattleRun | null => {
+    if (session.stage === null || session.deployed === null || error !== null) return null;
+    // ally の初期 HP はステージ固有値ではなく配分の個体値＝初期盤面へデプロイ値を差し込んでから回す。
+    const initial = withAllyInitialHp(session.stage.initial, session.deployed.allyHp);
+    return runBattle(initial, session.deployed.program, session.stage.enemy, { params });
+  },
+);
 
 /**
  * HP バーの満タン基準＝オートマトン id → 満タン HP の対応。
  * enemy はステージ初期配置の HP、ally は出撃時に配分した個体値（deployed.allyHp）。
- * 未デプロイは配分未確定なので総メモリ（上限）を基準に置く＝盤面の ally hp=0 と合わせ空バー表示。
+ * 未デプロイは配分未確定（メモリ未供給）なので null＝購読側は容量を「—」として描く。
  * 未セッション（stage=null）は空＝購読側は満タン基準を得られないが、効果と同じく CSR では描画前に埋まる。
  */
-export const maxHpById = derived(sessionStore, (session): Record<string, number> => {
+export const maxHpById = derived(sessionStore, (session): Record<string, number | null> => {
   if (session.stage === null) return {};
   const byInitial = Object.fromEntries(session.stage.initial.automatons.map((a) => [a.id, a.hp]));
-  return { ...byInitial, ally: session.deployed?.allyHp ?? session.stage.memoryTotal };
+  return { ...byInitial, ally: session.deployed?.allyHp ?? null };
 });
 
 /** ally（デプロイ済み）の擬似コード行＝ProgramViewer に渡す View Model。 */

@@ -13,6 +13,8 @@
   interface ImageViewerProps {
     // 内容ハッシュ（content fingerprint）。null＝イメージ未確定（未デプロイ等）で空表示にする。
     hash: string | null;
+    // 消費 CP（ブロック総数）＝起動に要る CP 割り当ての下限。null＝イメージ未確定（未デプロイ等）。
+    cpUsed: number | null;
     // 表示名（タグ）。
     name: string;
     // 土台にした素質（系統×版）。持たない対象では省略。
@@ -30,6 +32,7 @@
 
   let {
     hash,
+    cpUsed,
     name,
     baseImage = null,
     timeLabel = null,
@@ -59,6 +62,13 @@
         <!-- 素質＝何から作ったか（FROM）。 -->
         <span class="text-gray-500">base</span>
         <BaseImageChip base={baseImage} cIcon="size-3.5 text-emerald-400" cTag="font-mono" />
+      {/if}
+      {#if cpUsed !== null}
+        <!-- 消費 CP＝起動に要る割り当ての下限（イメージの属性なので配分とは独立に出す）。 -->
+        <span class="text-gray-500">cp</span>
+        <span class="inline-flex items-center gap-1 font-mono">
+          <Icon icon="mdi:memory" class="size-3.5" />{cpUsed}
+        </span>
       {/if}
       <span class="text-gray-500">hash</span>
       <span class="font-mono">{hash}</span>

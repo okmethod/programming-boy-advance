@@ -16,8 +16,8 @@
     frames: readonly BattleState[];
     frameIndex: number;
     id: AutomatonId;
-    // ヒープ容量＝初期 HP（ブロックの総数）。
-    maxHp: number;
+    // ヒープ容量＝初期 HP（ブロックの総数）。null＝未デプロイでメモリ未供給（容量を「—」で描き、ブロックは出さない）。
+    maxHp: number | null;
     // BP 天井＝フリーズ閾値（波形スケールの分母）。戦闘パラメータは合成ルートから供給する。
     bpMax: number;
     // 未起動（未デプロイ）＝まだ出撃していない。HP0 でも「撃破」ではなく休眠として描く（×目にしない）。
@@ -48,7 +48,7 @@
   const frozen = $derived(freezeRemaining > 0);
 
   // HP が残りわずか／BP が高いときは警告色にする。未起動は休眠なので警告色を出さない。
-  const hpDanger = $derived(!inactive && (defeated || hp / Math.max(1, maxHp) <= 0.34));
+  const hpDanger = $derived(!inactive && (defeated || hp / Math.max(1, maxHp ?? 0) <= 0.34));
   const bpDanger = $derived(frozen || bp / Math.max(1, bpMax) >= 0.8);
 
   // 再生ヘッドの x 座標（＝描画の右端＝現在フレーム）。
@@ -97,7 +97,7 @@
   <div class="flex items-center gap-2">
     <span class="w-8 shrink-0 text-xs font-bold text-gray-500">HP</span>
     <div class="flex h-7 min-w-0 flex-1 items-stretch gap-1 rounded-sm bg-black/40 p-1">
-      {#each Array(maxHp) as _, i (i)}
+      {#each Array(maxHp ?? 0) as _, i (i)}
         <span class="flex-1 {i < hp ? (hpDanger ? 'bg-red-500' : 'bg-green-500') : 'bg-white/5'}"></span>
       {/each}
     </div>
@@ -105,7 +105,7 @@
          桁数が変わってもスラッシュ位置がぶれないよう、両数字を固定幅で右揃えする。 -->
     <FractionReadout
       numerator={hp}
-      denominator={maxHp}
+      denominator={maxHp ?? "—"}
       cRoot={hpDanger ? "text-red-400" : "text-gray-100"}
       cNumerator="text-base font-bold"
       cSlash="text-xs text-gray-500"

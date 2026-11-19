@@ -45,6 +45,9 @@ export {
   battleSession,
   battleParams,
   battleRun,
+  launchError,
+  deployedCpUsed,
+  enemyCpUsed,
   maxHpById,
   allyLines,
   enemyLines,
@@ -53,7 +56,7 @@ export {
   deployedHash,
   enemyHash,
 } from "./usecases/battle/store";
-export type { BattleSession } from "./usecases/battle/store";
+export type { BattleSession, LaunchError } from "./usecases/battle/store";
 export type { Chapter, Stage, StageRepository } from "./ports/stageRepository";
 
 export { createRegistryFacade } from "./usecases/registry/facade";

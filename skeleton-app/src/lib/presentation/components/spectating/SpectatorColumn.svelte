@@ -14,9 +14,10 @@
     frames: readonly BattleState[];
     frameIndex: number;
     id: AutomatonId;
-    maxHp: number;
+    // null＝未デプロイでメモリ未供給（容量不明）。
+    maxHp: number | null;
     bpMax: number;
-    // 未起動（未デプロイ）＝まだ出撃していない。HP0 を撃破ではなく休眠として描く。
+    // 未起動（未デプロイ・起動エラー）＝まだ動いていない。HP0 を撃破ではなく休眠として描く。
     inactive?: boolean;
     // プログラム（擬似コード）ビュー。activeId＝現在クロックで実行中の命令ノード。
     lines: FlatLine[];
@@ -25,6 +26,8 @@
     log: ActionLogRow[];
     // イメージ（正体＝ハッシュ-名前-時刻）ビュー。Ally は timeLabel/drift を持ち、Enemy は持たない。
     hash: string | null;
+    // 消費 CP（ブロック総数）。null＝イメージ未確定。
+    cpUsed: number | null;
     name: string;
     baseImage?: BaseImage | null;
     timeLabel?: string | null;
@@ -43,6 +46,7 @@
     activeId,
     log,
     hash,
+    cpUsed,
     name,
     baseImage = null,
     timeLabel = null,
@@ -76,7 +80,7 @@
       <ActionLogViewer {log} {frameIndex} fill compact />
     {:else}
       <!-- イメージ＝正体。Ally は未デプロイ時に空表示＋ドリフトで「要再デプロイ」、Enemy はステージ固定。 -->
-      <ImageViewer {hash} {name} {baseImage} {timeLabel} {drift} {emptyLabel} fill />
+      <ImageViewer {hash} {cpUsed} {name} {baseImage} {timeLabel} {drift} {emptyLabel} fill />
     {/if}
   </div>
 </div>

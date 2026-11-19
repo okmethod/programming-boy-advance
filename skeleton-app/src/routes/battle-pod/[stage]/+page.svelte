@@ -15,6 +15,9 @@
     differsFromBuilt,
     battleSession,
     battleRun,
+    launchError,
+    deployedCpUsed,
+    enemyCpUsed,
     allyLines,
     enemyLines,
     allyLog,
@@ -52,6 +55,10 @@
   // デプロイ済みイメージ（出撃した実体・未デプロイは null）は battle store の所有 state を購読する。
   // program・表示名・素質・時刻は一体の集合体で、未デプロイは丸ごと null（表示メタだけ欠ける状態は起きない）。
   const deployed = $derived($battleSession.deployed);
+  // 起動エラー（CP 超過）＝デプロイは受け付けたが自動機は起動していない。判定はアプリ層の投影に委ねる。
+  const failedLaunch = $derived($launchError);
+  // 未起動＝未デプロイ or 起動エラー。どちらも ally は動いていないので休眠として描く。
+  const allyInactive = $derived(deployed === null || failedLaunch !== null);
 
   // BP 波形の天井＝このセッションで確定した bpMax（store が既定へステージ上書きを重ねた投影）。
   const bpMax = $derived($battleParams.bpMax);
@@ -181,13 +188,14 @@
       frames={displayFrames}
       {frameIndex}
       id="ally"
-      maxHp={$maxHpById.ally}
+      maxHp={$maxHpById.ally ?? null}
       {bpMax}
-      inactive={deployed === null}
+      inactive={allyInactive}
       lines={$allyLines}
       activeId={current?.active?.ally}
       log={$allyLog}
       hash={$deployedHash}
+      cpUsed={$deployedCpUsed}
       name={deployed?.name ?? ""}
       baseImage={deployed?.baseImage}
       timeLabel={deployedAtLabel}
@@ -200,8 +208,8 @@
     <div class="flex min-h-0 flex-[2] flex-col items-center gap-2">
       <!-- 盤面エリア（残り高を埋める。決着時は結果オーバーレイを重ねる） -->
       <div class="relative min-h-0 w-full flex-1">
-        <!-- 非活性はデプロイ前のみ（まだ自機が出ていない）。デプロイ後は実行前でも活性で描く。 -->
-        <BattlePodViewer state={displayFrame} allyInactive={deployed === null} prev={prevFrame} />
+        <!-- 非活性はデプロイ前と起動エラー時（自機が動いていない）。起動に成功すれば実行前でも活性で描く。 -->
+        <BattlePodViewer state={displayFrame} {allyInactive} prev={prevFrame} />
         {#if decided && result}
           <!-- 「次へ」は勝利時かつ次ステージがあるときだけ（onNext を渡す＝条件成立）。遷移先 id はプレゼンが解決。 -->
           <ResultOverlay
@@ -215,6 +223,12 @@
         <!-- 未デプロイ：再生する対戦がまだ無いので、コントローラの位置にデプロイ促しを置く。 -->
         <div class="flex h-9 items-center justify-center gap-1.5 text-xs text-surface-500">
           <Icon icon="mdi:rocket-launch-outline" class="size-4" /> オートマトンをデプロイして対戦
+        </div>
+      {:else if failedLaunch}
+        <!-- 起動エラー：CP 割り当てが足りず自動機が起動しない。実行は出さず、直し方（配分 or ブロック数）へ誘導する。 -->
+        <div class="flex h-9 items-center justify-center gap-1.5 text-xs font-bold text-red-600">
+          <Icon icon="mdi:alert-octagon-outline" class="size-4" />
+          起動エラー：CP 超過 {failedLaunch.cpOverflow}
         </div>
       {:else if started}
         <PlaybackController bind:frameIndex bind:playing {lastIndex} clock={displayFrame.clock} />
@@ -237,6 +251,7 @@
       activeId={current?.active?.enemy}
       log={$enemyLog}
       hash={$enemyHash}
+      cpUsed={$enemyCpUsed}
       name={stage.enemyLabel}
       baseImage={stage.enemyBaseImage}
     />
