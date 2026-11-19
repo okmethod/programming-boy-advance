@@ -117,6 +117,41 @@
     ws?.getAudioManager().setMuted(!$audioOn);
   });
 
+  // iOS/iPadOS Safari で Blockly 内蔵音が鳴らない問題の回避策。解除関数を返す。
+  // Blockly（v13.4 時点）は inject 時に自前の AudioContext を生成するため、生成直後は suspended になる。
+  // 再開（resume）は音を鳴らす直前（接続・削除＝ドラッグ終了時）にしか呼ばない。
+  // WebKit は「指が動いたタッチ」をユーザー操作とみなさないため、その resume は実機で効かず無音のまま。
+  // そこで、ドラッグでないタップ・クリックの処理中に Blockly の AudioContext を resume し、running になったら監視をやめる。
+  // 注意: WorkspaceAudio.context は型定義上 private で、公開 API ではない。Blockly 更新時は次を確認する:
+  //   - context が存在しない／名前が変わっている → 回避策は何もしなくなるだけ（例外にはしない）
+  //   - 本家で iOS 実機の再開が直った → この関数ごと削除する
+  //     （参考: RaspberryPiFoundation/blockly #4538 / PR #9560 はシミュレータでのみ検証）
+  function resumeBlocklyAudioOnTap(workspace: Blockly.WorkspaceSvg): () => void {
+    const audioManager = workspace.getAudioManager() as unknown as { context?: AudioContext };
+    const context = audioManager.context;
+    if (!context) return () => {};
+
+    function resumeIfSuspended() {
+      if (context?.state === "running") {
+        stopListening();
+        return;
+      }
+      // resume() はこのイベント処理中に同期的に呼ぶ必要がある（await を挟むとユーザー操作の扱いが外れる）。
+      void context?.resume().then(() => {
+        if (context.state === "running") stopListening();
+      });
+    }
+    function stopListening() {
+      document.removeEventListener("touchend", resumeIfSuspended, true);
+      document.removeEventListener("click", resumeIfSuspended, true);
+    }
+    // ヘッダーの音声トグルなどエディタ外のタップも対象にするため document で受ける。
+    // Blockly 内部の伝播停止の影響を受けないよう capture で登録する。
+    document.addEventListener("touchend", resumeIfSuspended, true);
+    document.addEventListener("click", resumeIfSuspended, true);
+    return stopListening;
+  }
+
   function blockly(node: HTMLElement) {
     registerBlocks();
     // フライアウトを固定下限幅版に差し替えてからinject（タブ切替でパレット幅を一定に保つ）。
@@ -134,6 +169,7 @@
 
     // 初期ミュート状態を inject 直後に確定する（以後のトグル追従は $effect が担う）。
     ws.getAudioManager().setMuted(!get(audioOn));
+    const stopResumingAudio = resumeBlocklyAudioOnTap(ws);
 
     // 全カテゴリを一度 show してフライアウト幅を全体最大に温める（sticky max を確定）。
     // これで最初のタブから幅が最大に固定され、タブ切替で原点がずれず配置済みブロックも動かない。
@@ -157,6 +193,7 @@
     return {
       destroy() {
         observer.disconnect();
+        stopResumingAudio();
         ws?.dispose();
         ws = undefined;
       },
