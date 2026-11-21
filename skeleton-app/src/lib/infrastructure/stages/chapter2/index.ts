@@ -8,12 +8,14 @@ import { RIGHT_STEPS_STAGE } from "./right-steps";
 import { RIGHT_SPIRAL_STAGE } from "./right-spiral";
 import { BENT_CORRIDOR_STAGE } from "./bent-corridor";
 import { MAZE_CORRIDOR_STAGE } from "./maze-corridor";
+import { MAZE_DEAD_END_STAGE } from "./maze-dead-end";
 
 export { RIGHT_HOOK_STAGE } from "./right-hook";
 export { RIGHT_STEPS_STAGE } from "./right-steps";
 export { RIGHT_SPIRAL_STAGE } from "./right-spiral";
 export { BENT_CORRIDOR_STAGE } from "./bent-corridor";
 export { MAZE_CORRIDOR_STAGE } from "./maze-corridor";
+export { MAZE_DEAD_END_STAGE } from "./maze-dead-end";
 
 /**
  * チャプター2 の学習曲線（リストの並び順＝選択 UI での並び順）。全面カメ v4（左右センサ＋否定）にロック。
@@ -27,6 +29,7 @@ export { MAZE_CORRIDOR_STAGE } from "./maze-corridor";
  * 迷路（左右センサが必須・ベタ書きは CP 超過）:
  * - 折れ道（右・左・右と折れる。ここで初めて左折を出す。左折は右折と同じ部品で足りるため導入面を設けない）
  * - 迷路（盤の全マスを使ったほぼ一本道。脇道は右手法が入らない位置だけ＝Uターン不要）
+ * - 迷路 その2（右側に行き止まりの脇道。右手法は入ってもUターンして戻る＝同じプログラムのまま）
  */
 export const CHAPTER2_STAGES: readonly Stage[] = [
   // 入門: 右手センサの使い方を右折のみの道で段階的に教える（教える→反復→強制）
@@ -36,5 +39,6 @@ export const CHAPTER2_STAGES: readonly Stage[] = [
   // 迷路: 左右センサが必須・ベタ書きは CP 上限を超える
   BENT_CORRIDOR_STAGE, // 行き止まりで左折を足す折れ道（左折の初出）
   MAZE_CORRIDOR_STAGE, // 同じ右手法で、盤いっぱいのほぼ一本道の迷路を抜ける
-  // TODO: 袋小路（Uターン）・分岐を含む本格迷路を追加し、最大8面にする
+  MAZE_DEAD_END_STAGE, // 右側の脇道に入っても、行き止まりでUターンして戻る
+  // TODO: 分岐の多い本格迷路・右手法が通じない迷路を追加し、8面にする
 ];
