@@ -3,6 +3,7 @@ import { programCost } from "#lib/domain";
 import type { Program } from "#lib/domain";
 import {
   AHEAD_FIRST,
+  LEFT_WALL_FOLLOWER_SIMPLE,
   NAIVE_V3,
   RIGHT_ONLY,
   WALL_FOLLOWER,
@@ -20,6 +21,7 @@ import { BENT_CORRIDOR_STAGE } from "./bent-corridor";
 import { MAZE_CORRIDOR_STAGE } from "./maze-corridor";
 import { MAZE_DEAD_END_STAGE } from "./maze-dead-end";
 import { MAZE_BRANCHES_STAGE } from "./maze-branches";
+import { MAZE_ISLAND_STAGE } from "./maze-island";
 
 describe("RIGHT_HOOK_STAGE（右まがり道・基本形）", () => {
   it("右が開いたら右折する縮約形で、階段道を下って勝てる（CP 上限に収まる）", () => {
@@ -167,6 +169,31 @@ describe("MAZE_BRANCHES_STAGE（迷路 その3・分岐の多い本格迷路）"
   it("右折だけの縮約形、前方だけ見る v3 相当、前が壁になってから左右を選ぶ解では抜けられない", () => {
     for (const program of [RIGHT_ONLY, NAIVE_V3, AHEAD_FIRST]) {
       expect(winsWith(MAZE_BRANCHES_STAGE, program)).not.toBe("ally");
+    }
+  });
+});
+
+describe("MAZE_ISLAND_STAGE（迷路 その4・右手法が通じない島）", () => {
+  it("これまでの右手法（フル形・簡略形）は島の周りを回り続けて勝てない", () => {
+    for (const program of [WALL_FOLLOWER, WALL_FOLLOWER_SIMPLE]) {
+      expect(winsWith(MAZE_ISLAND_STAGE, program)).not.toBe("ally");
+    }
+  });
+
+  it("左右を入れ替えた左手法なら、外周側の壁をたどって勝てる（CP 上限に収まる）", () => {
+    expect(programCost(LEFT_WALL_FOLLOWER_SIMPLE)).toBeLessThanOrEqual(cpMax(MAZE_ISLAND_STAGE));
+    expect(winsWith(MAZE_ISLAND_STAGE, LEFT_WALL_FOLLOWER_SIMPLE)).toBe("ally");
+  });
+
+  it("最初に右折2回でUターンしてから右手法（簡略形）を回しても勝てる（CP 上限ちょうど）", () => {
+    const turnAroundFirst: Program = [right, right, ...WALL_FOLLOWER_SIMPLE];
+    expect(programCost(turnAroundFirst)).toBeLessThanOrEqual(cpMax(MAZE_ISLAND_STAGE));
+    expect(winsWith(MAZE_ISLAND_STAGE, turnAroundFirst)).toBe("ally");
+  });
+
+  it("右折だけの縮約形、前方だけ見る v3 相当、前が壁になってから左右を選ぶ解では抜けられない", () => {
+    for (const program of [RIGHT_ONLY, NAIVE_V3, AHEAD_FIRST]) {
+      expect(winsWith(MAZE_ISLAND_STAGE, program)).not.toBe("ally");
     }
   });
 });

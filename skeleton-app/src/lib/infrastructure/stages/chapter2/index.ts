@@ -10,6 +10,7 @@ import { BENT_CORRIDOR_STAGE } from "./bent-corridor";
 import { MAZE_CORRIDOR_STAGE } from "./maze-corridor";
 import { MAZE_DEAD_END_STAGE } from "./maze-dead-end";
 import { MAZE_BRANCHES_STAGE } from "./maze-branches";
+import { MAZE_ISLAND_STAGE } from "./maze-island";
 
 export { RIGHT_HOOK_STAGE } from "./right-hook";
 export { RIGHT_STEPS_STAGE } from "./right-steps";
@@ -18,6 +19,7 @@ export { BENT_CORRIDOR_STAGE } from "./bent-corridor";
 export { MAZE_CORRIDOR_STAGE } from "./maze-corridor";
 export { MAZE_DEAD_END_STAGE } from "./maze-dead-end";
 export { MAZE_BRANCHES_STAGE } from "./maze-branches";
+export { MAZE_ISLAND_STAGE } from "./maze-island";
 
 /**
  * チャプター2 の学習曲線（リストの並び順＝選択 UI での並び順）。全面カメ v4（左右センサ＋否定）にロック。
@@ -33,6 +35,7 @@ export { MAZE_BRANCHES_STAGE } from "./maze-branches";
  * - 迷路（盤の全マスを使ったほぼ一本道。脇道は右手法が入らない位置だけ＝Uターン不要）
  * - 迷路 その2（右側に行き止まりの脇道。右手法は入ってもUターンして戻る＝同じプログラムのまま）
  * - 迷路 その3（盤を 8×6 に広げた分岐の多い本格迷路。同じプログラムのまま全体を探って抜ける総仕上げ）
+ * - 迷路 その4（スタートの右の壁が離れ島で、右手法は回り続ける。観察して左手法などに直す最終面）
  */
 export const CHAPTER2_STAGES: readonly Stage[] = [
   // 入門: 右手センサの使い方を右折のみの道で段階的に教える（教える→反復→強制）
@@ -44,5 +47,5 @@ export const CHAPTER2_STAGES: readonly Stage[] = [
   MAZE_CORRIDOR_STAGE, // 同じ右手法で、盤いっぱいのほぼ一本道の迷路を抜ける
   MAZE_DEAD_END_STAGE, // 右側の脇道に入っても、行き止まりでUターンして戻る
   MAZE_BRANCHES_STAGE, // 盤を広げた分岐の多い本格迷路を、同じ右手法で抜ける
-  // TODO: 右手法が通じない迷路（スタートの右の壁が離れ島）を追加し、8面にする
+  MAZE_ISLAND_STAGE, // 右手法では島の周りを回り続ける迷路を、観察して直す
 ];

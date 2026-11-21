@@ -38,6 +38,7 @@ export function stageMapOf(stage: Pick<Stage, "initial">): StageMap {
 const forever = (body: Program): Program => [{ kind: "while", cond: { kind: "literal", value: true }, body }];
 const wallAhead = { kind: "sensor", sensor: "wallAhead" } as const;
 const wallRight = { kind: "sensor", sensor: "wallRight" } as const;
+const wallLeft = { kind: "sensor", sensor: "wallLeft" } as const;
 const openRight = { kind: "not", operand: wallRight } as const;
 const openAhead = { kind: "not", operand: wallAhead } as const;
 
@@ -51,6 +52,13 @@ export const RIGHT_ONLY: Program = forever([{ kind: "if", cond: openRight, then:
 export const WALL_FOLLOWER_SIMPLE: Program = forever([
   { kind: "if", cond: openRight, then: [right] },
   { kind: "if", cond: wallAhead, then: [left] },
+  fwd,
+]);
+
+/** v4: 左手法の簡略形＝WALL_FOLLOWER_SIMPLE の左右を入れ替えた形（左が開けば左折、前が壁なら右折・CP 6）。 */
+export const LEFT_WALL_FOLLOWER_SIMPLE: Program = forever([
+  { kind: "if", cond: { kind: "not", operand: wallLeft }, then: [left] },
+  { kind: "if", cond: wallAhead, then: [right] },
   fwd,
 ]);
 
