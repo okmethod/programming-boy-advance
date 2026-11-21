@@ -1,5 +1,5 @@
 /**
- * ステージの盤面（壁と開始位置）を ASCII 図から組み立てるパーサー。
+ * ステージの盤面（壁と開始位置）と ASCII 図を相互に変換する（parseStageMap / formatStageMap）。
  *
  * 壁を wallOn の列挙で書くと形が読み取りにくいため、盤面を図のまま書けるようにする入力書式。
  * ドメインのモデル（辺の壁 WallEdge）は変えず、図を今のモデルへ変換するだけ。
@@ -19,6 +19,8 @@
 import { wallOn } from "#lib/domain";
 import type { Automaton, BattleState, Direction } from "#lib/domain";
 
+type Position = Automaton["pos"];
+
 /** ASCII 図から得た盤面と、味方・敵の開始位置と向き。 */
 export interface StageMap {
   readonly grid: BattleState["grid"];
@@ -29,6 +31,8 @@ export interface StageMap {
 const DIRECTION_BY_SYMBOL: Readonly<Record<string, Direction>> = { ">": "right", "<": "left", "^": "up", v: "down" };
 
 const CELL_WIDTH = 4; // "+---" / "| . " の4文字で1セル
+
+const SYMBOL_BY_DIRECTION: Readonly<Record<Direction, string>> = { right: ">", left: "<", up: "^", down: "v" };
 
 /** ASCII 図を盤面と開始位置へ変換する。書式に反する図は行・列つきの例外にする。 */
 export function parseStageMap(source: string): StageMap {
@@ -122,4 +126,48 @@ function parseVerticalEdge(line: string, lineIndex: number, x: number, isOuter: 
     throw new Error(`Stage map line ${lineIndex + 1}, column ${column + 1}: outer border must be "|"`);
   }
   return symbol === "|";
+}
+
+/**
+ * 盤面と開始位置を ASCII 図へ変換する（parseStageMap の逆）。
+ * 盤外を指す壁や重複した壁は図に表れないため、往復すると盤内の辺だけの壁リストに正規化される。
+ */
+export function formatStageMap(map: StageMap): string {
+  const { width, height } = map.grid;
+  const wallKeys = new Set(map.grid.walls.map((wall) => edgeKey(wall.a, wall.b)));
+  const hasWall = (a: Position, b: Position): boolean => wallKeys.has(edgeKey(a, b));
+  const cellContent = (x: number, y: number): string => {
+    for (const [mark, placement] of [
+      ["A", map.ally],
+      ["E", map.enemy],
+    ] as const) {
+      if (placement.pos.x === x && placement.pos.y === y) return ` ${mark}${SYMBOL_BY_DIRECTION[placement.dir]}`;
+    }
+    return " . ";
+  };
+
+  const lines: string[] = [];
+  for (let y = 0; y <= height; y++) {
+    // セル行の上の辺（y=0 と y=height は外周）
+    let border = "+";
+    for (let x = 0; x < width; x++) {
+      const isWall = y === 0 || y === height || hasWall({ x, y: y - 1 }, { x, y });
+      border += (isWall ? "---" : "   ") + "+";
+    }
+    lines.push(border);
+    if (y === height) break;
+    let row = "";
+    for (let x = 0; x < width; x++) {
+      const isWall = x === 0 || hasWall({ x: x - 1, y }, { x, y });
+      row += (isWall ? "|" : " ") + cellContent(x, y);
+    }
+    lines.push(row + "|");
+  }
+  return lines.join("\n");
+}
+
+// 辺の向きに依らない比較キー（往来は対称なので a/b の順を揃える）。
+function edgeKey(a: Position, b: Position): string {
+  const [first, second] = [`${a.x},${a.y}`, `${b.x},${b.y}`].sort();
+  return `${first}|${second}`;
 }

@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
-import { programCost, runBattle, withAllyInitialHp } from "#lib/domain";
+import { programCost } from "#lib/domain";
 import type { Program } from "#lib/domain";
+import { cpMax, fwd, left, right, winsWith } from "#lib/infrastructure/stages/stage-test-kit";
 import { STRAIGHT_CORRIDOR_STAGE } from "./straight-corridor";
 import { L_CURVE_STAGE } from "./l-curve";
 import { S_CURVE_STAGE } from "./s-curve";
@@ -9,22 +10,8 @@ import { ZIGZAG_STAGE } from "./zigzag";
 import { RING_STAGE } from "./ring";
 import { SPIRAL_STAGE } from "./spiral";
 
-const fwd = { kind: "call", cmd: "stepForward" } as const;
-const right = { kind: "call", cmd: "turnRight" } as const;
-const left = { kind: "call", cmd: "turnLeft" } as const;
 // 壁があれば右折する条件分岐（壁クエリ＋if）。壁沿いの各ステージで使い回す。
 const turnIfWall = { kind: "if", cond: { kind: "sensor", sensor: "wallAhead" }, then: [right] } as const;
-
-// ステージの CP 上限＝配分でHPに1目盛り残すため memoryTotal−memoryGrain（CapacityAllocator の可動域）。
-function cpMax(stage: { memoryTotal: number; memoryGrain: number }): number {
-  return stage.memoryTotal - stage.memoryGrain;
-}
-
-// 攻撃を使わず、敵の正面に立つだけで勝てることを確認する共通ヘルパー。
-function winsWith(stage: typeof STRAIGHT_CORRIDOR_STAGE, program: Program) {
-  const state = withAllyInitialHp(stage.initial, 3);
-  return runBattle(state, program, stage.enemy).result.winner;
-}
 
 describe("STRAIGHT_CORRIDOR_STAGE（まっすぐ）", () => {
   it("前進だけで敵の正面に到達して勝てる（想定解が CP 上限に収まる）", () => {
