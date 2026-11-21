@@ -39,14 +39,19 @@ const resultOf = (frames: readonly BattleState[]): BattleResult => {
 const signatureOf = (state: BattleState): string =>
   state.automatons.map((e) => `${e.id}:${e.pos.x},${e.pos.y},${e.dir},${e.hp},${e.bp},${e.freezeRemaining}`).join("|");
 
+// 膠着とみなす「状態不変が続くクロック数」。
+// シグネチャはプログラムの進行位置を含まないため、壁への move・攻撃の空振り・待機が続くだけで盤面は不変になる。
+// 小さすぎると、その後に意味のある行動が控えるプログラム（数回ぶつかってから turn 等）まで打ち切ってしまう。
+const STALL_CLOCKS = 5;
+
 // 状態が変化しない（同一シグネチャが続く）膠着を検出する。
-// 呼ぶたびに直前との差分を見て、同一が規定回数続いたら true を返す。
+// 呼ぶたびに直前との差分を見て、同一が STALL_CLOCKS 回続いたら true を返す。
 const makeStallDetector = (initialState: BattleState) => {
   let prevSig = signatureOf(initialState);
   let stallCount = 0;
   return (state: BattleState): boolean => {
     const sig = signatureOf(state);
-    if (sig === prevSig) return ++stallCount >= 2;
+    if (sig === prevSig) return ++stallCount >= STALL_CLOCKS;
     stallCount = 0;
     prevSig = sig;
     return false;
