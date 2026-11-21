@@ -4,9 +4,11 @@ import type { Program } from "#lib/domain";
 import { RIGHT_HOOK_STAGE } from "./right-hook";
 import { RIGHT_STEPS_STAGE } from "./right-steps";
 import { RIGHT_SPIRAL_STAGE } from "./right-spiral";
+import { BENT_CORRIDOR_STAGE } from "./bent-corridor";
 
 const fwd = { kind: "call", cmd: "stepForward" } as const;
 const right = { kind: "call", cmd: "turnRight" } as const;
+const left = { kind: "call", cmd: "turnLeft" } as const;
 
 // ステージの CP 上限＝配分でHPに1目盛り残すため memoryTotal−memoryGrain（CapacityAllocator の可動域）。
 function cpMax(stage: { memoryTotal: number; memoryGrain: number }): number {
@@ -14,12 +16,36 @@ function cpMax(stage: { memoryTotal: number; memoryGrain: number }): number {
 }
 
 // 攻撃を使わず、敵の正面に立つだけで勝てることを確認する共通ヘルパー。
-function winsWith(stage: typeof RIGHT_HOOK_STAGE, program: Program) {
+function winsWith(stage: typeof BENT_CORRIDOR_STAGE, program: Program) {
   const state = withAllyInitialHp(stage.initial, 3);
   return runBattle(state, program, stage.enemy).result.winner;
 }
 
-// 前方だけ見て「壁があれば右折」する v3 相当の素朴解。角の正面の袋小路ダミーへ直進して詰まる。
+// 右手法のフル形（右が開けば右折、前が開けば直進、どちらも壁なら左折）を while で回す想定解（CP 7）。
+// 道の形に依らず同じ本体を使い回せる＝単純迷路ならこのループ1本で抜けられる。
+const WALL_FOLLOWER: Program = [
+  {
+    kind: "while",
+    cond: { kind: "literal", value: true },
+    body: [
+      {
+        kind: "if",
+        cond: { kind: "not", operand: { kind: "sensor", sensor: "wallRight" } },
+        then: [right, fwd],
+        else: [
+          {
+            kind: "if",
+            cond: { kind: "not", operand: { kind: "sensor", sensor: "wallAhead" } },
+            then: [fwd],
+            else: [left],
+          },
+        ],
+      },
+    ],
+  },
+];
+
+// 前方だけ見て「壁があれば右折」する v3 相当の素朴解。折れ角で開く向きが左のとき逆へ曲がって詰まる。
 const NAIVE_V3: Program = [
   {
     kind: "while",
@@ -28,7 +54,7 @@ const NAIVE_V3: Program = [
   },
 ];
 
-// 右が開けば右折、そうでなければ直進＝右手法の縮約形（左折なし）。入門面の最小解（CP 4）。
+// 右が開けば右折、そうでなければ直進＝右手法の縮約形（左折なし）。入門面の最小解。
 const RIGHT_ONLY: Program = [
   {
     kind: "while",
@@ -93,5 +119,54 @@ describe("RIGHT_SPIRAL_STAGE（右まがり道 その3・ループ強制）", ()
 
   it("前方だけ見る v3 相当では袋小路ダミーへ直進して詰まる", () => {
     expect(winsWith(RIGHT_SPIRAL_STAGE, NAIVE_V3)).not.toBe("ally");
+  });
+});
+
+describe("BENT_CORRIDOR_STAGE（左右まがり道・左折の初出）", () => {
+  it("右手法のループ1本で折れ道を抜けて勝てる（CP 上限に収まる）", () => {
+    expect(programCost(WALL_FOLLOWER)).toBeLessThanOrEqual(cpMax(BENT_CORRIDOR_STAGE));
+    expect(winsWith(BENT_CORRIDOR_STAGE, WALL_FOLLOWER)).toBe("ally");
+  });
+
+  it("右折だけの縮約形は行き止まりで詰まる＝左折の分岐を足す動機になる", () => {
+    expect(winsWith(BENT_CORRIDOR_STAGE, RIGHT_ONLY)).not.toBe("ally");
+  });
+
+  it("前が壁になってから左右を選ぶ解は角の正面の袋小路ダミーへ入って詰まる＝右を先に見る必要がある", () => {
+    const aheadFirst: Program = [
+      {
+        kind: "while",
+        cond: { kind: "literal", value: true },
+        body: [
+          {
+            kind: "if",
+            cond: { kind: "sensor", sensor: "wallAhead" },
+            then: [{ kind: "if", cond: { kind: "sensor", sensor: "wallRight" }, then: [left], else: [right] }],
+          },
+          fwd,
+        ],
+      },
+    ];
+    expect(winsWith(BENT_CORRIDOR_STAGE, aheadFirst)).not.toBe("ally");
+  });
+
+  it("ベタ書き（区間ごとのくりかえし＋向き変え）は道をたどれるが CP 上限を超える", () => {
+    const perLeg: Program = [
+      { kind: "repeat", count: 2, body: [fwd] }, // 東2
+      right,
+      { kind: "repeat", count: 2, body: [fwd] }, // 南2
+      left,
+      { kind: "repeat", count: 2, body: [fwd] }, // 東2
+      right,
+      { kind: "repeat", count: 2, body: [fwd] }, // 南2
+      right,
+      { kind: "repeat", count: 3, body: [fwd] }, // 西3
+    ];
+    expect(winsWith(BENT_CORRIDOR_STAGE, perLeg)).toBe("ally");
+    expect(programCost(perLeg)).toBeGreaterThan(cpMax(BENT_CORRIDOR_STAGE));
+  });
+
+  it("前方だけ見る v3 相当では袋小路ダミーへ直進して詰まる", () => {
+    expect(winsWith(BENT_CORRIDOR_STAGE, NAIVE_V3)).not.toBe("ally");
   });
 });
