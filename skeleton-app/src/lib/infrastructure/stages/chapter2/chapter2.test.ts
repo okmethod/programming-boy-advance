@@ -17,6 +17,7 @@ import { RIGHT_HOOK_STAGE } from "./right-hook";
 import { RIGHT_STEPS_STAGE } from "./right-steps";
 import { RIGHT_SPIRAL_STAGE } from "./right-spiral";
 import { BENT_CORRIDOR_STAGE } from "./bent-corridor";
+import { MAZE_CORRIDOR_STAGE } from "./maze-corridor";
 
 describe("RIGHT_HOOK_STAGE（右まがり道・基本形）", () => {
   it("右が開いたら右折する縮約形で、階段道を下って勝てる（CP 上限に収まる）", () => {
@@ -114,5 +115,23 @@ describe("BENT_CORRIDOR_STAGE（左右まがり道・左折の初出）", () => 
 
   it("前方だけ見る v3 相当では袋小路ダミーへ直進して詰まる", () => {
     expect(winsWith(BENT_CORRIDOR_STAGE, NAIVE_V3)).not.toBe("ally");
+  });
+});
+
+describe("MAZE_CORRIDOR_STAGE（迷路・ほぼ一本道）", () => {
+  it("右手法のフル形・簡略形のどちらでも迷路を抜けて勝てる（CP 上限に収まる）", () => {
+    for (const program of [WALL_FOLLOWER, WALL_FOLLOWER_SIMPLE]) {
+      expect(programCost(program)).toBeLessThanOrEqual(cpMax(MAZE_CORRIDOR_STAGE));
+      expect(winsWith(MAZE_CORRIDOR_STAGE, program)).toBe("ally");
+    }
+  });
+
+  it("右折だけの縮約形は最初の行き止まりで詰まる", () => {
+    expect(winsWith(MAZE_CORRIDOR_STAGE, RIGHT_ONLY)).not.toBe("ally");
+  });
+
+  it("前方だけ見る v3 相当や、前が壁になってから左右を選ぶ解は、脇道に入って抜け出せない", () => {
+    expect(winsWith(MAZE_CORRIDOR_STAGE, NAIVE_V3)).not.toBe("ally");
+    expect(winsWith(MAZE_CORRIDOR_STAGE, AHEAD_FIRST)).not.toBe("ally");
   });
 });
