@@ -19,6 +19,7 @@ import { RIGHT_SPIRAL_STAGE } from "./right-spiral";
 import { BENT_CORRIDOR_STAGE } from "./bent-corridor";
 import { MAZE_CORRIDOR_STAGE } from "./maze-corridor";
 import { MAZE_DEAD_END_STAGE } from "./maze-dead-end";
+import { MAZE_BRANCHES_STAGE } from "./maze-branches";
 
 describe("RIGHT_HOOK_STAGE（右まがり道・基本形）", () => {
   it("右が開いたら右折する縮約形で、階段道を下って勝てる（CP 上限に収まる）", () => {
@@ -152,5 +153,20 @@ describe("MAZE_DEAD_END_STAGE（迷路 その2・右側の行き止まり）", (
   it("前方だけ見る v3 相当や、前が壁になってから左右を選ぶ解は、上段の偽の通路を往復して抜け出せない", () => {
     expect(winsWith(MAZE_DEAD_END_STAGE, NAIVE_V3)).not.toBe("ally");
     expect(winsWith(MAZE_DEAD_END_STAGE, AHEAD_FIRST)).not.toBe("ally");
+  });
+});
+
+describe("MAZE_BRANCHES_STAGE（迷路 その3・分岐の多い本格迷路）", () => {
+  it("右手法のフル形・簡略形のどちらでも、行き止まりでUターンしながら迷路全体を探って勝てる", () => {
+    for (const program of [WALL_FOLLOWER, WALL_FOLLOWER_SIMPLE]) {
+      expect(programCost(program)).toBeLessThanOrEqual(cpMax(MAZE_BRANCHES_STAGE));
+      expect(winsWith(MAZE_BRANCHES_STAGE, program)).toBe("ally");
+    }
+  });
+
+  it("右折だけの縮約形、前方だけ見る v3 相当、前が壁になってから左右を選ぶ解では抜けられない", () => {
+    for (const program of [RIGHT_ONLY, NAIVE_V3, AHEAD_FIRST]) {
+      expect(winsWith(MAZE_BRANCHES_STAGE, program)).not.toBe("ally");
+    }
   });
 });
