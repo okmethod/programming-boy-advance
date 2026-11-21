@@ -1,6 +1,13 @@
 import type { Stage } from "#lib/application";
 import { BRITTLE_SENTRY, TURTLE_V2 } from "#lib/domain";
 import { BRITTLE_ENEMY_LABEL, BRITTLE_ENEMY_PROGRAM } from "#lib/infrastructure/stages/chapter1/brittle-enemy";
+import { parseStageMap } from "#lib/infrastructure/stages/stage-map";
+
+const LONG_CORRIDOR_MAP = parseStageMap(`
+  +---+---+---+---+---+---+---+---+---+---+---+---+
+  | A>  .   .   .   .   .   .   .   .   .   .   E<|
+  +---+---+---+---+---+---+---+---+---+---+---+---+
+`);
 
 export const LONG_CORRIDOR_STAGE: Stage = {
   id: "long-corridor",
@@ -16,12 +23,12 @@ export const LONG_CORRIDOR_STAGE: Stage = {
   memoryGrain: 8,
 
   initial: {
-    grid: { width: 12, height: 1, walls: [] },
+    grid: LONG_CORRIDOR_MAP.grid,
     automatons: [
       // ally の hp=0 はデプロイ前の表示（未出撃＝空バー）用。対戦時は memoryTotal から配分した個体値で上書きされる。
-      { id: "ally", pos: { x: 0, y: 0 }, dir: "right", hp: 0, bp: 0, freezeRemaining: 0, priority: 1 },
+      { id: "ally", ...LONG_CORRIDOR_MAP.ally, hp: 0, bp: 0, freezeRemaining: 0, priority: 1 },
       // 左を向く＝正面セルは (10,0)。前進を 10 回くりかえすと到達＝自壊。repeat は壁/敵で止まるので回数は多めでも成立する。
-      { id: "enemy", pos: { x: 11, y: 0 }, dir: "left", hp: 1, bp: 0, freezeRemaining: 0, priority: 0 },
+      { id: "enemy", ...LONG_CORRIDOR_MAP.enemy, hp: 1, bp: 0, freezeRemaining: 0, priority: 0 },
     ],
     clock: 0,
     rngSeed: 0,

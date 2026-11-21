@@ -1,6 +1,7 @@
 import type { Stage } from "#lib/application";
-import { BRITTLE_SENTRY, TURTLE_V4, wallOn } from "#lib/domain";
+import { BRITTLE_SENTRY, TURTLE_V4 } from "#lib/domain";
 import { BRITTLE_ENEMY_LABEL, BRITTLE_ENEMY_PROGRAM } from "#lib/infrastructure/stages/chapter1/brittle-enemy";
+import { parseStageMap } from "#lib/infrastructure/stages/stage-map";
 
 // その2（東2/南3/西2）の終点 (0,3) を角に変え、そこから北へ巻き上げる兄弟面（右折が3回になる・脚長 東2/南3/西2/北1）。
 // 壁配置は right-steps と同一で、敵を1マス上 (0,2→0,1) へ置いて (0,3) を通過点にし、3折り目（北）を強制する。
@@ -8,17 +9,19 @@ import { BRITTLE_ENEMY_LABEL, BRITTLE_ENEMY_PROGRAM } from "#lib/infrastructure/
 // 脚別ベタ書きも 4脚＋右折3回＝10ブロックで CP 上限8を超える＝ベタ書きでは畳めない。
 // 右が開けば右折するループ1本（RIGHT_ONLY＝4ブロック）だけが上限に収まる＝ループを強制する面。
 // 角1の正面ダミー (3,0) で「前が壁なら右折」(v3) の直進を失敗させる。
-const RIGHT_SPIRAL_WALLS = [
-  wallOn({ x: 0, y: 0 }, "down"), // 上辺（東へ進む脚）の南を閉じて右手を壁につける
-  wallOn({ x: 1, y: 0 }, "down"),
-  wallOn({ x: 3, y: 0 }, "down"), // (3,0) を袋小路にする（角1の正面ダミー）
-  wallOn({ x: 2, y: 1 }, "left"), // 南下する縦路の両脇を閉じる（南3マス）
-  wallOn({ x: 2, y: 1 }, "right"),
-  wallOn({ x: 2, y: 2 }, "left"),
-  wallOn({ x: 2, y: 2 }, "right"),
-  wallOn({ x: 2, y: 3 }, "right"), // (2,3) の東を閉じて西（右折先）へ導く（南は盤端で行き止まり）
-  wallOn({ x: 1, y: 3 }, "up"), // 西へ戻る横路の北を閉じる（南は盤端）
-];
+// 壁の役割: 上辺 (0,0)(1,0) の南＝右手を壁につける／(3,0) の南＝角1の正面の袋小路ダミー／
+// (2,3) の東＝西（右折先）へ導く。残りは道の両脇を閉じる壁。
+const RIGHT_SPIRAL_MAP = parseStageMap(`
+  +---+---+---+---+
+  | A>  .   .   . |
+  +---+---+   +---+
+  | Ev  . | . | . |
+  +   +   +   +   +
+  | .   . | . | . |
+  +   +---+   +   +
+  | .   .   . | . |
+  +---+---+---+---+
+`);
 
 export const RIGHT_SPIRAL_STAGE: Stage = {
   id: "right-spiral",
@@ -33,12 +36,12 @@ export const RIGHT_SPIRAL_STAGE: Stage = {
   memoryGrain: 8,
 
   initial: {
-    grid: { width: 4, height: 4, walls: RIGHT_SPIRAL_WALLS },
+    grid: RIGHT_SPIRAL_MAP.grid,
     automatons: [
       // ally の hp=0 はデプロイ前の表示（未出撃＝空バー）用。対戦時は memoryTotal から配分した個体値で上書きされる。
-      { id: "ally", pos: { x: 0, y: 0 }, dir: "right", hp: 0, bp: 0, freezeRemaining: 0, priority: 1 },
+      { id: "ally", ...RIGHT_SPIRAL_MAP.ally, hp: 0, bp: 0, freezeRemaining: 0, priority: 1 },
       // 北へ巻き上げた終点 (0,2) の真上 (0,1) で下を向く＝正面セルは (0,2)。渦を巻き切った ally が立つと自壊する。
-      { id: "enemy", pos: { x: 0, y: 1 }, dir: "down", hp: 1, bp: 0, freezeRemaining: 0, priority: 0 },
+      { id: "enemy", ...RIGHT_SPIRAL_MAP.enemy, hp: 1, bp: 0, freezeRemaining: 0, priority: 0 },
     ],
     clock: 0,
     rngSeed: 0,

@@ -1,6 +1,13 @@
 import type { Stage } from "#lib/application";
 import { BRITTLE_SENTRY, TURTLE_V1 } from "#lib/domain";
 import { BRITTLE_ENEMY_LABEL, BRITTLE_ENEMY_PROGRAM } from "#lib/infrastructure/stages/chapter1/brittle-enemy";
+import { parseStageMap } from "#lib/infrastructure/stages/stage-map";
+
+const STRAIGHT_CORRIDOR_MAP = parseStageMap(`
+  +---+---+---+---+---+---+
+  | A>  .   .   .   .   E<|
+  +---+---+---+---+---+---+
+`);
 
 export const STRAIGHT_CORRIDOR_STAGE: Stage = {
   id: "straight-corridor",
@@ -14,12 +21,12 @@ export const STRAIGHT_CORRIDOR_STAGE: Stage = {
   allowedImages: [TURTLE_V1], // 移動のみ。制御・攻撃は持たせない（v1 で解く導入面）。
 
   initial: {
-    grid: { width: 6, height: 1, walls: [] },
+    grid: STRAIGHT_CORRIDOR_MAP.grid,
     automatons: [
       // ally の hp=0 はデプロイ前の表示（未出撃＝空バー）用。対戦時は memoryTotal から配分した個体値で上書きされる。
-      { id: "ally", pos: { x: 0, y: 0 }, dir: "right", hp: 0, bp: 0, freezeRemaining: 0, priority: 1 },
+      { id: "ally", ...STRAIGHT_CORRIDOR_MAP.ally, hp: 0, bp: 0, freezeRemaining: 0, priority: 1 },
       // 左を向く＝正面セルは (4,0)。プレイヤーがそこへ到達した瞬間、brittleAttack が暴発して自壊する。
-      { id: "enemy", pos: { x: 5, y: 0 }, dir: "left", hp: 1, bp: 0, freezeRemaining: 0, priority: 0 },
+      { id: "enemy", ...STRAIGHT_CORRIDOR_MAP.enemy, hp: 1, bp: 0, freezeRemaining: 0, priority: 0 },
     ],
     clock: 0,
     rngSeed: 0,
