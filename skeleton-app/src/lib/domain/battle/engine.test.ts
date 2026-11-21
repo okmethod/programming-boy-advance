@@ -79,6 +79,14 @@ describe("applyAction（attack）", () => {
     const s = state([automaton("ally", { x: 0, y: 0 }, "right")]);
     expect(applyAction(s, "ally", { kind: "attack" })).toBe(s);
   });
+
+  it("隣接していても間に壁があれば当たらない（同一参照）", () => {
+    const walls = [wallOn({ x: 0, y: 0 }, "right")];
+    const s = state([automaton("ally", { x: 0, y: 0 }, "right"), automaton("enemy", { x: 1, y: 0 }, "left")], walls);
+    expect(applyAction(s, "ally", { kind: "attack" })).toBe(s);
+    expect(applyAction(s, "ally", { kind: "loadAttack" })).toBe(s);
+    expect(applyAction(s, "ally", { kind: "brittleAttack" })).toBe(s);
+  });
 });
 
 describe("applyAction（loadAttack：負荷攻撃）", () => {

@@ -55,12 +55,20 @@ function withBpRaised(a: Automaton, amount: number, params: BattleParams): Autom
   return { ...a, bp };
 }
 
+// 前方マスにいる相手の添字を返す（いなければ -1）。間に壁があれば届かない＝いない扱い。
+// 攻撃系アクション（attack / loadAttack / brittleAttack）の命中判定に共通で使う。
+function findFrontTargetIndex(state: BattleState, self: Automaton): number {
+  const front = frontCell(self.pos, self.dir);
+  if (isBlocked(state.grid, self.pos, front)) return -1;
+  return state.automatons.findIndex((o) => o.id !== self.id && arePositionsEqual(o.pos, front));
+}
+
 /**
  * 1体のオートマトンの1アクションを状態に適用する（クロックは進めない）。
  *
  * バトルループが行動順に従って1体ずつ呼ぶ。後手は先手の行動を反映した最新状態を見て動くため、
  * 「2体が同じマスを同時に奪い合う」矛盾が原理的に起きず、アドホックな衝突回避が不要になる。
- * 移動は壁・場外・他オートマトンのいるマスへは進めない。攻撃は前方マスの相手に当たる。
+ * 移動は壁・場外・他オートマトンのいるマスへは進めない。攻撃は前方マスの相手に当たる（間に壁があれば当たらない）。
  * フリーズ中（freezeRemaining > 0）はコマンドが wait に強制上書きされ、何も起きない。
  */
 export function applyAction(
@@ -92,8 +100,7 @@ export function applyAction(
       break;
     }
     case "attack": {
-      const front = frontCell(self.pos, self.dir);
-      const idx = automatons.findIndex((o) => o.id !== selfId && arePositionsEqual(o.pos, front));
+      const idx = findFrontTargetIndex(state, self);
       if (idx >= 0) {
         const tgt = automatons[idx];
         const hp = tgt.hp - params.attackDamage;
@@ -112,8 +119,7 @@ export function applyAction(
     }
     case "loadAttack": {
       // 負荷攻撃（DDoS）：前方の相手の BP を上げる。HP は削らない。
-      const front = frontCell(self.pos, self.dir);
-      const idx = automatons.findIndex((o) => o.id !== selfId && arePositionsEqual(o.pos, front));
+      const idx = findFrontTargetIndex(state, self);
       if (idx >= 0) {
         automatons = automatons.map((e, i) => (i === idx ? withBpRaised(e, params.loadAttackBp, params) : e));
       }
@@ -122,9 +128,7 @@ export function applyAction(
     case "brittleAttack": {
       // brittleAttack（暴発のみ）：前方に相手がいる時だけ発動し、相手は無傷・自分の HP が 0 になる（自壊）。
       // 空振り（前方に相手なし）は無害。敵の「脆弱性」を位置取りで突いて勝たせる Chap1 の勝ち筋。
-      const front = frontCell(self.pos, self.dir);
-      const hasTarget = automatons.some((o) => o.id !== selfId && arePositionsEqual(o.pos, front));
-      if (hasTarget) {
+      if (findFrontTargetIndex(state, self) >= 0) {
         automatons = automatons.map((e) => (e.id === selfId ? { ...e, hp: 0 } : e));
         logs = [...logs, { clock: state.clock, attacker: selfId, target: selfId, damage: self.hp, targetHpAfter: 0 }];
       }

@@ -35,6 +35,12 @@ describe("sensorValue（enemyAhead）", () => {
     expect(sensorValue("enemyAhead", row([], [ally, enemyAhead]), "ally")).toBe(true);
     expect(sensorValue("enemyAhead", row([], [ally, enemyAway]), "ally")).toBe(false);
   });
+
+  it("隣接していても間に壁があれば偽", () => {
+    const ally = automaton("ally", { x: 0, y: 0 }, "right");
+    const enemy = automaton("enemy", { x: 1, y: 0 }, "left");
+    expect(sensorValue("enemyAhead", row([wallOn({ x: 0, y: 0 }, "right")], [ally, enemy]), "ally")).toBe(false);
+  });
 });
 
 describe("sensorValue（左右の壁）", () => {

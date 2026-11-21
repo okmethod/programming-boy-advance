@@ -37,6 +37,8 @@ export const sensorValue = (sensor: SensorName, state: BattleState, selfId: Auto
     case "wallRight":
       return isBlocked(state.grid, self.pos, frontCell(self.pos, rotate(self.dir, "right")));
     case "enemyAhead": {
+      // 攻撃の命中判定（engine）と揃え、間に壁があれば相手は「いない」扱いにする。
+      if (isBlocked(state.grid, self.pos, front)) return false;
       const other = state.automatons.find((e) => e.id !== selfId && arePositionsEqual(e.pos, front));
       return other !== undefined;
     }
