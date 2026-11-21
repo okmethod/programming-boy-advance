@@ -2,6 +2,7 @@ import { describe, it, expect } from "vitest";
 import { wallOn } from "#lib/domain";
 import { CHAPTER1_STAGES } from "./chapter1";
 import { CHAPTER2_STAGES } from "./chapter2";
+import { CHAPTER3_STAGES } from "./chapter3";
 import { formatStageMap, parseStageMap } from "./stage-map";
 import type { StageMap } from "./stage-map";
 import { stageMapOf } from "./stage-test-kit";
@@ -56,7 +57,7 @@ describe("parseStageMap", () => {
     expect(formatStageMap(parseStageMap(source))).toBe(source);
   });
 
-  it.each([...CHAPTER1_STAGES, ...CHAPTER2_STAGES].map((stage) => [stage.id, stage] as const))(
+  it.each([...CHAPTER1_STAGES, ...CHAPTER2_STAGES, ...CHAPTER3_STAGES].map((stage) => [stage.id, stage] as const))(
     "登録済みステージ %s の盤面は、図へ変換して読み直しても壁・盤の大きさ・開始位置が変わらない",
     (_id, stage) => {
       const original = stageMapOf(stage);

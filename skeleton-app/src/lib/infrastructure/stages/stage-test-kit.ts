@@ -19,9 +19,17 @@ export function cpMax(stage: Pick<Stage, "memoryTotal" | "memoryGrain">): number
   return stage.memoryTotal - stage.memoryGrain;
 }
 
-/** 攻撃を使わず、プログラムを走らせた勝者を返す（脆弱敵の正面に立てば ally 勝ち）。 */
-export function winsWith(stage: Pick<Stage, "initial" | "enemy">, program: Program) {
-  const state = withAllyInitialHp(stage.initial, 3);
+/** ステージの CP を上限まで取った配分での ally の HP（＝最小 HP。memoryTotal=memoryGrain*2 なら唯一の配分）。 */
+export function allyHpAtCpMax(stage: Pick<Stage, "memoryTotal" | "memoryGrain">): number {
+  return stage.memoryTotal - cpMax(stage);
+}
+
+/**
+ * プログラムを走らせた勝者を返す。
+ * allyHp の既定 3 は HP が勝敗に効かない脆弱敵の面向け。攻撃し合う面では配分どおりの HP を渡す。
+ */
+export function winsWith(stage: Pick<Stage, "initial" | "enemy">, program: Program, allyHp = 3) {
+  const state = withAllyInitialHp(stage.initial, allyHp);
   return runBattle(state, program, stage.enemy).result.winner;
 }
 

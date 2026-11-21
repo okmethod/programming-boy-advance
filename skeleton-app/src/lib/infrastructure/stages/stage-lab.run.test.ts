@@ -16,6 +16,7 @@ import { describe, it } from "vitest";
 import { existsSync, readFileSync } from "node:fs";
 import { CHAPTER1_STAGES } from "./chapter1";
 import { CHAPTER2_STAGES } from "./chapter2";
+import { CHAPTER3_STAGES } from "./chapter3";
 import { parseStageMap } from "./stage-map";
 import { formatStageLab, labStageFromMap, runStageLab } from "./stage-lab";
 
@@ -23,7 +24,9 @@ const target = process.env.STAGE_LAB;
 
 describe.runIf(target)("stage-lab", () => {
   it(`試走表: ${target}`, () => {
-    const registered = [...CHAPTER1_STAGES, ...CHAPTER2_STAGES].find((stage) => stage.id === target);
+    const registered = [...CHAPTER1_STAGES, ...CHAPTER2_STAGES, ...CHAPTER3_STAGES].find(
+      (stage) => stage.id === target,
+    );
     if (!registered && !existsSync(target!)) {
       throw new Error(`STAGE_LAB must be a registered stage id or a path to an ASCII map file: ${target}`);
     }

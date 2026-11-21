@@ -41,6 +41,7 @@ export {
   TURTLE_V5,
   TURTLE_IMAGES,
   BRITTLE_SENTRY,
+  BASIC_SENTRY,
   BASE_IMAGES,
   UNKNOWN_BASE_IMAGE,
 } from "./image";

@@ -2,15 +2,12 @@
  * 敵専用の素質（プレイヤーカタログ外）。
  *
  * BASE_IMAGES には載せない＝ツールボックス/ブロックに漏れない。
- * 今は版ラダーを持たない単体の敵のみ。将来、敵が版で成長するなら系統ごとのファイルへ割り直す。
  */
 
 import type { BaseImage } from "../model";
 
 /**
- * brittleAttack だけを持つ初期型の敵（Chap1 の「脆弱性を突いて勝つ」敵）。敵プログラム表示の土台。
- *
- * brittleAttack は命中時に自分が自壊する暴発（→ engine）。
+ * brittleAttack だけを持つチュートリアル用の敵。
  * 敵は `while(true){ brittleAttack }` で無心に振り続け、自キャラが正面に立つと自壊する。
  */
 export const BRITTLE_SENTRY: BaseImage = {
@@ -22,5 +19,20 @@ export const BRITTLE_SENTRY: BaseImage = {
   commands: ["brittleAttack"],
   queries: [],
   controls: ["while"],
+  operators: [],
+};
+
+/**
+ * 標準的な敵
+ */
+export const BASIC_SENTRY: BaseImage = {
+  imageName: "sentry",
+  family: "戦闘用オートマトン",
+  version: "1.0",
+  icon: "mdi:robot-angry",
+  summary: "標準的な戦闘用オートマトン",
+  commands: ["stepForward", "turnRight", "turnLeft", "attack", "wait"],
+  queries: ["wallAhead", "enemyAhead"],
+  controls: ["while", "if"],
   operators: [],
 };
