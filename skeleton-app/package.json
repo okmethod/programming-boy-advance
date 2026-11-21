@@ -19,6 +19,7 @@
     "format": "prettier --write .",
     "test:integration": "playwright test",
     "test:unit": "vitest run",
+    "stage:lab": "vitest run src/lib/infrastructure/stages/stage-lab.run.test.ts --reporter=verbose",
     "push": "gh-pages -d build --dotfiles",
     "deploy": "npm run build && npm run push"
   },
